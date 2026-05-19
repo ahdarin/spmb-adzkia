@@ -4,7 +4,7 @@
         <div class="w-8 h-10 bg-orange-500 rounded-b-xl rounded-t-sm flex items-end justify-center pb-1">
             <div class="w-4 h-4 bg-white rounded-full"></div>
         </div>
-        <span>PMB ADZKIA</span>
+        <span>SPMB ADZKIA</span>
     </a>
 
     <div class="hidden lg:flex items-center gap-7 text-[14px] font-bold text-gray-500">

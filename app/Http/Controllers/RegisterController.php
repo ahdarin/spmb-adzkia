@@ -3,16 +3,41 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\DataPendaftar; // Model yang digunakan
+use App\Models\DataPendaftar;
+use App\Models\Prodi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RegisterController extends Controller
 {
-    public function showRegistrationForm()
+public function showRegistrationForm()
     {
-        return view('user.register'); 
+        // 1. Ambil data program studi
+        $prodis = Prodi::all(); 
+
+        // 2. Ambil atau siapkan data jalur khusus
+        if (Schema::hasTable('jalurs')) {
+            $jalurKhusus = DB::table('jalurs')->get()->groupBy('category');
+        } else {
+            $jalurKhusus = collect([
+                'Program Beasiswa' => [
+                    (object)['name' => 'Beasiswa Adzkia Unggul (BAU)'],
+                    (object)['name' => 'Beasiswa PMDK'],
+                    (object)['name' => 'Beasiswa Prestasi'],
+                    (object)['name' => 'Beasiswa KIP-K'],
+                ],
+                'Rekognisi Pembelajaran Lampau (RPL)' => [
+                    (object)['name' => 'RPL Afirmasi YASB'],
+                    (object)['name' => 'RPL Afirmasi JSIT'],
+                    (object)['name' => 'RPL Kelas Khusus'],
+                ]
+            ]);
+        }
+        
+        // 3. Kirim data ke view
+        return view('user.register', compact('prodis', 'jalurKhusus')); 
     }
 
     public function store(Request $request)

@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
             
             <a href="/admin" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin')])>
                 <span class="flex items-center justify-center"><i data-feather="grid" class="w-5 h-5"></i></span>
@@ -92,6 +92,11 @@
             <a href="/admin/berita" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/berita*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/berita*')])>
                 <span class="flex items-center justify-center"><i data-feather="file-text" class="w-5 h-5"></i></span>
                 <span class="text-[14px]">Berita</span>
+            </a>
+
+            <a href="/admin/tugas" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/tugas*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/tugas*')])>
+                <span class="flex items-center justify-center"><i data-feather="shield" class="w-5 h-5"></i></span>
+                <span class="text-[14px]">Manajemen Divisi</span>
             </a>
 
             <a href="/admin/faq" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/faq*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/faq*')])>
