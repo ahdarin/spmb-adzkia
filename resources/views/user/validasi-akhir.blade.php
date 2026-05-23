@@ -83,16 +83,40 @@
                         <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-brand-dark">Menunggu Verifikasi</div>
                     </div>
 
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-brand-blue text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 ring-4 ring-brand-blue-light">
-                            <i data-feather="loader" class="w-3 h-3 animate-spin"></i>
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group {{ in_array($pendaftar->status_pendaftaran, ['Sedang Diproses', 'Selesai']) ? 'is-active' : '' }}">
+                        {{-- Lingkaran: Tambahkan class md:order-1 dst. agar masuk jalur tengah --}}
+                        <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white 
+                            {{ $pendaftar->status_pendaftaran == 'Sedang Diproses' ? 'bg-brand-blue ring-4 ring-brand-blue-light' : 'bg-brand-dark' }} 
+                            text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            
+                            @if($pendaftar->status_pendaftaran == 'Sedang Diproses')
+                                <i data-feather="loader" class="w-3 h-3 animate-spin"></i>
+                            @else
+                                <i data-feather="check" class="w-3 h-3"></i>
+                            @endif
                         </div>
-                        <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-brand-blue">Sedang Diproses</div>
+                        <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] 
+                            {{ $pendaftar->status_pendaftaran == 'Sedang Diproses' ? 'text-brand-blue' : 'text-brand-dark' }}">Sedang Diproses</div>
                     </div>
 
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                        <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-200 bg-white text-gray-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
-                        <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-gray-400">Selesai</div>
+                    {{-- 4. Status Selesai (Diperbaiki agar masuk jalur tengah) --}}
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group {{ $pendaftar->status_pendaftaran == 'Selesai' ? 'is-active' : '' }}">
+                        
+                        {{-- Lingkaran (Wajib ada di dalam flex agar sejajar) --}}
+                        <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white 
+                            {{ $pendaftar->status_pendaftaran == 'Selesai' ? 'bg-brand-dark' : 'bg-white border-gray-200' }} 
+                            text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            
+                            @if($pendaftar->status_pendaftaran == 'Selesai')
+                                <i data-feather="check" class="w-3 h-3"></i>
+                            @endif
+                        </div>
+
+                        {{-- Teks --}}
+                        <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] 
+                            {{ $pendaftar->status_pendaftaran == 'Selesai' ? 'text-brand-dark' : 'text-gray-400' }}">
+                            Selesai
+                        </div>
                     </div>
 
                 </div>
@@ -101,15 +125,16 @@
             <div class="bg-[#F8FAFC] rounded-3xl p-6 md:p-8 mb-6 border border-gray-100 grid grid-cols-2 gap-y-6 gap-x-4">
                 <div>
                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Nama Pendaftar</p>
-                    <h4 class="text-[14px] font-extrabold text-brand-dark">Ahmad Fauzi</h4>
+                    <h4 class="text-[14px] font-extrabold text-brand-dark">{{ $pendaftar->nama_lengkap }}</h4>
                 </div>
                 <div>
                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Program Studi</p>
-                    <h4 class="text-[14px] font-extrabold text-brand-dark">S1 Informatika</h4>
+                    <h4 class="text-[14px] font-extrabold text-brand-dark">{{ $pendaftar->pilihan_jurusan_1 }}</h4>
                 </div>
                 <div>
                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Tanggal Kirim</p>
-                    <h4 class="text-[14px] font-extrabold text-brand-dark">12 Mei 2026</h4>
+                    <!-- Format tanggal agar lebih rapi -->
+                    <h4 class="text-[14px] font-extrabold text-brand-dark">{{ $pendaftar->updated_at->format('d F Y') }}</h4>
                 </div>
                 <div>
                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Estimasi Verifikasi</p>

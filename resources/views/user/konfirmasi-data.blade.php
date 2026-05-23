@@ -73,18 +73,20 @@
             
             <div class="lg:col-span-4 space-y-6">
                 <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm flex flex-col items-center text-center">
-                    <img src="https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=F1F5F9&color=0F172A&size=128" alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100">
-                    <h2 class="text-2xl font-black text-brand-dark mb-1">Ahmad Fauzi</h2>
-                    <p class="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-6">Candidate ID: #2026-AF091</p>
-                    
-                    <div class="w-full bg-brand-dark rounded-2xl p-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-4 opacity-5">
-                            <i data-feather="book-open" class="w-20 h-20"></i>
-                        </div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 relative z-10 text-left">Program Studi Pilihan</p>
-                        <h3 class="text-xl font-extrabold text-white relative z-10 text-left">S1 Informatika</h3>
-                    </div>
+                    <!-- Menggunakan gravatar atau path foto dari database jika ada -->
+                     <img src="https://ui-avatars.com/api/?name={{ urlencode($pendaftar->nama_lengkap) }}&background=F1F5F9&color=0F172A&size=128" alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100">
+                     
+                    <h2 class="text-2xl font-black text-brand-dark mb-1">{{ $pendaftar->nama_lengkap }}</h2>
+                    <p class="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-6">Candidate ID: #{{ $pendaftar->id_pendaftaran }}</p>
+    
+                <div class="w-full bg-brand-dark rounded-2xl p-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-5">
+                    <i data-feather="book-open" class="w-20 h-20"></i>
                 </div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 relative z-10 text-left">Program Studi Pilihan</p>
+                    <h3 class="text-xl font-extrabold text-white relative z-10 text-left">{{ $pendaftar->pilihan_jurusan_1 ?? 'Data Jurusan Kosong' }}</h3>
+                </div>
+            </div>
 
                 <div class="flex gap-4 border-l-4 border-brand-dark pl-5 py-2">
                     <i data-feather="info" class="w-5 h-5 text-brand-dark shrink-0 mt-0.5"></i>
@@ -100,7 +102,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm relative group">
-                        <a href="/biodata" class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">Edit</a>
+                        <a href="{{ route('edit-biodata', $pendaftar->id) }}" 
+                            class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">
+                            Edit
+                        </a>
                         <div class="flex items-center gap-2 mb-6">
                             <i data-feather="user" class="w-4 h-4 text-brand-dark"></i>
                             <h3 class="text-[15px] font-extrabold text-brand-dark">Data Diri</h3>
@@ -108,27 +113,34 @@
                         <div class="space-y-4">
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Nama Lengkap</p>
-                                <p class="text-[14px] font-bold text-brand-dark">Ahmad Fauzi</p>
+                                <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->nama_lengkap }}</p>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">NIK</p>
-                                <p class="text-[14px] font-bold text-brand-dark">3271234567890001</p>
+                                <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->nik }}</p>
                             </div>
                             <div class="flex gap-8">
                                 <div>
                                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Tanggal Lahir</p>
-                                    <p class="text-[14px] font-bold text-brand-dark">12 Mei 2005</p>
+                                    <p class="text-[14px] font-bold text-brand-dark">
+                                        {{ $pendaftar->tanggal_lahir ? \Carbon\Carbon::parse($pendaftar->tanggal_lahir)->translatedFormat('d F Y') : '-' }}
+                                    </p>
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Gender</p>
-                                    <p class="text-[14px] font-bold text-brand-dark">Laki-laki</p>
+                                    <div>
+                                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Gender</p>
+                                        <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->gender ?? '-' }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm relative group">
-                        <a href="/biodata" class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">Edit</a>
+                        <a href="{{ route('edit-biodata', $pendaftar->id) }}" 
+                            class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">
+                            Edit
+                        </a>
                         <div class="flex items-center gap-2 mb-6">
                             <i data-feather="map-pin" class="w-4 h-4 text-brand-dark"></i>
                             <h3 class="text-[15px] font-extrabold text-brand-dark">Kontak</h3>
@@ -136,21 +148,24 @@
                         <div class="space-y-4">
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Email</p>
-                                <p class="text-[14px] font-bold text-brand-dark">ahmad.fauzi@email.com</p>
+                                <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->email }}</p>
                             </div>
                             <div>
-                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">No HP</p>
-                                <p class="text-[14px] font-bold text-brand-dark">081234567890</p>
+                                <<p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">No HP</p>
+                                <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->no_whatsapp ?? '-' }}</p>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Alamat</p>
-                                <p class="text-[14px] font-bold text-brand-dark leading-snug">Jl. Merdeka No. 123, Bandung</p>
+                                <p class="text-[14px] font-bold text-brand-dark leading-snug">{{ $pendaftar->alamat_rumah ?? '-' }}</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm relative group">
-                        <a href="/biodata" class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">Edit</a>
+                        <a href="{{ route('edit-biodata', $pendaftar->id) }}" 
+                            class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">
+                            Edit
+                        </a>
                         <div class="flex items-center gap-2 mb-6">
                             <i data-feather="book-open" class="w-4 h-4 text-brand-dark"></i>
                             <h3 class="text-[15px] font-extrabold text-brand-dark">Pendidikan</h3>
@@ -158,47 +173,54 @@
                         <div class="space-y-4">
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Sekolah Asal</p>
-                                <p class="text-[14px] font-bold text-brand-dark">SMAN 1 Bandung</p>
+                                <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->sekolah_asal ?? '-' }}</p>
                             </div>
                             <div class="flex gap-8">
                                 <div>
                                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Tahun Lulus</p>
-                                    <p class="text-[14px] font-bold text-brand-dark">2023</p>
+                                    <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->tahun_lulus ?? '-' }}</p>
                                 </div>
                                 <div>
                                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
-                                    <p class="text-[14px] font-bold text-brand-dark">88.50</p>
+                                    <p class="text-[14px] font-bold text-brand-dark">{{ $pendaftar->nilai_akhir ?? '-' }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm relative group">
-                        <a href="/biodata" class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">Edit</a>
+                        <p>ID Pendaftar saat ini: {{ $pendaftar->id }}</p>
+                        <a href="{{ route('edit-biodata', $pendaftar->id) }}" 
+                            class="absolute top-8 right-8 text-[12px] font-extrabold text-gray-400 underline underline-offset-2 hover:text-brand-blue transition-colors">
+                            Edit
+                        </a>
                         <div class="flex items-center gap-2 mb-6">
                             <i data-feather="folder" class="w-4 h-4 text-brand-dark"></i>
                             <h3 class="text-[15px] font-extrabold text-brand-dark">Dokumen</h3>
                         </div>
                         <div class="flex gap-4">
-                            <div class="flex flex-col items-center gap-2">
-                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100">
+                            <!-- Foto -->
+                            <a href="{{ asset('storage/dokumen/foto/' . $pendaftar->pas_foto) }}" target="_blank" class="flex flex-col items-center gap-2 group">
+                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 group-hover:border-brand-blue transition-colors">
                                     <i data-feather="image" class="w-5 h-5"></i>
                                 </div>
-                                <p class="text-[9px] font-bold text-gray-400">Foto.jpg</p>
-                            </div>
-                            <div class="flex flex-col items-center gap-2">
-                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100">
+                                <p class="text-[9px] font-bold text-gray-400">Foto</p>
+                            </a>
+                            <!-- KTP -->
+                           <a href="{{ asset('storage/dokumen/ktp/' . $pendaftar->scan_ktp) }}" target="_blank" class="flex flex-col items-center gap-2 group">
+                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 group-hover:border-brand-blue transition-colors">
                                     <i data-feather="file-text" class="w-5 h-5"></i>
                                 </div>
-                                <p class="text-[9px] font-bold text-gray-400">KTP.pdf</p>
-                            </div>
-                            <div class="flex flex-col items-center gap-2">
-                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100">
+                                <p class="text-[9px] font-bold text-gray-400">KTP</p>
+                            </a>
+                            <!-- Ijazah -->
+                            <a href="{{ asset('storage/dokumen/ijazah/' . $pendaftar->ijazah_skl) }}" target="_blank" class="flex flex-col items-center gap-2 group">
+                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 group-hover:border-brand-blue transition-colors">
                                     <i data-feather="award" class="w-5 h-5"></i>
                                 </div>
-                                <p class="text-[9px] font-bold text-gray-400">Ijazah.pdf</p>
-                            </div>
-                        </div>
+                                <p class="text-[9px] font-bold text-gray-400">Ijazah</p>
+                            </a>
+                                                    </div>
                     </div>
 
                 </div>
@@ -228,17 +250,21 @@
                 </div>
 
                 <div class="flex flex-col items-center gap-4 pt-4">
-                    <button @click="submitFinal()" 
-                            class="w-full py-4 rounded-2xl font-black text-[15px] transition-all"
-                            :disabled="!canProceed"
-                            :class="canProceed ? 'bg-brand-dark text-white hover:bg-brand-blue shadow-xl shadow-brand-dark/20 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
-                        Konfirmasi
-                    </button>
-                    <a href="/biodata" class="text-[13px] font-extrabold text-gray-500 hover:text-brand-dark transition-colors py-2">
+                    <!-- Form ditambahkan di sini agar tombol bisa melakukan submit -->
+                    <form action="{{ route('proses.konfirmasi', $pendaftar->id) }}" method="POST" class="w-full">
+                        @csrf
+                        <button type="submit"
+                                :disabled="!canProceed"
+                                class="w-full py-4 rounded-2xl font-black text-[15px] transition-all"
+                                :class="canProceed ? 'bg-brand-dark text-white hover:bg-brand-blue shadow-xl shadow-brand-dark/20 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+                            Konfirmasi
+                        </button>
+                    </form>
+                    
+                    <a href="{{ route('pendaftaran.biodata', $pendaftar->id) }}" class="text-[13px] font-extrabold text-gray-500 hover:text-brand-dark transition-colors py-2">
                         Kembali
                     </a>
                 </div>
-
             </div>
         </div>
     </main>

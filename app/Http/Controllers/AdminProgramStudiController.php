@@ -33,7 +33,6 @@ class AdminProgramStudiController extends Controller
             'biaya'      => 'required|numeric',
         ]);
 
-        // Simpan ke database
         Prodi::create($validated);
 
         return redirect()->back()->with('success', 'Program Studi berhasil ditambahkan!');

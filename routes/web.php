@@ -30,9 +30,24 @@ Route::post('/upload-bukti', [RegisterController::class, 'prosesUploadBukti'])->
 Route::get('/validasi-pembayaran', [DashboardUserController::class, 'validasiUser'])->name('pendaftaran.validasi');
 
 Route::get('/formulir-biodata', [DashboardUserController::class, 'biodataIndex'])->name('pendaftaran.biodata');
-Route::get('/konfirmasi-data', function () { return view('user.konfirmasi-data'); })->name('pendaftaran.konfirmasi');
-Route::get('/validasi-akhir', function () { return view('user.validasi-akhir'); })->name('pendaftaran.validasiakhir');
-Route::get('/sukses', function () { return view('user.sukses'); })->name('pendaftaran.sukses');
+// Tambahkan {id} di URL
+Route::put('/simpan-biodata/{id}', [App\Http\Controllers\DashboardUserController::class, 'update'])
+    ->name('simpan-biodata');
+Route::get('/formulir-biodata/{id}', [DashboardUserController::class, 'editBiodata'])->name('pendaftaran.biodata');
+Route::get('/edit-biodata/{id}', [DashboardUserController::class, 'editBiodata'])->name('edit-biodata');
+
+Route::put('/simpan-biodata/{id}', [DashboardUserController::class, 'update'])->name('simpan-biodata');
+
+
+// Pastikan barisnya seperti ini
+Route::get('/konfirmasi-data{id}', [DashboardUserController::class, 'tampilkanKonfirmasi'])->name('konfirmasi-data');
+Route::post('/proses-konfirmasi/{id}', [DashboardUserController::class, 'prosesKonfirmasi'])->name('proses.konfirmasi');
+Route::get('/validasi-akhir/{id}', [DashboardUserController::class, 'tampilkanValidasiAkhir'])->name('pendaftaran.validasiakhir');
+
+
+Route::get('/sukses', [App\Http\Controllers\DashboardUserController::class, 'tampilkanSukses'])
+     ->name('pendaftaran.sukses'); 
+
 
 Route::get('/rekomendasi/mulai', function () { return view('user.rekomendasi-start'); }); 
 Route::get('/rekomendasi/kuesioner', function () { return view('user.kuesioner'); });
@@ -43,9 +58,21 @@ Route::get('/rekomendasi/hasil', function () { return view('user.hasil-rekomenda
 // ==========================================
 Route::get('/admin', [AdminPendaftarController::class, 'dashboard'])->name('admin.dashboard'); 
 Route::get('/admin/pendaftar', [AdminPendaftarController::class, 'index'])->name('admin.pendaftar.index');
+
+
+// Jika kamu butuh keduanya, gunakan match atau buat terpisah
+Route::match(['get', 'post'], '/admin/validasi-pembayaran', [DashboardUserController::class, 'validasiUser']);
+// 1. Rute GET untuk menampilkan halaman (menggunakan Controller yang benar)
 Route::get('/admin/validasi-pembayaran', [AdminPendaftarController::class, 'validasiPembayaranIndex'])->name('admin.pembayaran');
-Route::post('/admin/setujui-pembayaran/{id}', [AdminPendaftarController::class, 'setujuiPembayaran'])->name('admin.setujui.pembayaran');
+
+// 2. Rute POST untuk memproses validasi (diarahkan ke fungsi prosesValidasi)
+Route::post('/admin/proses-validasi', [DashboardUserController::class, 'prosesValidasi'])->name('admin.proses.validasi');
+
 Route::get('/admin/validasi-daftar-ulang', [AdminPendaftarController::class, 'daftarUlangIndex'])->name('admin.validasi.daftarulang');
+Route::post('/admin/setujui-daftar-ulang/{id}', [App\Http\Controllers\AdminPendaftarController::class, 'setujuiDaftarUlang'])
+     ->name('admin.setujui-daftar-ulang');
+
+
 Route::get('/admin/pengumuman', [AdminPendaftarController::class, 'pengumumanIndex'])->name('admin.pengumuman');
 Route::post('/admin/update-kelulusan/{id}', [AdminPendaftarController::class, 'updateKelulusan'])->name('admin.update-kelulusan');
 Route::get('/admin/faq', function () { return view('admin.faq'); });

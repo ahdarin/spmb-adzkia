@@ -61,24 +61,26 @@
                 Selamat! Anda telah menyelesaikan seluruh proses pendaftaran di Universitas Adzkia.
             </p>
 
-            <div class="bg-[#F8FAFC] rounded-3xl p-6 md:p-8 mb-10 border border-gray-100 grid grid-cols-2 gap-y-6 gap-x-4 text-left relative z-10">
-                <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Nama Pendaftar</p>
-                    <h4 class="text-[14px] md:text-[16px] font-extrabold text-brand-dark">Ahmad Fauzi</h4>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Program Studi</p>
-                    <h4 class="text-[14px] md:text-[16px] font-extrabold text-brand-dark">S1 Informatika</h4>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Nomor Pendaftaran</p>
-                    <h4 class="text-[15px] md:text-[18px] font-black text-brand-blue tracking-wider">#SPMB-2026-8821</h4>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Tanggal Selesai</p>
-                    <h4 class="text-[14px] md:text-[16px] font-extrabold text-brand-dark">13 Mei 2026</h4>
-                </div>
-            </div>
+<div class="bg-[#F8FAFC] rounded-3xl p-6 md:p-8 mb-10 border border-gray-100 grid grid-cols-2 gap-y-6 gap-x-4 text-left relative z-10">
+    <div>
+        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Nama Pendaftar</p>
+        <h4 class="text-[14px] md:text-[16px] font-extrabold text-brand-dark">{{ $pendaftar->nama_lengkap }}</h4>
+    </div>
+    <div>
+        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Program Studi</p>
+        <h4 class="text-[14px] md:text-[16px] font-extrabold text-brand-dark">{{ $pendaftar->pilihan_jurusan_1 }}</h4>
+    </div>
+    <div>
+        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Nomor Pendaftaran</p>
+        <h4 class="text-[15px] md:text-[18px] font-black text-brand-blue tracking-wider">{{ $pendaftar->no_pendaftaran }}</h4>
+    </div>
+    <div>
+        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Tanggal Selesai</p>
+        <h4 class="text-[14px] md:text-[16px] font-extrabold text-brand-dark">
+            {{ \Carbon\Carbon::parse($pendaftar->updated_at)->format('d F Y') }}
+        </h4>
+    </div>
+</div>
 
             <div class="mb-12 relative z-10">
                 <div class="flex items-center justify-center gap-4 mb-6">

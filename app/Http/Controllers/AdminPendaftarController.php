@@ -47,6 +47,7 @@ class AdminPendaftarController extends Controller
             'users', 'totalPendaftar', 'menungguValidasi', 'lulusSeleksi', 'pembayaranBelum'
         ));
     }
+    
 
     /**
      * PERBAIKAN: Halaman Validasi Pembayaran
@@ -97,37 +98,64 @@ class AdminPendaftarController extends Controller
         $data->nominal_biaya = $data->nominal_biaya ?? 250000;
     }
 
-    return view('admin.validasi-pembayaran', compact('pendaftarPending'));
+    return view('admin.validasi-pembayaran', [
+    'pendaftarPending' => $pendaftarPending
+]);
 }
 
-    public function setujuiPembayaran($id)
-{
-    $pendaftar = DataPendaftar::findOrFail($id);
-    // PASTIKAN STRINGNYA SAMA PERSIS DENGAN YANG KAMU CEK DI CONTROLLER USER
-    $pendaftar->status_pembayaran = 'Terverifikasi'; 
+    public function setujuiPembayaran($id) {
+    $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
+    $pendaftar->status_pembayaran = 'Terverifikasi';
     $pendaftar->save();
-    
-    return redirect()->back()->with('success', 'Berhasil diverifikasi!');
+
+    return redirect()->back()->with('success', 'Data berhasil diverifikasi!');
 }
 
     public function daftarUlangIndex()
 {
-    // Pastikan 'Terverifikasi' ini sama dengan yang di atas
-    $antrian = \App\Models\DataPendaftar::where('status_pembayaran', 'Terverifikasi')->get();
+    $pendaftarDaftarUlang = \App\Models\DataPendaftar::where('status_pembayaran', 'Terverifikasi')
+                                ->latest()
+                                ->get();
 
-    $data = $antrian->first();
 
-
-    return view('admin.validasi-daftar-ulang', compact('antrian'));
+    return view('admin.validasi-daftar-ulang', compact('pendaftarDaftarUlang'));
 }
 
     public function setujuiDaftarUlang($id)
-    {
-        $pendaftar = DataPendaftar::findOrFail($id);
-        $pendaftar->status_pembayaran = 'Verified'; 
-        $pendaftar->save();
-        return redirect()->back()->with('success', 'Daftar Ulang Berhasil Diverifikasi!');
-    }
+{
+    $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
+    
+    // Pastikan nama kolom status sama dengan yang digunakan di halaman User
+    $pendaftar->status_pendaftaran = 'Selesai';
+    $pendaftar->save();
+
+    return redirect()->back()->with('success', 'Data pendaftar telah diverifikasi.');
+}
+
+
+
+public function verifikasiBerkas(Request $request, $id)
+{
+    // 1. Cari data pendaftar
+    $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
+
+    // 2. Update status menjadi Selesai
+    $pendaftar->status_pendaftaran = 'Selesai';
+    $pendaftar->save();
+
+    // 3. Tambahkan redirect ke admin (tetap)
+    return redirect()->route('admin.validasi-daftar-ulang')
+                     ->with('success', 'Berkas pendaftar berhasil diverifikasi.');
+}
+
+
+public function tampilkanPengumuman()
+{
+    // Hanya menampilkan pendaftar yang statusnya sudah Selesai
+    $dataSelesai = \App\Models\DataPendaftar::where('status_pendaftaran', 'Selesai')->get();
+
+    return view('admin.pengumuman', compact('dataSelesai'));
+}
 
     public function pengumumanIndex()
     {

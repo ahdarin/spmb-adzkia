@@ -179,12 +179,15 @@
                 <button @click="modalOpen = false" class="px-6 py-3 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl font-bold text-[13px] transition-colors">Tolak</button>
                 <div class="flex gap-3">
                     <button @click="modalOpen = false" class="px-6 py-3 border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl font-bold text-[13px]">Batal</button>
-                    <<form action="{{ route('admin.setujui.pembayaran', $data->id) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">
-                            Setujui & Verifikasi
-                        </button>
-                    </form>
+<form action="{{ route('admin.proses.validasi') }}" method="POST">
+    @csrf
+    <!-- Gunakan x-bind untuk mengisi ID pendaftar dari dataPendaftar yang sedang aktif di modal -->
+    <input type="hidden" name="pendaftar_id" x-bind:value="dataPendaftar.id">
+    
+    <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-[13px] hover:bg-green-700 transition-colors">
+        Setujui & Verifikasi
+    </button>
+</form>
                 </div>
             </div>
         </div>

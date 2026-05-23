@@ -26,6 +26,19 @@ class DataPendaftar extends Authenticatable
         'status_pembayaran',
         'metode_pembayaran', 
         'bukti_bayar',
+        'pas_foto',      
+        'scan_ktp',      
+        'ijazah_skl',
+        'sekolah_asal',
+        'tahun_lulus',
+        'nilai_akhir',
+        'gender',
+        'tanggal_lahir',
+        'agama', 
+        'tempat_lahir', 
+        'provinsi', 
+        'kota_kabupaten', 
+        'jurusan_sma',
     ];
 
     protected $hidden = [
@@ -33,13 +46,13 @@ class DataPendaftar extends Authenticatable
     ];
 
     // Relasi untuk mengambil data pilihan jurusan 1 secara dinamis
-public function prodi1()
-{
-    return $this->belongsTo(Prodi::class, 'pilihan_jurusan_1', 'id');
-}
+    public function prodi1()
+    {
+        return $this->belongsTo(Prodi::class, 'pilihan_jurusan_1', 'id');
+    }
 
-public function user()
-{
-    return $this->belongsTo(\App\Models\User::class, 'user_id', 'id');
-}
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id', 'id');
+    }
 }
