@@ -60,33 +60,24 @@ class RegisterController extends Controller
     }
 
     // Proses Login
-public function loginProses(Request $request)
-{
-    // 1. Cek apakah input masuk ke controller
-    // dd($request->all());
+    public function loginProses(Request $request)
+    {
+        $request->validate([
+            'login_input' => 'required',
+            'password'    => 'required',
+        ]);
 
-    $credentials = $request->only('login_input', 'password');
-    
-    // 2. Cek apakah user ada di database
-    // Ganti 'User' dengan nama Model User Anda
-    $user = \App\Models\User::where('email', $request->login_input)
-             ->orWhere('no_pendaftaran', $request->login_input)
-             ->first();
+        $pendaftar = DataPendaftar::where('email', $request->login_input)
+            ->orWhere('no_pendaftaran', $request->login_input)
+            ->first();
 
-    if (!$user) {
-        dd("User tidak ditemukan di database dengan input: " . $request->login_input);
+        if ($pendaftar && Hash::check($request->password, $pendaftar->password)) {
+             session()->put('pendaftar_id', $pendaftar->id); 
+             session()->put('nama_pendaftar', $pendaftar->nama_lengkap);
+             
+             return redirect()->route('pembayaran.index');
+        }
     }
-
-    // 3. Cek apakah password cocok secara manual (Hanya untuk testing!)
-    if (!\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
-        dd("Password salah! Password di DB: " . $user->password);
-    }
-
-    // Jika sampai di sini tidak error, berarti ada masalah pada auth config
-    if (auth()->loginUsingId($user->id)) {
-        return redirect('/dashboard');
-    }
-}
 
     // Simpan Metode Pembayaran
     public function simpanPembayaran(Request $request)
