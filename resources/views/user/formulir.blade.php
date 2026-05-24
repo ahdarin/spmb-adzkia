@@ -86,7 +86,6 @@
 
             <form action="{{ route('simpan-biodata') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                @method('PUT')
                 
                 @if ($errors->any())
                     <div class="bg-red-50 border-l-4 border-adzkia-red p-4 mb-8 rounded-r-2xl">
@@ -182,16 +181,34 @@
                             <textarea name="alamat_rumah" rows="3" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark resize-none">{{ old('alamat_rumah', $pendaftar->alamat_rumah ?? '') }}</textarea>
                         </div>
 
-                        <div>
+<div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Provinsi</label>
                             <div class="relative">
-                                <select name="provinsi" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
-                                    <option value="" disabled selected>Pilih Provinsi</option>
-                                    @foreach(['Sumatra Barat', 'Riau', 'Jambi'] as $prov)
-                                        <option value="{{ $prov }}" {{ old('provinsi', $pendaftar->provinsi ?? '') == $prov ? 'selected' : '' }}>
-                                            {{ $prov }}
-                                        </option>
-                                    @endforeach
+                                <select name="provinsi_id" @change="loadCities($event.target.value)" required>
+                                    <option value="">Pilih Provinsi</option>
+                                    <template x-for="prov in provinces" :key="prov.id">
+                                        <option :value="prov.id" x-text="prov.name" :selected="prov.id == selectedProvinceId"></option>
+                                    </template>
+                                </select>
+
+                                <select name="kota_kabupaten" required>
+                                    <option value="">Pilih Kota/Kabupaten</option>
+                                    <template x-for="city in cities" :key="city.id">
+                                        <option :value="city.name" x-text="city.name" :selected="city.name == selectedCity"></option>
+                                    </template>
+                                </select>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Kota/Kabupaten</label>
+                            <div class="relative">
+                                <select name="kota_kabupaten" x-model="selectedCity" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" disabled>Pilih Kota/Kabupaten</option>
+                                    <template x-for="city in (wilayahData[selectedProvince] || [])" :key="city">
+                                        <option :value="city" x-text="city" :selected="city === selectedCity"></option>
+                                    </template>
                                 </select>
                                 <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                             </div>
@@ -248,32 +265,40 @@
                 <section class="bg-[#F8FAFC] p-8 md:p-10 rounded-[2rem] border border-gray-100 my-10">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-white shadow-sm text-adzkia-blue rounded-xl flex items-center justify-center">
-                            <i data-feather="search" class="w-5 h-5"></i>
+                            <i data-feather="book-open" class="w-5 h-5"></i>
                         </div>
                         <h2 class="text-lg font-black text-adzkia-dark">Pilihan Program Studi</h2>
                     </div>
 
-                    <div>
-                        <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Cari Program Studi</label>
-                        <div class="relative mb-4">
-                            <i data-feather="book" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></i>
-                            <select name="prodi_id" class="w-full pl-14 pr-10 py-4 bg-white border border-transparent rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
-                                <option value="" disabled selected>Pilih Program Studi...</option>
-                                @foreach($prodis as $prodi)
-                                    <option value="{{ $prodi->id }}" {{ old('prodi_id', $pendaftar->prodi_id ?? '') == $prodi->id ? 'selected' : '' }}>
-                                        {{ $prodi->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <i data-feather="chevron-down" class="w-5 h-5 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pilihan Jurusan 1 (Utama)</label>
+                            <div class="relative">
+                                <select name="pilihan_jurusan_1" required class="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
+                                    <option value="" disabled>Pilih Jurusan 1</option>
+                                    @foreach($prodis as $prodi)
+                                        <option value="{{ $prodi->nama }}" {{ old('pilihan_jurusan_1', $pendaftar->pilihan_jurusan_1 ?? '') == $prodi->nama ? 'selected' : '' }}>
+                                            {{ $prodi->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <i data-feather="chevron-down" class="w-5 h-5 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
                         </div>
 
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($prodis->take(3) as $prodi)
-                                <span class="px-3 py-1.5 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black tracking-wide cursor-pointer hover:bg-blue-100 transition-colors">
-                                    {{ $prodi->nama_prodi ?? $prodi->nama }}
-                                </span>
-                            @endforeach
+                        <div>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pilihan Jurusan 2 (Alternatif)</label>
+                            <div class="relative">
+                                <select name="pilihan_jurusan_2" required class="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
+                                    <option value="" disabled>Pilih Jurusan 2</option>
+                                    @foreach($prodis as $prodi)
+                                        <option value="{{ $prodi->nama }}" {{ old('pilihan_jurusan_2', $pendaftar->pilihan_jurusan_2 ?? '') == $prodi->nama ? 'selected' : '' }}>
+                                            {{ $prodi->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <i data-feather="chevron-down" class="w-5 h-5 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -377,7 +402,28 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('formulirApp', () => ({
                 currentStep: 4,
-                
+                provinces: [],
+    cities: [],
+    selectedProvinceId: '{{ old('provinsi_id', $pendaftar->provinsi_id ?? '') }}',
+    selectedCity: '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}',
+
+    async init() {
+        // 1. Ambil data semua provinsi
+        const res = await fetch('/data/provinsi.json');
+        this.provinces = await res.json();
+
+        // 2. Jika sudah ada provinsi terpilih saat edit, langsung load kotanya
+        if (this.selectedProvinceId) {
+            this.loadCities(this.selectedProvinceId);
+        }
+    },
+
+    async loadCities(provinceId) {
+        this.selectedProvinceId = provinceId;
+        // Load file JSON kota berdasarkan ID (misal: 11.json)
+        const res = await fetch(`/data/kabkota/${provinceId}.json`);
+        this.cities = await res.json();
+    }
                 // State untuk menyimpan nama file yang diunggah
                 files: {
                     foto: null,

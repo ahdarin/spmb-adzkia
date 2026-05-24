@@ -99,19 +99,19 @@ public function dashboardUser()
     }
 
     public function prosesUploadBukti(Request $request)
-    {
-        $request->validate(['bukti_bayar' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
-        $pendaftar = \App\Models\DataPendaftar::find(session('pendaftar_id'));
-        
-        $path = $request->file('bukti_bayar')->store('bukti_pembayaran', 'public');
-        
-        $pendaftar->update([
-            'bukti_bayar' => $path,
-            'status_pembayaran' => 'Menunggu Validasi' 
-        ]);
+        {
+            $request->validate(['bukti_bayar' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
+            $pendaftar = \App\Models\DataPendaftar::find(session('pendaftar_id'));
+            
+            $path = $request->file('bukti_bayar')->store('bukti_pembayaran', 'public');
+            
+            $pendaftar->update([
+                'bukti_bayar' => $path,
+                'status_pembayaran' => 'Menunggu Validasi' // KUNCI: Status ini mengunci agar admin harus melakukan verifikasi manual
+            ]);
 
-        return redirect()->route('pendaftaran.validasi')->with('success', 'Bukti berhasil diunggah!');
-    }
+            return redirect()->route('pendaftaran.validasi')->with('success', 'Bukti berhasil diunggah!');
+        }
 
     public function biodataIndex()
     {
@@ -131,16 +131,19 @@ public function dashboardUser()
         return view('user.formulir', compact('pendaftar', 'prodis')); 
     }
 
-    public function simpanBiodata(Request $request)
+public function simpanBiodata(Request $request)
     {
         $request->validate([
-            'nama_lengkap' => 'required|string|max:255',
-            'nik'          => 'required|string|max:20',
-            'gender'       => 'required',
-            'prodi_id'     => 'required',
-            'pas_foto'     => 'required|file|image|max:2048',
-            'scan_ktp'     => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'ijazah_skl'   => 'required|file|mimes:pdf,jpg,png|max:2048',
+            'nama_lengkap'      => 'required|string|max:255',
+            'nik'               => 'required|string|max:20',
+            'gender'            => 'required',
+            'pilihan_jurusan_1' => 'required|string',
+            'pilihan_jurusan_2' => 'required|string|different:pilihan_jurusan_1',
+            'provinsi'          => 'required|string',
+            'kota_kabupaten'    => 'required|string',
+            'pas_foto'          => 'required|file|image|max:2048',
+            'scan_ktp'          => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'ijazah_skl'        => 'required|file|mimes:pdf,jpg,png|max:2048',
         ]);
 
         $pathFoto   = $request->file('pas_foto')->store('dokumen/foto', 'public');
@@ -151,13 +154,16 @@ public function dashboardUser()
         $pendaftar = \App\Models\DataPendaftar::find($pendaftarId);
 
         $pendaftar->update([
-            'nama_lengkap' => $request->nama_lengkap,
-            'nik'          => $request->nik,
-            'gender'       => $request->gender,
-            'prodi_id'     => $request->prodi_id,
-            'pas_foto'     => $pathFoto,
-            'scan_ktp'     => $pathKtp,
-            'ijazah_skl'   => $pathIjazah,
+            'nama_lengkap'      => $request->nama_lengkap,
+            'nik'               => $request->nik,
+            'gender'            => $request->gender,
+            'pilihan_jurusan_1' => $request->pilihan_jurusan_1,
+            'pilihan_jurusan_2' => $request->pilihan_jurusan_2,
+            'provinsi'          => $request->provinsi,
+            'kota_kabupaten'    => $request->kota_kabupaten,
+            'pas_foto'          => $pathFoto,
+            'scan_ktp'          => $pathKtp,
+            'ijazah_skl'        => $pathIjazah,
         ]);
 
         return redirect()->route('konfirmasi-data', $pendaftar->id)->with('success', 'Biodata berhasil disimpan!');
