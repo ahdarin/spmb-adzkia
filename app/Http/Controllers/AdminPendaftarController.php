@@ -114,6 +114,7 @@ class AdminPendaftarController extends Controller
     public function daftarUlangIndex()
 {
     $pendaftarDaftarUlang = \App\Models\DataPendaftar::where('status_pembayaran', 'Terverifikasi')
+                                ->where('status_pendaftaran', ['menunggu verifikasi', 'Selesai'])  
                                 ->latest()
                                 ->get();
 

@@ -84,7 +84,7 @@
                 </p>
             </div>
 
-            <form action="{{ route('simpan-biodata') }}" method="POST" x-data="formulirApp" enctype="multipart/form-data">
+            <form action="{{ route('simpan-biodata') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 
                 @if ($errors->any())
@@ -162,7 +162,7 @@
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
                             <i data-feather="map-pin" class="w-5 h-5"></i>
                         </div>
-                        <h2 class="text-lg font-black text-adzkia-dark">Informasi Kontak</h2>
+                        <h2 class="text-lg font-black text-adzkia-dark">Informasi Kontak & Wilayah</h2>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,29 +180,34 @@
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Alamat Lengkap</label>
                             <textarea name="alamat_rumah" rows="3" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark resize-none">{{ old('alamat_rumah', $pendaftar->alamat_rumah ?? '') }}</textarea>
                         </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             
-                            <!-- PROVINSI -->
                         <div>
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Provinsi</label>
-                            <select name="provinsi_id" @change="loadCities($event.target.value)" class="w-full px-5 py-4 bg-gray-50 rounded-2xl font-bold">
-                                <option value="">Pilih Provinsi</option>
-                                <template x-for="prov in provinces" :key="prov.code">
-                                    <option :value="prov.code" x-text="prov.name"></option>
-                                </template>
-                            </select>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Provinsi</label>
+                            <div class="relative">
+                                <select name="provinsi" @change="loadCities($event.target.value)" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Pilih Provinsi</option>
+                                    <template x-for="prov in provinces" :key="prov.code">
+                                        <option :value="prov.code" x-text="prov.name"></option>
+                                    </template>
+                                </select>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
                         </div>
+
                         <div>
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Kota / Kabupaten</label>
-                            <select name="kota_kabupaten" class="w-full px-5 py-4 bg-gray-50 rounded-2xl font-bold">
-                                <option value="">Pilih Kota</option>
-                                <template x-for="city in cities" :key="city.code">
-                                    <option :value="city.name" x-text="city.name"></option>
-                                </template>
-                            </select>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Kota / Kabupaten</label>
+                            <div class="relative">
+                                <select name="kota_kabupaten" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Pilih Kota</option>
+                                    <template x-for="city in cities" :key="city.code">
+                                        <option :value="city.name" x-text="city.name"></option>
+                                    </template>
+                                </select>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
                         </div>
-                        </div>
+
+                    </div>
                 </section>
 
                 <section>
@@ -246,7 +251,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pilihan Jurusan 1 (Utama)</label>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pilihan Jurusan 1</label>
                             <div class="relative">
                                 <select name="pilihan_jurusan_1" required class="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
                                     <option value="" disabled>Pilih Jurusan 1</option>
@@ -261,7 +266,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pilihan Jurusan 2 (Alternatif)</label>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pilihan Jurusan 2</label>
                             <div class="relative">
                                 <select name="pilihan_jurusan_2" required class="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
                                     <option value="" disabled>Pilih Jurusan 2</option>
@@ -285,7 +290,7 @@
                         <h2 class="text-lg font-black text-adzkia-dark">Unggah Dokumen</h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" x-data="{ files: { foto: null, ktp: null, ijazah: null } }">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
                         <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-adzkia-blue hover:bg-blue-50 transition-all group"
                             @click="$refs.fileFoto.click()">
@@ -351,7 +356,7 @@
                         <i data-feather="check-circle" class="w-4 h-4"></i> Data tersimpan otomatis
                     </div>
 
-                    <button type="submit" class="w-full py-4 bg-adzkia-red text-white rounded-2xl font-black text-[15px] hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">
+                    <button type="submit" class="w-full py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
                         Simpan & Lanjutkan
                     </button>
 
@@ -372,35 +377,13 @@
         </div>
     </footer>
 
-    <script>
+<script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('formulirApp', () => ({
                 currentStep: 4,
-                    provinces: [],
-                    cities: [],
-
-                    async init() {
-                        // Mengambil data provinsi dari public/data/provinsi.json
-                        const res = await fetch('/data/provinsi.json');
-                        const json = await res.json();
-                        this.provinces = json.provinsi || json;
-                    }catch (error) {
-                        console.error('Gagal memuat data provinsi:', error);
-                    },
-
-                    async loadCities(provinceId) {
-                        if (!provinceId) { this.cities = []; return; }
-                        try{
-                        // Mengambil data kota dari public/data/kabkota/{id}.json
-                        const res = await fetch(`/data/kabkota/${provinceId}.json`);
-                        const json = await res.json();
-                        this.cities = json.kabkota || json;
-                        } catch (error) {
-                            console.error('Gagal memuat data kota:', error);
-                            this.cities = [];
-                        }
-            }
-                // State untuk menyimpan nama file yang diunggah
+                provinces: [],
+                cities: [],
+                
                 files: {
                     foto: null,
                     ktp: null,
@@ -408,24 +391,61 @@
                 },
 
                 steps: [
-                    { id: 1, title: 'Pendaftaran' },
-                    { id: 2, title: 'Biaya Pendaftaran' },
-                    { id: 3, title: 'Validasi Pembayaran' },
-                    { id: 4, title: 'Biodata' },
-                    { id: 5, title: 'Dokumen' },
-                    { id: 6, title: 'Ujian' },
-                    { id: 7, title: 'Hasil' }
+                    { id: 1, title: 'Pendaftaran' }, { id: 2, title: 'Biaya' },
+                    { id: 3, title: 'Validasi' }, { id: 4, title: 'Biodata' },
+                    { id: 5, title: 'Dokumen' }, { id: 6, title: 'Ujian' }, { id: 7, title: 'Hasil' }
                 ],
 
-                submitForm() {
-                    // Cek sederhana jika file belum lengkap (opsional)
-                    // if(!this.files.foto || !this.files.ktp || !this.files.ijazah) {
-                    //    alert('Mohon lengkapi semua unggahan dokumen!');
-                    //    return;
-                    // }
-                    
-                    alert("Data berhasil disimpan! Melanjutkan ke Step 5: Konfirmasi Data...");
-                    window.location.href = '/konfirmasi-data';
+                async init() {
+                    try {
+                        const res = await fetch('/data/provinsi.json');
+                        const json = await res.json();
+                        this.provinces = json.data || [];
+                    } catch (error) {
+                        console.error('Gagal memuat data provinsi:', error);
+                    }
+                },
+
+                async loadCities(provinceId) {
+                    if (!provinceId) { this.cities = []; return; }
+                    try {
+                        const res = await fetch(`/data/kabkota/${provinceId}.json`);
+                        const json = await res.json();
+                        this.cities = json.data || [];
+                    } catch (error) {
+                        console.error('Gagal memuat data kota:', error);
+                        this.cities = [];
+                    }
+                },
+
+                // FUNGSI VALIDASI FILE REAL-TIME
+                handleFileUpload(event, type) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    // 1. Cek Ukuran (Maksimal 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('Ukuran file maksimal 2MB!');
+                        event.target.value = ''; // Reset input
+                        return;
+                    }
+
+                    // 2. Cek Format
+                    if (type === 'foto' && !['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+                        alert('Pas Foto harus berformat JPG atau PNG!');
+                        event.target.value = ''; return;
+                    }
+                    if (type === 'ktp' && !['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) {
+                        alert('KTP harus berformat JPG/PNG atau PDF!');
+                        event.target.value = ''; return;
+                    }
+                    if (type === 'ijazah' && file.type !== 'application/pdf') {
+                        alert('Ijazah harus berformat PDF!');
+                        event.target.value = ''; return;
+                    }
+
+                    // Jika lolos validasi, simpan nama file untuk ditampilkan
+                    this.files[type] = file.name;
                 }
             }));
         });
@@ -433,6 +453,38 @@
         // Initialize Feather Icons
         document.addEventListener('DOMContentLoaded', () => {
             feather.replace();
+        });
+
+        // FUNGSI AUTO-SAVE (DRAFT OTOMATIS)
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const formElements = form.querySelectorAll('input:not([type="file"]), select, textarea');
+            
+            // Memuat data yang tersimpan di LocalStorage jika ada
+            const savedData = JSON.parse(localStorage.getItem('draftFormulir') || '{}');
+            
+            formElements.forEach(el => {
+                if (el.name && savedData[el.name]) {
+                    if(el.type === 'radio') {
+                        if(el.value === savedData[el.name]) el.checked = true;
+                    } else {
+                        el.value = savedData[el.name];
+                    }
+                }
+            });
+
+            // Menyimpan data ke LocalStorage setiap kali ada ketikan/perubahan
+            form.addEventListener('input', function(e) {
+                if (e.target.name && e.target.type !== 'file' && e.target.name !== '_token') {
+                    savedData[e.target.name] = e.target.value;
+                    localStorage.setItem('draftFormulir', JSON.stringify(savedData));
+                }
+            });
+
+            // Menghapus draft saat form sukses disubmit
+            form.addEventListener('submit', function() {
+                localStorage.removeItem('draftFormulir');
+            });
         });
     </script>
 </body>
