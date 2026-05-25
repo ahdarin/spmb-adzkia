@@ -83,7 +83,7 @@
                     <p class="text-xs font-medium text-amber-700/90 mt-1 leading-relaxed">
                         Anda belum menyelesaikan pembayaran registrasi awal sebesar <span class="font-extrabold text-adzkia-dark">Rp 250.000</span>. Pilih metode pembayaran Anda untuk mengaktifkan tahap pengisian formulir berkas.
                     </p>
-                    <a href="{{ route('pembayaran.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl mt-4 transition-all">
+                    <a href="{{ url('/pembayaran') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl mt-4 transition-all">
                         Pilih Metode Pembayaran &rarr;
                     </a>
                 </div>

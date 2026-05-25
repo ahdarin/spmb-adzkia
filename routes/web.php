@@ -29,7 +29,7 @@ Route::get('/dashboard', [DashboardUserController::class, 'index'])->name('dashb
 Route::get('/dashboard-user', [DashboardUserController::class, 'dashboardUser'])->name('dashboard.user'); 
 
 // Pembayaran
-Route::get('/pembayaran', [DashboardUserController::class, 'pembayaranIndex'])->name('dashboard.user');
+Route::get('/pembayaran', [DashboardUserController::class, 'pembayaranIndex'])->name('pembayaran.index');
 Route::post('/pembayaran/proses', [DashboardUserController::class, 'prosesPembayaran'])->name('simpan.pembayaran');
 Route::post('/upload-bukti', [DashboardUserController::class, 'prosesUploadBukti'])->name('user.upload-bukti');
 Route::get('/validasi-pembayaran', [DashboardUserController::class, 'validasiUser'])->name('pendaftaran.validasi');

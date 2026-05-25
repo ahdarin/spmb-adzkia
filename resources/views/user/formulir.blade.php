@@ -184,36 +184,24 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             
                             <!-- PROVINSI -->
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Provinsi</label>
-                                <select name="provinsi_id"
-                                        @change="loadCities($event.target.value)"
-                                        class="w-full p-4 bg-gray-50 rounded-xl border font-bold">
-                                    
-                                    <option value="">Pilih Provinsi</option>
-
-                                    <template x-for="prov in provinces" :key="prov.code">
-                                        <option :value="prov.code" x-text="prov.name"></option>
-                                    </template>
-
-                                </select>
-                            </div>
-
-                            <!-- KOTA -->
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Kota / Kabupaten</label>
-                                <select name="kota_kabupaten"
-                                        class="w-full p-4 bg-gray-50 rounded-xl border font-bold">
-                                    
-                                    <option value="">Pilih Kota</option>
-
-                                    <template x-for="city in cities" :key="city.code">
-                                        <option :value="city.name" x-text="city.name"></option>
-                                    </template>
-
-                                </select>
-                            </div>
-
+                        <div>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Provinsi</label>
+                            <select name="provinsi_id" @change="loadCities($event.target.value)" class="w-full px-5 py-4 bg-gray-50 rounded-2xl font-bold">
+                                <option value="">Pilih Provinsi</option>
+                                <template x-for="prov in provinces" :key="prov.code">
+                                    <option :value="prov.code" x-text="prov.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Kota / Kabupaten</label>
+                            <select name="kota_kabupaten" class="w-full px-5 py-4 bg-gray-50 rounded-2xl font-bold">
+                                <option value="">Pilih Kota</option>
+                                <template x-for="city in cities" :key="city.code">
+                                    <option :value="city.name" x-text="city.name"></option>
+                                </template>
+                            </select>
+                        </div>
                         </div>
                 </section>
 
@@ -394,14 +382,23 @@
                     async init() {
                         // Mengambil data provinsi dari public/data/provinsi.json
                         const res = await fetch('/data/provinsi.json');
-                        this.provinces = await res.json();
+                        const json = await res.json();
+                        this.provinces = json.provinsi || json;
+                    }catch (error) {
+                        console.error('Gagal memuat data provinsi:', error);
                     },
 
                     async loadCities(provinceId) {
                         if (!provinceId) { this.cities = []; return; }
+                        try{
                         // Mengambil data kota dari public/data/kabkota/{id}.json
                         const res = await fetch(`/data/kabkota/${provinceId}.json`);
-                        this.cities = await res.json();
+                        const json = await res.json();
+                        this.cities = json.kabkota || json;
+                        } catch (error) {
+                            console.error('Gagal memuat data kota:', error);
+                            this.cities = [];
+                        }
             }
                 // State untuk menyimpan nama file yang diunggah
                 files: {
