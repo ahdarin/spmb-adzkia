@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('nominal_biaya')->default(0); // Diatur dinamis lewat nominal admin
             $table->string('status_pembayaran')->default('Belum Bayar');
             $table->string('metode_pembayaran')->nullable(); // Menyimpan metode pembayaran yang dipilih
+            $table->text('pesan_revisi')->nullable(); // Untuk menyimpan pesan revisi dari admin jika ada
             $table->timestamps();
         });
     }

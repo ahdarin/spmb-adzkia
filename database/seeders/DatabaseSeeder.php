@@ -21,5 +21,13 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+        \App\Models\User::create([
+        'name' => 'Super Admin',
+        'email' => 'admin@adzkia.ac.id',
+        'password' => \Illuminate\Support\Facades\Hash::make('password123'), // Password Anda
+        'role' => 'super_admin',
+        'divisi' => 'Pusat',
+    ]);
     }
+    
 }

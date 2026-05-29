@@ -172,4 +172,15 @@ public function tampilkanPengumuman()
         $pendaftar->save();
         return redirect()->back()->with('success', 'Status berhasil diperbarui!');
     }
+
+public function revisiDaftarUlang(Request $request, $id)
+ {
+     $request->validate(['pesan_revisi' => 'required|string']);
+     $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
+     $pendaftar->update([
+         'status_pendaftaran' => 'Revisi',
+         'pesan_revisi'       => $request->pesan_revisi
+     ]);
+     return back()->with('success', 'Pesan revisi berhasil dikirim ke pendaftar.');
+ }
 }

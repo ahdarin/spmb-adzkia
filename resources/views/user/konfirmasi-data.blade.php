@@ -80,7 +80,7 @@
                          alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100 object-cover">
                      
                     <h2 class="text-2xl font-black text-adzkia-dark mb-1">{{ $pendaftar->nama_lengkap }}</h2>
-                    <p class="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-6">Candidate ID: #{{ $pendaftar->no_pendaftaran ?? $pendaftar->id }}</p>
+                    <p class="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-6">No. Registrasi: #{{ $pendaftar->no_pendaftaran ?? $pendaftar->id }}</p>
     
                     <div class="w-full bg-adzkia-blue rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-adzkia-blue/20">
                         <div class="absolute top-0 right-0 p-4 opacity-10">
@@ -208,24 +208,65 @@
                         </div>
                         
                         <div class="flex gap-4">
-                            <a href="{{ $pendaftar->pas_foto ? asset('storage/' . $pendaftar->pas_foto) : '#' }}" target="_blank" class="flex flex-col items-center gap-2 group/doc">
-                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 group-hover/doc:border-adzkia-blue group-hover/doc:text-adzkia-blue transition-colors">
-                                    <i data-feather="image" class="w-5 h-5"></i>
+                            <!-- PAS FOTO -->
+                            @if(!empty($pendaftar->pas_foto))
+                                <a href="{{ asset('storage/' . $pendaftar->pas_foto) }}" target="_blank" class="flex flex-col items-center gap-2 group/doc">
+                                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-adzkia-blue border border-blue-200 group-hover/doc:bg-adzkia-blue group-hover/doc:text-white transition-colors relative">
+                                        <i data-feather="image" class="w-5 h-5"></i>
+                                        <div class="absolute -top-1.5 -right-1.5 bg-green-500 rounded-full border-2 border-white text-white p-0.5 shadow-sm">
+                                            <i data-feather="check" class="w-2.5 h-2.5"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] font-bold text-adzkia-blue group-hover/doc:text-adzkia-dark transition-colors">Lihat Foto</p>
+                                </a>
+                            @else
+                                <div class="flex flex-col items-center gap-2 opacity-60">
+                                    <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-200">
+                                        <i data-feather="image" class="w-5 h-5"></i>
+                                    </div>
+                                    <p class="text-[9px] font-extrabold text-red-500">Kosong</p>
                                 </div>
-                                <p class="text-[9px] font-bold text-gray-400 group-hover/doc:text-adzkia-blue transition-colors">Foto</p>
-                            </a>
-                            <a href="{{ $pendaftar->scan_ktp ? asset('storage/' . $pendaftar->scan_ktp) : '#' }}" target="_blank" class="flex flex-col items-center gap-2 group/doc">
-                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 group-hover/doc:border-adzkia-blue group-hover/doc:text-adzkia-blue transition-colors">
-                                    <i data-feather="file-text" class="w-5 h-5"></i>
+                            @endif
+
+                            <!-- KTP -->
+                            @if(!empty($pendaftar->scan_ktp))
+                                <a href="{{ asset('storage/' . $pendaftar->scan_ktp) }}" target="_blank" class="flex flex-col items-center gap-2 group/doc">
+                                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-adzkia-blue border border-blue-200 group-hover/doc:bg-adzkia-blue group-hover/doc:text-white transition-colors relative">
+                                        <i data-feather="file-text" class="w-5 h-5"></i>
+                                        <div class="absolute -top-1.5 -right-1.5 bg-green-500 rounded-full border-2 border-white text-white p-0.5 shadow-sm">
+                                            <i data-feather="check" class="w-2.5 h-2.5"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] font-bold text-adzkia-blue group-hover/doc:text-adzkia-dark transition-colors">Lihat KTP</p>
+                                </a>
+                            @else
+                                <div class="flex flex-col items-center gap-2 opacity-60">
+                                    <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-200">
+                                        <i data-feather="file-text" class="w-5 h-5"></i>
+                                    </div>
+                                    <p class="text-[9px] font-extrabold text-red-500">Kosong</p>
                                 </div>
-                                <p class="text-[9px] font-bold text-gray-400 group-hover/doc:text-adzkia-blue transition-colors">KTP</p>
-                            </a>
-                            <a href="{{ $pendaftar->ijazah_skl ? asset('storage/' . $pendaftar->ijazah_skl) : '#' }}" target="_blank" class="flex flex-col items-center gap-2 group/doc">
-                                <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-100 group-hover/doc:border-adzkia-blue group-hover/doc:text-adzkia-blue transition-colors">
-                                    <i data-feather="award" class="w-5 h-5"></i>
+                            @endif
+
+                            <!-- IJAZAH -->
+                            @if(!empty($pendaftar->ijazah_skl))
+                                <a href="{{ asset('storage/' . $pendaftar->ijazah_skl) }}" target="_blank" class="flex flex-col items-center gap-2 group/doc">
+                                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-adzkia-blue border border-blue-200 group-hover/doc:bg-adzkia-blue group-hover/doc:text-white transition-colors relative">
+                                        <i data-feather="award" class="w-5 h-5"></i>
+                                        <div class="absolute -top-1.5 -right-1.5 bg-green-500 rounded-full border-2 border-white text-white p-0.5 shadow-sm">
+                                            <i data-feather="check" class="w-2.5 h-2.5"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] font-bold text-adzkia-blue group-hover/doc:text-adzkia-dark transition-colors">Lihat Ijazah</p>
+                                </a>
+                            @else
+                                <div class="flex flex-col items-center gap-2 opacity-60">
+                                    <div class="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border border-gray-200">
+                                        <i data-feather="award" class="w-5 h-5"></i>
+                                    </div>
+                                    <p class="text-[9px] font-extrabold text-red-500">Kosong</p>
                                 </div>
-                                <p class="text-[9px] font-bold text-gray-400 group-hover/doc:text-adzkia-blue transition-colors">Ijazah</p>
-                            </a>
+                            @endif
                         </div>
                     </div>
 

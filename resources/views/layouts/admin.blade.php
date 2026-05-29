@@ -36,6 +36,13 @@
 
     <aside class="w-[280px] bg-white border-r border-gray-100 flex flex-col fixed h-screen z-20">
         
+        {{-- PENGHITUNG OTOMATIS DATA YANG PERLU DIVALIDASI --}}
+        @php
+            $pendingPembayaran = \App\Models\DataPendaftar::where('status_pembayaran', 'Menunggu Validasi')->count();
+            $pendingBerkas = \App\Models\DataPendaftar::where('status_pendaftaran', 'menunggu verifikasi')->count();
+            $totalPending = $pendingPembayaran + $pendingBerkas;
+        @endphp
+
         <div class="h-24 flex items-center px-8 gap-3">
         <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo Universitas Adzkia" class="h-11 w-auto transition-transform group-hover:scale-105 duration-300">
 
@@ -47,65 +54,47 @@
 
 <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto custom-scrollbar">
             
-            <a href="/admin" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin')])>
-                <span class="flex items-center justify-center"><i data-feather="grid" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Dashboard</span>
-            </a>
+            @php
+                $user = auth()->user();
+                $isSuperAdmin = $user->role === 'super_admin';
+                $divisi = $user->divisi;
+            @endphp
 
-            <a href="/admin/pendaftar" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/pendaftar*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/pendaftar*')])>
-                <span class="flex items-center justify-center"><i data-feather="users" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Data Pendaftar</span>
-            </a>
+            {{-- MENU UMUM (Semua Admin Bisa Lihat Dashboard & Data Pendaftar) --}}
+            <a href="/admin" ...> <!-- Kode menu Dashboard --> </a>
+            <a href="/admin/pendaftar" ...> <!-- Kode menu Data Pendaftar --> </a>
 
+            {{-- MENU VALIDASI (Hanya Super Admin, Keuangan, & Verifikator) --}}
+            @if($isSuperAdmin || in_array($divisi, ['Keuangan', 'Verifikator Berkas']))
             <div x-data="{ open: {{ request()->is('admin/validasi*') ? 'true' : 'false' }} }">
-                <button @click="open = !open" 
-                   :class="open || {{ request()->is('admin/validasi*') ? 'true' : 'false' }} ? 'text-brand-blue bg-brand-blue-light' : 'text-brand-gray hover:bg-gray-50'"
-                   class="w-full flex items-center justify-between px-4 py-3 font-bold rounded-xl transition-all outline-none">
-                    <div class="flex items-center gap-3">
-                        <span class="flex items-center justify-center"><i data-feather="check-circle" class="w-5 h-5"></i></span>
-                        <span class="text-[14px]">Validasi</span>
-                    </div>
-                    <span class="flex items-center justify-center transition-transform duration-300" :class="open ? 'rotate-180' : ''">
-                        <i data-feather="chevron-down" class="w-4 h-4"></i>
-                    </span>
-                </button>
+                <!-- Tombol Dropdown Validasi -->
+                
                 <div x-show="open" x-cloak class="mt-1 ml-9 space-y-1">
-                    <a href="/admin/validasi-pembayaran" class="block py-2 text-[13px] font-bold {{ request()->is('admin/validasi-pembayaran') ? 'text-brand-blue' : 'text-brand-gray hover:text-brand-dark' }}">Pembayaran</a>
-                    <a href="/admin/validasi-daftar-ulang" class="block py-2 text-[13px] font-bold {{ request()->is('admin/validasi-daftar-ulang') ? 'text-brand-blue' : 'text-brand-gray hover:text-brand-dark' }}">Daftar Ulang</a>
+                    @if($isSuperAdmin || $divisi === 'Keuangan')
+                        <a href="/admin/validasi-pembayaran" ...>Pembayaran</a>
+                    @endif
+                    
+                    @if($isSuperAdmin || $divisi === 'Verifikator Berkas')
+                        <a href="/admin/validasi-daftar-ulang" ...>Daftar Ulang</a>
+                    @endif
                 </div>
             </div>
+            @endif
 
-            <a href="/admin/pengumuman" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/pengumuman*'), 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' => !request()->is('admin/pengumuman*')])>
-                <span class="flex items-center justify-center w-5 h-5 shrink-0">
-                    <i data-feather="volume-2"></i>
-                </span>
-                <span class="text-[14px]">Pengumuman</span>
-            </a>
+            {{-- MENU HUMAS (Hanya Super Admin & Humas) --}}
+            @if($isSuperAdmin || $divisi === 'Humas & Informasi')
+                <a href="/admin/pengumuman" ...>Pengumuman</a>
+                <a href="/admin/berita" ...>Berita</a>
+                <a href="/admin/faq" ...>FAQ</a>
+            @endif
 
-            <a href="/admin/prodi" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/prodi*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/prodi*')])>
-                <span class="flex items-center justify-center"><i data-feather="book-open" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Program Studi</span>
-            </a>
+            {{-- MENU SUPER ADMIN EKSKLUSIF --}}
+            @if($isSuperAdmin)
+                <a href="/admin/prodi" ...>Program Studi</a>
+                <a href="/admin/tugas" ...>Manajemen Divisi</a>
+                <a href="/admin/settings" ...>Settings</a>
+            @endif
 
-            <a href="/admin/berita" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/berita*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/berita*')])>
-                <span class="flex items-center justify-center"><i data-feather="file-text" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Berita</span>
-            </a>
-
-            <a href="/admin/tugas" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/tugas*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/tugas*')])>
-                <span class="flex items-center justify-center"><i data-feather="shield" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Manajemen Divisi</span>
-            </a>
-
-            <a href="/admin/faq" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/faq*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/faq*')])>
-                <span class="flex items-center justify-center"><i data-feather="help-circle" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">FAQ</span>
-            </a>
-
-            <a href="/admin/settings" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/settings*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/settings*')])>
-                <span class="flex items-center justify-center"><i data-feather="settings" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Settings</span>
-            </a>
         </nav>
 
         <div class="p-6 m-4 bg-brand-bg rounded-2xl border border-gray-100">
@@ -126,9 +115,15 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <div class="flex items-center gap-4 text-brand-gray">
-                    <span class="flex items-center justify-center"><i data-feather="bell" class="w-5 h-5"></i></span>
-                    <span class="flex items-center justify-center"><i data-feather="help-circle" class="w-5 h-5"></i></span>
+                <div class="flex items-center gap-4 text-brand-gray relative">
+                    <span class="flex items-center justify-center cursor-pointer hover:text-brand-blue transition-colors">
+                        <i data-feather="bell" class="w-5 h-5"></i>
+                        {{-- Notifikasi Lonceng --}}
+                        @if($totalPending > 0)
+                            <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-brand-bg"></div>
+                        @endif
+                    </span>
+                    <span class="flex items-center justify-center cursor-pointer hover:text-brand-blue transition-colors"><i data-feather="help-circle" class="w-5 h-5"></i></span>
                 </div>
                 <div class="h-8 w-px bg-gray-200"></div>
                 <div class="flex items-center gap-3">

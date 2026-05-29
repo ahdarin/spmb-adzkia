@@ -1,73 +1,166 @@
 @extends('layouts.admin')
 
 @section('admin-content')
-<div class="py-6 max-w-5xl">
-    
-    <div class="mb-8">
-        <h1 class="text-2xl font-black text-brand-dark tracking-tight">Manajemen Divisi Admin</h1>
-        <p class="text-[13px] font-medium text-brand-gray mt-1">Tentukan peran dan tanggung jawab setiap admin di dalam sistem SPMB.</p>
+<div x-data="manajemenDivisi()">
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-brand-dark tracking-tight mb-2">Manajemen Divisi & Staf</h1>
+            <p class="text-brand-gray text-[14px] font-medium">
+                Atur akun dan hak akses staf admin SPMB Universitas Adzkia.
+            </p>
+        </div>
+        <button @click="bukaModalTambah()" class="px-6 py-3 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-brand-blue transition-colors shadow-lg flex items-center gap-2">
+            <i data-feather="plus-circle" class="w-4 h-4"></i> Tambah Staf Baru
+        </button>
     </div>
 
     @if(session('success'))
-    <div class="mb-6 p-4 bg-green-50 border border-green-100 text-green-600 text-[13px] font-bold rounded-xl flex items-center gap-2">
-        <i data-feather="check-circle" class="w-4 h-4"></i> {{ session('success') }}
-    </div>
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-xl">
+            <p class="text-sm font-bold text-green-700">{{ session('success') }}</p>
+        </div>
     @endif
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-            <h3 class="text-[14px] font-black text-brand-dark">Daftar Admin & Hak Akses</h3>
-        </div>
-        
+    <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-white border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        <th class="p-4 pl-6">Profil Admin</th>
-                        <th class="p-4">Email / Kontak</th>
-                        <th class="p-4">Divisi & Tanggung Jawab</th>
-                        <th class="p-4 pr-6 text-right">Aksi Simpan</th>
+            <table class="w-full text-left whitespace-nowrap">
+                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-5">Informasi Staf</th>
+                        <th class="px-4 py-5">Divisi / Tugas</th>
+                        <th class="px-4 py-5">Status Akun</th>
+                        <th class="px-6 py-5 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="text-[13px] text-brand-dark">
-                    @foreach($admins as $admin)
-                    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                        <td class="p-4 pl-6 flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-brand-dark text-white flex items-center justify-center font-black text-[14px]">
-                                {{ substr($admin->name, 0, 1) }}
-                            </div>
-                            <div>
-                                <p class="font-bold text-brand-dark">{{ $admin->name }}</p>
-                                <p class="text-[11px] font-black uppercase text-brand-blue">{{ $admin->role }}</p>
+                <tbody class="divide-y divide-gray-50 text-[13px]">
+                    @forelse($admins as $admin)
+                    <tr class="hover:bg-gray-50/50 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($admin->name) }}&background=EFF6FF&color=2563EB" class="w-10 h-10 rounded-full border border-gray-200">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-brand-dark text-[14px]">{{ $admin->name }}</span>
+                                    <span class="text-gray-400 text-[11px] font-extrabold tracking-wider">{{ $admin->email }}</span>
+                                </div>
                             </div>
                         </td>
-                        <td class="p-4 font-medium text-brand-gray">
-                            {{ $admin->email }}
+                        <td class="px-4 py-4">
+                            <span class="px-4 py-1.5 bg-brand-blue-light text-brand-blue rounded-full text-[11px] font-extrabold tracking-wide">
+                                {{ $admin->divisi ?? 'Belum Ditentukan' }}
+                            </span>
                         </td>
-                        
-                        <form action="{{ route('admin.tugas.update', $admin->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <td class="p-4">
-                                <select name="tanggung_jawab" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-brand-blue font-bold text-[12px] text-brand-dark">
-                                    <option value="Belum Ditentukan" {{ $admin->tanggung_jawab == 'Belum Ditentukan' ? 'selected' : '' }}>-- Belum Ditentukan --</option>
-                                    <option value="Super Admin (Full Akses)" {{ $admin->tanggung_jawab == 'Super Admin (Full Akses)' ? 'selected' : '' }}>Super Admin (Full Akses)</option>
-                                    <option value="Keuangan (Validasi Pembayaran)" {{ $admin->tanggung_jawab == 'Keuangan (Validasi Pembayaran)' ? 'selected' : '' }}>Keuangan (Validasi Pembayaran)</option>
-                                    <option value="Akademik (Prodi & Daftar Ulang)" {{ $admin->tanggung_jawab == 'Akademik (Prodi & Daftar Ulang)' ? 'selected' : '' }}>Akademik (Prodi & Daftar Ulang)</option>
-                                    <option value="Humas (Berita, FAQ, Pengumuman)" {{ $admin->tanggung_jawab == 'Humas (Berita, FAQ, Pengumuman)' ? 'selected' : '' }}>Humas (Berita, FAQ, Pengumuman)</option>
-                                </select>
-                            </td>
-                            <td class="p-4 pr-6 text-right">
-                                <button type="submit" class="px-4 py-2 bg-brand-blue-light text-brand-blue hover:bg-brand-blue hover:text-white transition-all rounded-lg text-[11px] font-black uppercase tracking-widest flex items-center gap-1 ml-auto">
-                                    <i data-feather="save" class="w-3 h-3"></i> Simpan
+                        <td class="px-4 py-4">
+                            <span class="inline-flex items-center gap-1.5 text-green-500 text-[11px] font-black uppercase tracking-wider">
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div> AKTIF
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button @click="bukaModalEdit('{{ $admin->id }}', '{{ addslashes($admin->name) }}', '{{ addslashes($admin->email) }}', '{{ $admin->divisi }}')" 
+                                    class="p-2 text-brand-blue bg-brand-blue-light hover:bg-blue-100 rounded-lg transition-colors">
+                                    <i data-feather="edit-2" class="w-4 h-4"></i>
                                 </button>
-                            </td>
-                        </form>
+                                <form action="{{ url('/admin/tugas/'.$admin->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus staf ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                                        <i data-feather="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-10 text-center text-gray-500 font-bold">Belum ada akun staf yang ditambahkan.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+
+    {{-- MODAL TAMBAH/EDIT STAF --}}
+    <div x-show="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4" style="display: none;">
+        <div x-show="modalOpen" x-transition.opacity @click="modalOpen = false" class="absolute inset-0 bg-brand-dark/60 backdrop-blur-sm cursor-pointer"></div>
+        
+        <div x-show="modalOpen" 
+             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
+             class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
+            
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h2 class="text-xl font-extrabold text-brand-dark tracking-tight" x-text="isEdit ? 'Edit Data Staf' : 'Tambah Staf Baru'"></h2>
+                <button @click="modalOpen = false" class="p-2 bg-white border border-gray-200 hover:bg-gray-100 rounded-full transition-colors">
+                    <i data-feather="x" class="w-4 h-4 text-gray-500"></i>
+                </button>
+            </div>
+
+            <form :action="isEdit ? `/admin/tugas/${formData.id}` : '/admin/tugas'" method="POST" class="p-8 space-y-5">
+                @csrf
+                <template x-if="isEdit">
+                    <input type="hidden" name="_method" value="PUT">
+                </template>
+
+                <div>
+                    <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Nama Lengkap</label>
+                    <input type="text" name="name" x-model="formData.name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold focus:border-brand-blue focus:bg-white outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Email / Username</label>
+                    <input type="email" name="email" x-model="formData.email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold focus:border-brand-blue focus:bg-white outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">
+                        Password <span x-show="isEdit" class="text-gray-400 lowercase font-medium tracking-normal">(Kosongkan jika tidak ingin diubah)</span>
+                    </label>
+                    <input type="password" name="password" :required="!isEdit" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold focus:border-brand-blue focus:bg-white outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Divisi Tugas</label>
+                    <div class="relative">
+                        <select name="divisi" x-model="formData.divisi" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold focus:border-brand-blue focus:bg-white outline-none transition-all appearance-none cursor-pointer">
+                            <option value="" disabled>Pilih Divisi</option>
+                            <option value="Keuangan">Keuangan (Validasi Pembayaran)</option>
+                            <option value="Verifikator Berkas">Verifikator Berkas (Daftar Ulang)</option>
+                            <option value="Humas & Informasi">Humas & Informasi (Berita/Pengumuman)</option>
+                        </select>
+                        <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100 flex gap-3 mt-4">
+                    <button type="button" @click="modalOpen = false" class="flex-1 py-3 border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl font-bold text-[13px] transition-colors">Batal</button>
+                    <button type="submit" class="flex-1 py-3 bg-brand-dark text-white hover:bg-brand-blue rounded-xl font-bold text-[13px] transition-colors shadow-lg" x-text="isEdit ? 'Simpan Perubahan' : 'Buat Akun Staf'"></button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    function manajemenDivisi() {
+        return {
+            modalOpen: false,
+            isEdit: false,
+            formData: { id: '', name: '', email: '', divisi: '' },
+
+            bukaModalTambah() {
+                this.isEdit = false;
+                this.formData = { id: '', name: '', email: '', divisi: '' };
+                this.modalOpen = true;
+                setTimeout(() => feather.replace(), 50);
+            },
+
+            bukaModalEdit(id, name, email, divisi) {
+                this.isEdit = true;
+                this.formData = { id, name, email, divisi };
+                this.modalOpen = true;
+                setTimeout(() => feather.replace(), 50);
+            }
+        }
+    }
+</script>
 @endsection

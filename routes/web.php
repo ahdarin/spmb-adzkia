@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminBeritaController;
 use App\Http\Controllers\AdminTugasController; 
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\DashboardUserController;
+use App\Http\Controllers\AuthController;
 
 // ==========================================
 // 1. HALAMAN UTAMA & PUBLIK
@@ -57,7 +58,7 @@ Route::get('/rekomendasi/hasil', function () { return view('user.hasil-rekomenda
 // ==========================================
 Route::get('/admin', [AdminPendaftarController::class, 'dashboard'])->name('admin.dashboard'); 
 Route::get('/admin/pendaftar', [AdminPendaftarController::class, 'index'])->name('admin.pendaftar.index');
-
+Route::post('/admin/revisi-daftar-ulang/{id}', [App\Http\Controllers\AdminPendaftarController::class, 'revisiDaftarUlang'])->name('admin.revisi-daftar-ulang');
 Route::get('/admin/validasi-pembayaran', [AdminPendaftarController::class, 'validasiPembayaranIndex'])->name('admin.pembayaran');
 Route::post('/admin/proses-validasi', [DashboardUserController::class, 'prosesValidasi'])->name('admin.proses.validasi');
 
@@ -82,4 +83,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     
     Route::get('/tugas', [AdminTugasController::class, 'index'])->name('tugas.index');
     Route::put('/tugas/{id}', [AdminTugasController::class, 'update'])->name('tugas.update');
+    Route::resource('/admin/tugas', App\Http\Controllers\AdminTugasController::class);
+    
+    Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

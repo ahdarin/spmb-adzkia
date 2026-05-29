@@ -37,7 +37,6 @@
     </script>
     <style>
         [x-cloak] { display: none !important; }
-        /* Kustomisasi scrollbar untuk text area */
         textarea::-webkit-scrollbar { width: 6px; }
         textarea::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
     </style>
@@ -86,6 +85,7 @@
 
             <form action="{{ route('simpan-biodata') }}" method="POST" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="pendaftar_id" value="{{ $pendaftar->id }}">
                 
                 @if ($errors->any())
                     <div class="bg-red-50 border-l-4 border-adzkia-red p-4 mb-8 rounded-r-2xl">
@@ -157,7 +157,7 @@
                     </div>
                 </section>
 
-                <section>
+<section>
                     <div class="flex items-center gap-3 mb-6 mt-10">
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
                             <i data-feather="map-pin" class="w-5 h-5"></i>
@@ -176,15 +176,12 @@
                             <input type="text" name="no_whatsapp" value="{{ old('no_whatsapp', $pendaftar->no_whatsapp ?? '') }}" placeholder="0812xxxx" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
 
-                        <div class="md:col-span-2">
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Alamat Lengkap</label>
-                            <textarea name="alamat_rumah" rows="3" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark resize-none">{{ old('alamat_rumah', $pendaftar->alamat_rumah ?? '') }}</textarea>
-                        </div>
-                            
+                        <!-- PROVINSI DAN KOTA (Dipindah Ke Atas Alamat) -->
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Provinsi</label>
                             <div class="relative">
-                                <select name="provinsi" x-model="selectedProv" @change="loadCities(selectedProv)" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">                                    <option value="" disabled selected>Pilih Provinsi</option>
+                                <select name="provinsi" x-model="selectedProv" @change="loadCities(selectedProv)" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" disabled>Pilih Provinsi</option>
                                     <template x-for="prov in provinces" :key="prov.code">
                                         <option :value="prov.code" x-text="prov.name"></option>
                                     </template>
@@ -196,7 +193,8 @@
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Kota / Kabupaten</label>
                             <div class="relative">
-                                <select name="kota_kabupaten" x-model="selectedCity" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">                                    <option value="" disabled selected>Pilih Kota</option>
+                                <select name="kota_kabupaten" x-model="selectedCity" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" disabled>Pilih Kota</option>
                                     <template x-for="city in cities" :key="city.code">
                                         <option :value="city.name" x-text="city.name"></option>
                                     </template>
@@ -205,6 +203,11 @@
                             </div>
                         </div>
 
+                        <!-- ALAMAT LENGKAP -->
+                        <div class="md:col-span-2">
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Alamat Lengkap (Jl, RT/RW, Kecamatan)</label>
+                            <textarea name="alamat_rumah" rows="3" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark resize-none">{{ old('alamat_rumah', $pendaftar->alamat_rumah ?? '') }}</textarea>
+                        </div>
                     </div>
                 </section>
 
@@ -280,7 +283,7 @@
                     </div>
                 </section>
 
-                <section>
+<section>
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
                             <i data-feather="upload-cloud" class="w-5 h-5"></i>
@@ -290,29 +293,49 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
-                        <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-adzkia-blue hover:bg-blue-50 transition-all group"
-                            @click="$refs.fileFoto.click()">
-                            <input type="file" name="pas_foto" x-ref="fileFoto" @change="files.foto = $event.target.files[0]?.name" class="hidden" accept=".jpg,.png">
+                        <!-- PAS FOTO -->
+                        <div class="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all group overflow-hidden relative"
+                            :class="!files.foto ? 'border-gray-200 cursor-pointer hover:border-adzkia-blue hover:bg-blue-50' : 'bg-gray-50 border-gray-300'"
+                            @click="if(!files.foto) $refs.fileFoto.click()">
                             
+                            <input type="file" name="pas_foto" x-ref="fileFoto" @change="handleFileUpload($event, 'foto')" class="hidden" accept=".jpg,.png,.jpeg">
+                            
+                            <!-- Saat Kosong -->
                             <div x-show="!files.foto" class="flex flex-col items-center">
                                 <i data-feather="camera" class="w-6 h-6 text-gray-400 mb-3 group-hover:text-adzkia-blue transition-colors"></i>
                                 <h4 class="text-[13px] font-extrabold text-adzkia-dark mb-1">Pas Foto 4x6</h4>
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">JPG, Max 2MB</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">JPG/PNG, Max 2MB</p>
                                 <span class="text-[12px] font-black text-adzkia-blue underline underline-offset-2">Pilih File</span>
                             </div>
                             
-                            <div x-show="files.foto" class="flex flex-col items-center" x-cloak>
-                                <div class="w-10 h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2">
+                            <!-- Saat Sudah Diunggah -->
+                            <div x-show="files.foto" class="flex flex-col items-center w-full min-w-0" x-cloak>
+                                <div class="w-10 h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2 shrink-0">
                                     <i data-feather="check" class="w-5 h-5"></i>
                                 </div>
-                                <h4 class="text-[12px] font-extrabold text-adzkia-dark line-clamp-1 px-2" x-text="files.foto"></h4>
+                                <h4 class="text-[12px] font-extrabold text-adzkia-dark w-full px-2 text-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="files.foto"></h4>
+                                
+                                <div class="flex gap-2 mt-3">
+                                    @if(!empty($pendaftar->pas_foto))
+                                    <a href="{{ asset('storage/' . $pendaftar->pas_foto) }}" target="_blank" x-show="files.foto === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
+                                        Lihat File
+                                    </a>
+                                    @endif
+                                    <button type="button" @click.stop="$refs.fileFoto.click()" class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">
+                                        Ganti
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-adzkia-blue hover:bg-blue-50 transition-all group"
-                            @click="$refs.fileKtp.click()">
-                            <input type="file" name="scan_ktp" x-ref="fileKtp" @change="files.ktp = $event.target.files[0]?.name" class="hidden" accept=".jpg,.pdf">
+                        <!-- SCAN KTP -->
+                        <div class="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all group overflow-hidden relative"
+                            :class="!files.ktp ? 'border-gray-200 cursor-pointer hover:border-adzkia-blue hover:bg-blue-50' : 'bg-gray-50 border-gray-300'"
+                            @click="if(!files.ktp) $refs.fileKtp.click()">
                             
+                            <input type="file" name="scan_ktp" x-ref="fileKtp" @change="handleFileUpload($event, 'ktp')" class="hidden" accept=".jpg,.jpeg,.png,.pdf">
+                            
+                            <!-- Saat Kosong -->
                             <div x-show="!files.ktp" class="flex flex-col items-center">
                                 <i data-feather="credit-card" class="w-6 h-6 text-gray-400 mb-3 group-hover:text-adzkia-blue transition-colors"></i>
                                 <h4 class="text-[13px] font-extrabold text-adzkia-dark mb-1">Scan KTP</h4>
@@ -320,18 +343,34 @@
                                 <span class="text-[12px] font-black text-adzkia-blue underline underline-offset-2">Pilih File</span>
                             </div>
 
-                            <div x-show="files.ktp" class="flex flex-col items-center" x-cloak>
-                                <div class="w-10 h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2">
+                            <!-- Saat Sudah Diunggah -->
+                            <div x-show="files.ktp" class="flex flex-col items-center w-full min-w-0" x-cloak>
+                                <div class="w-10 h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2 shrink-0">
                                     <i data-feather="check" class="w-5 h-5"></i>
                                 </div>
-                                <h4 class="text-[12px] font-extrabold text-adzkia-dark line-clamp-1 px-2" x-text="files.ktp"></h4>
+                                <h4 class="text-[12px] font-extrabold text-adzkia-dark w-full px-2 text-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="files.ktp"></h4>
+                                
+                                <div class="flex gap-2 mt-3">
+                                    @if(!empty($pendaftar->scan_ktp))
+                                    <a href="{{ asset('storage/' . $pendaftar->scan_ktp) }}" target="_blank" x-show="files.ktp === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
+                                        Lihat File
+                                    </a>
+                                    @endif
+                                    <button type="button" @click.stop="$refs.fileKtp.click()" class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">
+                                        Ganti
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-adzkia-blue hover:bg-blue-50 transition-all group"
-                            @click="$refs.fileIjazah.click()">
-                            <input type="file" name="ijazah_skl" x-ref="fileIjazah" @change="files.ijazah = $event.target.files[0]?.name" class="hidden" accept=".pdf">
+                        <!-- IJAZAH / SKL -->
+                        <div class="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all group overflow-hidden relative"
+                            :class="!files.ijazah ? 'border-gray-200 cursor-pointer hover:border-adzkia-blue hover:bg-blue-50' : 'bg-gray-50 border-gray-300'"
+                            @click="if(!files.ijazah) $refs.fileIjazah.click()">
                             
+                            <input type="file" name="ijazah_skl" x-ref="fileIjazah" @change="handleFileUpload($event, 'ijazah')" class="hidden" accept=".pdf">
+                            
+                            <!-- Saat Kosong -->
                             <div x-show="!files.ijazah" class="flex flex-col items-center">
                                 <i data-feather="file-text" class="w-6 h-6 text-gray-400 mb-3 group-hover:text-adzkia-blue transition-colors"></i>
                                 <h4 class="text-[13px] font-extrabold text-adzkia-dark mb-1">Ijazah / SKL</h4>
@@ -339,11 +378,23 @@
                                 <span class="text-[12px] font-black text-adzkia-blue underline underline-offset-2">Pilih File</span>
                             </div>
 
-                            <div x-show="files.ijazah" class="flex flex-col items-center" x-cloak>
-                                <div class="w-10 h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2">
+                            <!-- Saat Sudah Diunggah -->
+                            <div x-show="files.ijazah" class="flex flex-col items-center w-full min-w-0" x-cloak>
+                                <div class="w-10 h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2 shrink-0">
                                     <i data-feather="check" class="w-5 h-5"></i>
                                 </div>
-                                <h4 class="text-[12px] font-extrabold text-adzkia-dark line-clamp-1 px-2" x-text="files.ijazah"></h4>
+                                <h4 class="text-[12px] font-extrabold text-adzkia-dark w-full px-2 text-center" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="files.ijazah"></h4>
+                                
+                                <div class="flex gap-2 mt-3">
+                                    @if(!empty($pendaftar->ijazah_skl))
+                                    <a href="{{ asset('storage/' . $pendaftar->ijazah_skl) }}" target="_blank" x-show="files.ijazah === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
+                                        Lihat File
+                                    </a>
+                                    @endif
+                                    <button type="button" @click.stop="$refs.fileIjazah.click()" class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">
+                                        Ganti
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -375,24 +426,34 @@
         </div>
     </footer>
 
-<script>
-document.addEventListener('alpine:init', () => {
+    <script>
+        document.addEventListener('alpine:init', () => {
             Alpine.data('formulirApp', () => ({
+                currentStep: 4,
+                provinces: [],
+                cities: [],
+                
+                selectedProv: '{{ old('provinsi', $pendaftar->provinsi ?? '') }}',
+                selectedCity: '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}',
+
+files: {
+                    foto: '{{ !empty($pendaftar->pas_foto) ? basename($pendaftar->pas_foto) : "" }}',
+                    ktp: '{{ !empty($pendaftar->scan_ktp) ? basename($pendaftar->scan_ktp) : "" }}',
+                    ijazah: '{{ !empty($pendaftar->ijazah_skl) ? basename($pendaftar->ijazah_skl) : "" }}'
+                },
+
+                // Deteksi file baru yang diunggah (belum tersimpan di DB)
+                newUploads: {
+                    foto: false,
+                    ktp: false,
+                    ijazah: false
+                },
+
                 steps: [
                     { id: 1, title: 'Pendaftaran' }, { id: 2, title: 'Biaya' },
                     { id: 3, title: 'Validasi' }, { id: 4, title: 'Biodata' },
                     { id: 5, title: 'Dokumen' }, { id: 6, title: 'Ujian' }, { id: 7, title: 'Hasil' }
                 ],
-                currentStep: 4,
-                provinces: [],
-                cities: [],
-                
-                // Tambahkan dua baris ini untuk mengingat pilihan database
-                selectedProv: '{{ old('provinsi', $pendaftar->provinsi ?? '') }}',
-                selectedCity: '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}',
-                
-                files: { foto: null, ktp: null, ijazah: null },
-                steps: [ /* ... isi steps tetap sama ... */ ],
 
                 async init() {
                     try {
@@ -400,9 +461,11 @@ document.addEventListener('alpine:init', () => {
                         const json = await res.json();
                         this.provinces = json.data || [];
                         
-                        // Jika dalam mode EDIT (Provinsi sudah ada), load kotanya otomatis
                         if (this.selectedProv) {
                             await this.loadCities(this.selectedProv);
+                            this.$nextTick(() => {
+                                this.selectedCity = '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}';
+                            });
                         }
                     } catch (error) {
                         console.error('Gagal memuat data provinsi:', error);
@@ -421,21 +484,17 @@ document.addEventListener('alpine:init', () => {
                     }
                 },
 
-                // FUNGSI VALIDASI FILE REAL-TIME
                 handleFileUpload(event, type) {
                     const file = event.target.files[0];
                     if (!file) return;
 
-                    // 1. Cek Ukuran (Maksimal 2MB)
                     if (file.size > 2 * 1024 * 1024) {
                         alert('Ukuran file maksimal 2MB!');
-                        event.target.value = ''; // Reset input
-                        return;
+                        event.target.value = ''; return;
                     }
 
-                    // 2. Cek Format
                     if (type === 'foto' && !['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-                        alert('Pas Foto harus berformat JPG atau PNG!');
+                        alert('Pas Foto harus berformat JPG/PNG!');
                         event.target.value = ''; return;
                     }
                     if (type === 'ktp' && !['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) {
@@ -447,27 +506,23 @@ document.addEventListener('alpine:init', () => {
                         event.target.value = ''; return;
                     }
 
-                    // Jika lolos validasi, simpan nama file untuk ditampilkan
                     this.files[type] = file.name;
+                    this.newUploads[type] = true; // Tandai bahwa ini file baru
                 }
             }));
         });
-                
-        // Initialize Feather Icons
+
         document.addEventListener('DOMContentLoaded', () => {
             feather.replace();
         });
 
-        // FUNGSI AUTO-SAVE (DRAFT OTOMATIS)
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
             const formElements = form.querySelectorAll('input:not([type="file"]), select, textarea');
-            
-            // Memuat data yang tersimpan di LocalStorage jika ada
             const savedData = JSON.parse(localStorage.getItem('draftFormulir') || '{}');
             
             formElements.forEach(el => {
-                if (el.name && savedData[el.name]) {
+                if (el.name && savedData[el.name] && !el.value) {
                     if(el.type === 'radio') {
                         if(el.value === savedData[el.name]) el.checked = true;
                     } else {
@@ -476,7 +531,6 @@ document.addEventListener('alpine:init', () => {
                 }
             });
 
-            // Menyimpan data ke LocalStorage setiap kali ada ketikan/perubahan
             form.addEventListener('input', function(e) {
                 if (e.target.name && e.target.type !== 'file' && e.target.name !== '_token') {
                     savedData[e.target.name] = e.target.value;
@@ -484,7 +538,6 @@ document.addEventListener('alpine:init', () => {
                 }
             });
 
-            // Menghapus draft saat form sukses disubmit
             form.addEventListener('submit', function() {
                 localStorage.removeItem('draftFormulir');
             });

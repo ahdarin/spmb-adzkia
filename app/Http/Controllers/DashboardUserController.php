@@ -133,10 +133,10 @@ public function dashboardUser()
 
 public function simpanBiodata(Request $request)
     {
-        $pendaftarId = session('pendaftar_id');
-        $pendaftar = \App\Models\DataPendaftar::find($pendaftarId);
+        // 1. CARI PENDAFTAR BERDASARKAN ID YANG DIKIRIM DARI FORM
+        $pendaftar = \App\Models\DataPendaftar::findOrFail($request->pendaftar_id);
 
-        // 1. Validasi: File menjadi 'nullable' jika user sedang EDIT (file lama sudah ada)
+        // 2. Validasi
         $request->validate([
             'nama_lengkap'      => 'required|string|max:255',
             'nik'               => 'required|string|max:20',
@@ -150,7 +150,7 @@ public function simpanBiodata(Request $request)
             'ijazah_skl'        => ($pendaftar->ijazah_skl ? 'nullable' : 'required') . '|file|mimes:pdf,jpg,png|max:2048',
         ]);
 
-        // 2. Simpan SEMUA field ke database (Termasuk field baru)
+        // 3. Simpan SEMUA teks ke database
         $pendaftar->update([
             'nama_lengkap'      => $request->nama_lengkap,
             'nik'               => $request->nik,
@@ -171,7 +171,7 @@ public function simpanBiodata(Request $request)
             'pilihan_jurusan_2' => $request->pilihan_jurusan_2,
         ]);
 
-        // 3. Simpan file HANYA jika ada file baru yang diunggah
+        // 4. Simpan file HANYA JIKA user mengunggah file baru
         if ($request->hasFile('pas_foto')) {
             $pendaftar->update(['pas_foto' => $request->file('pas_foto')->store('dokumen/foto', 'public')]);
         }
@@ -182,7 +182,8 @@ public function simpanBiodata(Request $request)
             $pendaftar->update(['ijazah_skl' => $request->file('ijazah_skl')->store('dokumen/ijazah', 'public')]);
         }
 
-        return redirect()->route('konfirmasi-data', $pendaftar->id)->with('success', 'Biodata berhasil disimpan!');
+        // Lanjut ke Konfirmasi
+        return redirect()->route('konfirmasi-data', $pendaftar->id)->with('success', 'Data tersimpan!');
     }
 
     public function tampilkanKonfirmasi($id)
@@ -196,11 +197,14 @@ public function simpanBiodata(Request $request)
         return view('user.konfirmasi-data', compact('pendaftar'));
     }
 
-    public function editBiodata()
+// FUNGSI UNTUK MENAMPILKAN HALAMAN EDIT (Memperbaiki View Not Found)
+    public function editBiodata($id)
     {
-        $pendaftar = \App\Models\DataPendaftar::findOrFail(session('pendaftar_id'));
+        $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
         $prodis = \App\Models\Prodi::all();
-        return view('user.edit-biodata', compact('pendaftar', 'prodis'));
+        
+        // Arahkan kembali ke halaman formulir, namun dengan membawa data lama
+        return view('user.formulir', compact('pendaftar', 'prodis'));
     }
 
     public function update(Request $request, $id)

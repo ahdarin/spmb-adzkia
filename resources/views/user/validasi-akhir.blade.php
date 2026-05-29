@@ -148,7 +148,7 @@
             </div>
 
             <div class="flex flex-col items-center gap-4">
-                <button onclick="window.location.href='/sukses'" class="w-full py-4 bg-adzkia-red text-white rounded-2xl font-black text-[15px] hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">
+                <button onclick="window.location.href='/sukses'" class="w-full py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
                     Kembali ke Dashboard
                 </button>
                 <button onclick="window.location.reload()" class="text-[13px] font-extrabold text-gray-500 hover:text-adzkia-dark transition-colors py-2">

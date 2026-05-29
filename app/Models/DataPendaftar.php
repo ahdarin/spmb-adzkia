@@ -11,35 +11,8 @@ class DataPendaftar extends Authenticatable
 
     protected $table = 'data_pendaftars';
 
-    protected $guarded = [
-        'no_pendaftaran',
-        'jalur_pendaftaran',
-        'nama_lengkap',
-        'nik',
-        'no_whatsapp',
-        'email',
-        'pilihan_jurusan_1',
-        'pilihan_jurusan_2',
-        'alamat_rumah',
-        'password',
-        'nominal_biaya',
-        'status_pembayaran',
-        'metode_pembayaran', 
-        'bukti_bayar',
-        'pas_foto',      
-        'scan_ktp',      
-        'ijazah_skl',
-        'sekolah_asal',
-        'tahun_lulus',
-        'nilai_akhir',
-        'gender',
-        'tanggal_lahir',
-        'agama', 
-        'tempat_lahir', 
-        'provinsi', 
-        'kota_kabupaten', 
-        'jurusan_sma',
-    ];
+    // KOSONGKAN GUARDED AGAR SEMUA DATA DARI FORM BISA DISIMPAN
+    protected $guarded = [];
 
     protected $hidden = [
         'password',
