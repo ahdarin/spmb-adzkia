@@ -6,7 +6,7 @@
         <div class="max-w-xl">
             <h1 class="text-3xl font-extrabold text-brand-dark tracking-tight mb-2">Pengumuman Kelulusan</h1>
             <p class="text-brand-gray text-[14px] font-medium leading-relaxed">
-                Tentukan dan publikasikan hasil seleksi pendaftar untuk gelombang akademik 2024/2025.
+                Tentukan dan publikasikan hasil seleksi pendaftar untuk gelombang akademik berjalan.
             </p>
         </div>
         
@@ -45,6 +45,14 @@
         </button>
     </div>
 
+    {{-- Alert Notifikasi --}}
+    @if(session('success'))
+        <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-xl flex items-start gap-3">
+            <i data-feather="check-circle" class="w-5 h-5 text-green-600 shrink-0"></i>
+            <p class="text-[13px] font-bold text-green-800">{{ session('success') }}</p>
+        </div>
+    @endif
+
     <div x-show="selected.length > 0" x-transition.opacity class="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl mb-6 flex items-center justify-between shadow-sm" x-cloak>
         <div class="flex items-center gap-6">
             <span class="text-[13px] font-bold text-brand-blue">
@@ -82,7 +90,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-[13px]">
                     @foreach($pengumuman as $p)
-                    <tr x-show="matchesFilter('{{ $p->user->name }}', '{{ $p->id }}', '{{ $p->status_kelulusan ?? 'Belum Ditentukan' }}')" 
+                    <tr x-show="matchesFilter('{{ $p->nama_lengkap }}', '{{ $p->no_pendaftaran }}', '{{ $p->status_kelulusan ?? 'Belum Ditentukan' }}')" 
                         class="hover:bg-gray-50/50 transition-colors">
                         <td class="px-8 py-5">
                             <input type="checkbox" x-model="selected" value="{{ $p->id }}" class="rounded border-gray-300 text-brand-blue">
@@ -90,21 +98,21 @@
                         <td class="px-4 py-5">
                             <div class="flex items-center gap-3">
                                 <div class="w-9 h-9 rounded-full bg-blue-50 text-brand-blue flex items-center justify-center font-black text-[10px]">
-                                    {{ strtoupper(substr($p->user->name, 0, 2)) }}
+                                    {{ strtoupper(substr($p->nama_lengkap, 0, 2)) }}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-brand-dark">{{ $p->user->name }}</span>
-                                    <span class="text-gray-400 text-[11px] font-bold tracking-tight">REG-2024-{{ str_pad($p->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                    <span class="font-bold text-brand-dark">{{ $p->nama_lengkap }}</span>
+                                    <span class="text-gray-400 text-[11px] font-bold tracking-tight">{{ $p->no_pendaftaran }}</span>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-5 font-bold text-gray-500">{{ $p->program_studi ?? 'Informatika' }}</td>
+                        <td class="px-4 py-5 font-bold text-gray-500">{{ $p->pilihan_jurusan_1 ?? '-' }}</td>
                         <td class="px-4 py-5">
                             <span class="px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-blue-50 text-brand-blue">
-                                {{ $p->jalur }}
+                                {{ Str::limit($p->jalur_pendaftaran, 15) }}
                             </span>
                         </td>
-                        <td class="px-4 py-5 font-black text-brand-dark">{{ number_format($p->nilai_seleksi ?? 0, 2) }}</td>
+                        <td class="px-4 py-5 font-black text-brand-dark">{{ number_format($p->nilai_akhir ?? 0, 2) }}</td>
                         <td class="px-4 py-5">
                             @if($p->status_kelulusan == 'Lulus')
                                 <span class="flex items-center gap-2 font-bold text-green-600">
@@ -123,9 +131,9 @@
                         <td class="px-8 py-5 text-center">
                             <button @click="bukaModal({
                                 id: '{{ $p->id }}',
-                                nama: '{{ $p->user->name }}',
-                                prodi: '{{ $p->program_studi }}',
-                                nilai: '{{ number_format($p->nilai_seleksi ?? 0, 2) }}',
+                                nama: '{{ $p->nama_lengkap }}',
+                                prodi: '{{ $p->pilihan_jurusan_1 }}',
+                                nilai: '{{ number_format($p->nilai_akhir ?? 0, 2) }}',
                                 url: '{{ route('admin.update-kelulusan', $p->id) }}'
                             })" class="px-5 py-2.5 bg-brand-blue-light text-brand-blue rounded-xl font-black text-[11px] hover:bg-brand-blue hover:text-white transition-all shadow-sm">
                                 @if(!$p->status_kelulusan || $p->status_kelulusan == 'Belum Ditentukan') Tentukan @else <i data-feather="edit-3" class="w-4 h-4 mx-auto"></i> @endif
@@ -135,6 +143,13 @@
                     @endforeach
                 </tbody>
             </table>
+            
+            @if($pengumuman->isEmpty())
+                <div class="p-10 text-center text-gray-400 font-bold">
+                    <i data-feather="inbox" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
+                    Belum ada pendaftar yang menyelesaikan tahap verifikasi berkas.
+                </div>
+            @endif
         </div>
     </div>
 
@@ -162,12 +177,12 @@
                                 <p class="text-[14px] font-extrabold text-brand-dark" x-text="dataSiswa.nama"></p>
                             </div>
                             <div class="text-right">
-                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Nilai Seleksi</p>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
                                 <p class="text-xl font-black text-brand-blue" x-text="dataSiswa.nilai"></p>
                             </div>
                         </div>
                         <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Program Studi</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pilihan Program Studi</p>
                             <p class="text-[14px] font-extrabold text-brand-dark" x-text="dataSiswa.prodi"></p>
                         </div>
                     </div>
@@ -204,16 +219,15 @@ document.addEventListener('alpine:init', () => {
         modalOpen: false,
         dataSiswa: { id: '', nama: '', prodi: '', nilai: 0, url: '' },
 
-        matchesFilter(nama, id, status) {
+        matchesFilter(nama, no_reg, status) {
             const q = this.searchQuery.toLowerCase();
-            const matchSearch = nama.toLowerCase().includes(q) || id.toLowerCase().includes(q);
+            const matchSearch = nama.toLowerCase().includes(q) || no_reg.toLowerCase().includes(q);
             const matchStatus = this.filterStatus === 'Semua Status' || status === this.filterStatus;
             return matchSearch && matchStatus;
         },
 
         toggleAll() {
             if (this.allSelected) {
-                // Catatan: Bulk action butuh ID dari pendaftar yang tampil saja
                 this.selected = Array.from(document.querySelectorAll('input[type="checkbox"][value]'))
                                      .map(el => el.value);
             } else {

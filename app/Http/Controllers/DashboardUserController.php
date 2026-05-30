@@ -4,253 +4,135 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\DataPendaftar;
-use App\Models\MetodePembayaran; 
-use Carbon\Carbon;
 use App\Models\Prodi;
 
 class DashboardUserController extends Controller
 {
-    public function index() 
+    // ==========================================
+    // 1. DASHBOARD UTAMA
+    // ==========================================
+    public function dashboardUser()
     {
-        $pendaftarId = session('pendaftar_id');
-        if (!$pendaftarId) return redirect('/login')->withErrors(['error' => 'Silakan login terlebih dahulu!']);
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+        if (!$pendaftar) return redirect()->route('login')->withErrors(['error' => 'Silakan login kembali.']);
 
-        $mahasiswa = DataPendaftar::find($pendaftarId);
-        if (!$mahasiswa) return redirect('/login')->withErrors(['error' => 'Data pendaftar tidak ditemukan!']);
-
-        $semuaMetode = MetodePembayaran::where('is_active', true)->get();
-        $bankTransfer   = $semuaMetode->where('kategori', 'Bank Transfer');
-        $virtualAccount = $semuaMetode->where('kategori', 'Virtual Account');
-        $eWallet        = $semuaMetode->where('kategori', 'E-Wallet');
-        
-        $batasWaktu = now()->addDays(1)->format('M d, Y (23:59 \W\I\B)');
-
-        return view('user.pembayaran', compact('mahasiswa', 'bankTransfer', 'virtualAccount', 'eWallet', 'batasWaktu'));
+        return view('user.dashboard-user', compact('pendaftar'));
     }
 
-public function pembayaranIndex()
+    // ==========================================
+    // 2. PEMBAYARAN (STEP 2 & 3)
+    // ==========================================
+    public function pembayaranIndex()
     {
-        // Ambil data pendaftar berdasarkan sesi yang sedang login
-        $pendaftar = \App\Models\DataPendaftar::find(session('pendaftar_id'));
-        
-        if (!$pendaftar) {
-            return redirect('/login')->with('error', 'Sesi Anda telah habis. Silakan login kembali.');
-        }
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+        if (!$pendaftar) return redirect('/login')->with('error', 'Sesi Anda telah habis.');
 
         return view('user.pembayaran', compact('pendaftar'));
     }
 
-    public function prosesPembayaran(Request $request)
-    {
-        $pendaftarId = session('pendaftar_id');
-        $pendaftar = \App\Models\DataPendaftar::find($pendaftarId);
-        
-        // PERBAIKAN: Ganti $user->update jadi $pendaftar->update
-        $pendaftar->update([
-            'metode_pembayaran' => $request->metode_pembayaran, 
-            'nominal_biaya'     => 250000, 
-            'status_pembayaran' => 'Validasi', 
-        ]);
-
-        return redirect()->route('pendaftaran.validasi')->with('success', 'Pembayaran diproses!');
-    }
-
-    public function prosesValidasi(Request $request)
-    {
-        $request->validate(['pendaftar_id' => 'required|exists:data_pendaftars,id']);
-        $pendaftar = \App\Models\DataPendaftar::find($request->pendaftar_id);
-        
-        if ($pendaftar) {
-            $pendaftar->update(['status_pembayaran' => 'Terverifikasi']);
-            return back()->with('success', 'Pembayaran berhasil diverifikasi!');
-        }
-
-        return back()->with('error', 'Data tidak ditemukan.');
-    }
-
-public function dashboardUser()
-{
-    $pendaftar = \App\Models\DataPendaftar::find(session('pendaftar_id'));
-
-    if (!$pendaftar) {
-        return redirect()->route('login')->withErrors(['error' => 'Silakan login kembali.']);
-    }
-
-    // Mengarahkan ke halaman dashboard-user bawaan dengan menyertakan data pendaftar
-    return view('user.dashboard-user', compact('pendaftar'));
-}
-
-    public function validasiUser()
-    {
-        $pendaftar = \App\Models\DataPendaftar::find(session('pendaftar_id'));
-        if (!$pendaftar) return redirect()->route('login')->withErrors(['error' => 'Silakan login kembali.']);
-
-        return view('user.validasi-pembayaran', compact('pendaftar'));
-    }
-
-public function prosesUploadBukti(\Illuminate\Http\Request $request)
+    public function prosesUploadBukti(Request $request)
     {
         $request->validate([
-            'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png|max:2048', // Maksimal 2MB, hanya gambar
+            'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png,pdf|max:2048', 
         ], [
-            'bukti_pembayaran.required' => 'Anda harus memilih file gambar bukti pembayaran.',
-            'bukti_pembayaran.image' => 'File harus berupa gambar (JPG/PNG).',
-            'bukti_pembayaran.max' => 'Ukuran gambar maksimal adalah 2MB.'
+            'bukti_pembayaran.required' => 'File bukti pembayaran wajib diisi.',
+            'bukti_pembayaran.max' => 'Ukuran file maksimal 2MB.'
         ]);
 
-        $pendaftar = \App\Models\DataPendaftar::find(session('pendaftar_id'));
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+
+        // Simpan nama bank/qris yang dipilih
+        if ($request->filled('metode_pembayaran')) {
+            $pendaftar->metode_pembayaran = $request->metode_pembayaran;
+        }
 
         if ($request->hasFile('bukti_pembayaran')) {
             $file = $request->file('bukti_pembayaran');
+            $filename = $pendaftar->id . '_' . time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
             
-            // Buat nama file unik: ID-Pendaftar_Timestamp_NamaAsli
-            $filename = $pendaftar->id . '_' . time() . '_' . $file->getClientOriginalName();
-            
-            // Simpan ke folder public/uploads/bukti_bayar
             $file->move(public_path('uploads/bukti_bayar'), $filename);
             
-            // Update database
             $pendaftar->bukti_pembayaran = $filename;
             $pendaftar->status_pembayaran = 'Menunggu Validasi';
-            $pendaftar->save();
         }
 
+        $pendaftar->save();
         return back()->with('success', 'Bukti pembayaran berhasil diunggah! Harap tunggu proses validasi oleh Admin.');
     }
 
+    // ==========================================
+    // 3. BIODATA & DOKUMEN (STEP 4)
+    // ==========================================
     public function biodataIndex()
     {
-        $pendaftarId = session('pendaftar_id');
-        $pendaftar = \App\Models\DataPendaftar::find($pendaftarId);
-
-        if (!$pendaftar) {
-            return redirect('/login');
-        }
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+        if (!$pendaftar) return redirect('/login');
 
         if (strtolower($pendaftar->status_pembayaran) !== 'terverifikasi') {
-            return redirect()->route('pembayaran.index')->with('error', 'Status pembayaran belum terverifikasi.');
+            return redirect()->route('pembayaran.index')->with('error', 'Selesaikan pembayaran terlebih dahulu.');
         }
 
-        // PERBAIKAN: Menghapus spasi pada Prodi::all()
-        $prodis = \App\Models\Prodi::all(); 
+        $prodis = Prodi::all(); 
         return view('user.formulir', compact('pendaftar', 'prodis')); 
     }
 
-public function simpanBiodata(Request $request)
+    public function simpanBiodata(Request $request)
     {
-        // 1. CARI PENDAFTAR BERDASARKAN ID YANG DIKIRIM DARI FORM
-        $pendaftar = \App\Models\DataPendaftar::findOrFail($request->pendaftar_id);
+        $pendaftar = DataPendaftar::findOrFail($request->pendaftar_id);
 
-        // 2. Validasi
         $request->validate([
             'nama_lengkap'      => 'required|string|max:255',
             'nik'               => 'required|string|max:20',
             'gender'            => 'required',
             'pilihan_jurusan_1' => 'required|string',
             'pilihan_jurusan_2' => 'required|string|different:pilihan_jurusan_1',
-            'provinsi'          => 'required|string',
-            'kota_kabupaten'    => 'required|string',
             'pas_foto'          => ($pendaftar->pas_foto ? 'nullable' : 'required') . '|file|image|max:2048',
             'scan_ktp'          => ($pendaftar->scan_ktp ? 'nullable' : 'required') . '|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'ijazah_skl'        => ($pendaftar->ijazah_skl ? 'nullable' : 'required') . '|file|mimes:pdf,jpg,png|max:2048',
         ]);
 
-        // 3. Simpan SEMUA teks ke database
-        $pendaftar->update([
-            'nama_lengkap'      => $request->nama_lengkap,
-            'nik'               => $request->nik,
-            'agama'             => $request->agama,
-            'tempat_lahir'      => $request->tempat_lahir,
-            'tanggal_lahir'     => $request->tanggal_lahir,
-            'gender'            => $request->gender,
-            'email'             => $request->email,
-            'no_whatsapp'       => $request->no_whatsapp,
-            'alamat_rumah'      => $request->alamat_rumah,
-            'provinsi'          => $request->provinsi,
-            'kota_kabupaten'    => $request->kota_kabupaten,
-            'sekolah_asal'      => $request->sekolah_asal,
-            'jurusan_sma'       => $request->jurusan_sma,
-            'tahun_lulus'       => $request->tahun_lulus,
-            'nilai_akhir'       => $request->nilai_akhir,
-            'pilihan_jurusan_1' => $request->pilihan_jurusan_1,
-            'pilihan_jurusan_2' => $request->pilihan_jurusan_2,
-        ]);
+        $pendaftar->update($request->except(['_token', 'pas_foto', 'scan_ktp', 'ijazah_skl']));
 
-        // 4. Simpan file HANYA JIKA user mengunggah file baru
-        if ($request->hasFile('pas_foto')) {
-            $pendaftar->update(['pas_foto' => $request->file('pas_foto')->store('dokumen/foto', 'public')]);
-        }
-        if ($request->hasFile('scan_ktp')) {
-            $pendaftar->update(['scan_ktp' => $request->file('scan_ktp')->store('dokumen/ktp', 'public')]);
-        }
-        if ($request->hasFile('ijazah_skl')) {
-            $pendaftar->update(['ijazah_skl' => $request->file('ijazah_skl')->store('dokumen/ijazah', 'public')]);
-        }
+        if ($request->hasFile('pas_foto'))   $pendaftar->update(['pas_foto' => $request->file('pas_foto')->store('dokumen/foto', 'public')]);
+        if ($request->hasFile('scan_ktp'))   $pendaftar->update(['scan_ktp' => $request->file('scan_ktp')->store('dokumen/ktp', 'public')]);
+        if ($request->hasFile('ijazah_skl')) $pendaftar->update(['ijazah_skl' => $request->file('ijazah_skl')->store('dokumen/ijazah', 'public')]);
 
-        // Lanjut ke Konfirmasi
-        return redirect()->route('konfirmasi-data', $pendaftar->id)->with('success', 'Data tersimpan!');
+        return redirect()->route('konfirmasi-data', $pendaftar->id)->with('success', 'Data biodata berhasil tersimpan!');
     }
 
+    // ==========================================
+    // 4. KONFIRMASI (STEP 5)
+    // ==========================================
     public function tampilkanKonfirmasi($id)
     {
-        $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
-
-        if (!$pendaftar) {
-            return redirect()->route('pendaftaran.biodata')->with('error', 'Silakan lengkapi biodata terlebih dahulu.');
-        }
-
+        $pendaftar = DataPendaftar::findOrFail($id);
+        if ($pendaftar->id != session('pendaftar_id')) abort(403);
         return view('user.konfirmasi-data', compact('pendaftar'));
-    }
-
-// FUNGSI UNTUK MENAMPILKAN HALAMAN EDIT (Memperbaiki View Not Found)
-    public function editBiodata($id)
-    {
-        $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
-        $prodis = \App\Models\Prodi::all();
-        
-        // Arahkan kembali ke halaman formulir, namun dengan membawa data lama
-        return view('user.formulir', compact('pendaftar', 'prodis'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
-
-        $request->validate([
-            'nama_lengkap' => 'required',
-            'nik'          => 'required|unique:data_pendaftars,nik,' . $pendaftar->id, 
-        ]);
-
-        $pendaftar->update($request->all());
-
-        return redirect()->route('konfirmasi-data', ['id' => $pendaftar->id])
-                         ->with('success', 'Data berhasil diperbarui!');
-    } 
-
-    public function tampilkanValidasiAkhir($id)
-    {
-        $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
-        return view('user.validasi-akhir', compact('pendaftar'));
     }
 
     public function prosesKonfirmasi($id)
     {
-        $pendaftar = \App\Models\DataPendaftar::findOrFail($id);
+        $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->status_pendaftaran = 'menunggu verifikasi'; 
         $pendaftar->save();
 
         return redirect()->route('pendaftaran.validasiakhir', ['id' => $id]);
     }
 
+    // ==========================================
+    // 5. VALIDASI AKHIR & HASIL (STEP 6 & 7)
+    // ==========================================
+    public function tampilkanValidasiAkhir($id)
+    {
+        $pendaftar = DataPendaftar::findOrFail($id);
+        if ($pendaftar->id != session('pendaftar_id')) abort(403);
+        return view('user.validasi-akhir', compact('pendaftar'));
+    }
+
     public function tampilkanSukses()
     {
-        $pendaftarId = session('pendaftar_id');
-        $pendaftar = \App\Models\DataPendaftar::find($pendaftarId);
-
-        if (!$pendaftar) {
-            return redirect()->route('dashboard')->with('error', 'Data pendaftaran tidak ditemukan.');
-        }
-        
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+        if (!$pendaftar) return redirect()->route('dashboard')->with('error', 'Data tidak ditemukan.');
         return view('user.sukses', compact('pendaftar'));
     }
 }

@@ -78,8 +78,7 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
     
     // Pembayaran & Daftar Ulang
     Route::get('/validasi-pembayaran', [AdminPendaftarController::class, 'validasiPembayaranIndex'])->name('pembayaran');
-    Route::post('/proses-validasi', [DashboardUserController::class, 'prosesValidasi'])->name('proses.validasi');
-    Route::get('/validasi-daftar-ulang', [AdminPendaftarController::class, 'daftarUlangIndex'])->name('validasi.daftarulang');
+    Route::post('/setujui-pembayaran/{id}', [AdminPendaftarController::class, 'setujuiPembayaran'])->name('setujui.pembayaran');    Route::get('/validasi-daftar-ulang', [AdminPendaftarController::class, 'daftarUlangIndex'])->name('validasi.daftarulang');
     Route::post('/setujui-daftar-ulang/{id}', [AdminPendaftarController::class, 'setujuiDaftarUlang'])->name('setujui-daftar-ulang');
     Route::post('/revisi-daftar-ulang/{id}', [AdminPendaftarController::class, 'revisiDaftarUlang'])->name('revisi-daftar-ulang');
 
