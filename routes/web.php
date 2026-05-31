@@ -107,7 +107,10 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
     Route::get('/berita', [AdminBeritaController::class, 'index'])->name('berita.index');
     Route::get('/berita/create', [AdminBeritaController::class, 'create'])->name('berita.create');
     Route::post('/berita/store', [AdminBeritaController::class, 'store'])->name('berita.store');
-    
+    Route::get('/berita/{id}/edit', [AdminBeritaController::class, 'edit'])->name('berita.edit');
+    Route::put('/berita/{id}', [AdminBeritaController::class, 'update'])->name('berita.update');
+    Route::delete('/berita/{id}', [AdminBeritaController::class, 'destroy'])->name('berita.destroy');
+
     // ------------------------------------------
     // KELOLA FAQ (PUSAT BANTUAN)
     // ------------------------------------------

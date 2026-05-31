@@ -373,9 +373,9 @@
                         <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-adzkia-blue text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-widest z-10">
                             {{ $item->kategori ?? 'Informasi' }}
                         </div>
-                        <img src="{{ $item->gambar ? asset('storage/' . $item->gambar) : 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=500' }}" 
-                             alt="{{ $item->judul }}" 
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="{{ $item->thumbnail ? asset('uploads/berita/' . $item->thumbnail) : 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=500' }}" 
+                            alt="{{ $item->judul }}" 
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     </div>
                     <div class="p-6 flex flex-col flex-grow">
                         <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-3">

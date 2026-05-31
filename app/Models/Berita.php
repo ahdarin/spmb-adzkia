@@ -9,13 +9,14 @@ class Berita extends Model
 {
     use HasFactory;
 
-    protected $table = 'beritas'; // Pastikan nama tabel di PHPMyAdmin memang 'beritas'
+    protected $table = 'beritas'; 
 
     protected $fillable = [
         'judul', 
-        'kategori', 
+        'kategori',
+        'slug', // <--- Tambahkan ini
         'ringkasan', 
-        'isi', 
+        'konten', // <--- Ubah 'isi' menjadi 'konten'
         'status', 
         'thumbnail', 
         'tanggal_publish'

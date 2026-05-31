@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
 @section('admin-content')
-<form action="{{ route('admin.berita.store') }}" method="POST" enctype="multipart/form-data" x-data="beritaEditor()">
+<form action="{{ route('admin.berita.update', $berita->id) }}" method="POST" enctype="multipart/form-data" 
+      x-data="beritaEditor(`{!! addslashes($berita->isi) !!}`, `{{ $berita->thumbnail ? asset('uploads/berita/' . $berita->thumbnail) : '' }}`)">
     @csrf
-    
-    <input type="hidden" name="status" x-model="status">
+    @method('PUT') <input type="hidden" name="status" x-model="status">
 
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
@@ -16,7 +16,7 @@
                 <i data-feather="chevron-right" class="w-3 h-3"></i>
                 <a href="/admin/berita" class="hover:text-brand-dark transition-colors">Manajemen Berita</a>
                 <i data-feather="chevron-right" class="w-3 h-3"></i>
-                <span class="text-brand-dark">Tambah Berita</span>
+                <span class="text-brand-dark">Edit Berita</span>
             </div>
         </div>
         <button type="button" @click="previewArticle()" class="flex items-center gap-2 px-5 py-2.5 bg-brand-blue-light text-brand-blue rounded-xl font-bold text-[12px] hover:bg-blue-100 transition-all shadow-sm">
@@ -30,8 +30,7 @@
             
             <div>
                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Judul Berita</label>
-                <textarea name="judul" rows="2" placeholder="Masukkan judul artikel yang menarik..." required
-                          class="w-full bg-white border border-gray-100 rounded-3xl p-6 text-3xl font-extrabold text-brand-dark placeholder-gray-300 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm"></textarea>
+                <textarea name="judul" rows="2" required class="w-full bg-white border border-gray-100 rounded-3xl p-6 text-3xl font-extrabold text-brand-dark placeholder-gray-300 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm">{{ old('judul', $berita->judul) }}</textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-6">
@@ -39,9 +38,9 @@
                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Kategori</label>
                     <div class="relative">
                         <select name="kategori" required class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 appearance-none shadow-sm">
-                            <option value="Akademik">Akademik</option>
-                            <option value="Beasiswa">Beasiswa</option>
-                            <option value="Kegiatan">Kegiatan</option>
+                            <option value="Akademik" {{ $berita->kategori == 'Akademik' ? 'selected' : '' }}>Akademik</option>
+                            <option value="Beasiswa" {{ $berita->kategori == 'Beasiswa' ? 'selected' : '' }}>Beasiswa</option>
+                            <option value="Kegiatan" {{ $berita->kategori == 'Kegiatan' ? 'selected' : '' }}>Kegiatan</option>
                         </select>
                         <i data-feather="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
                     </div>
@@ -49,19 +48,18 @@
                 <div>
                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Jadwal Publikasi</label>
                     <div class="relative">
-                        <input type="datetime-local" name="tanggal_publish" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 shadow-sm cursor-pointer">
+                        <input type="datetime-local" name="tanggal_publish" value="{{ $berita->tanggal_publish ? \Carbon\Carbon::parse($berita->tanggal_publish)->format('Y-m-d\TH:i') : '' }}" class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 shadow-sm cursor-pointer">
                     </div>
                 </div>
             </div>
 
             <div>
                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Ringkasan Artikel</label>
-                <textarea name="ringkasan" rows="3" placeholder="Berikan deskripsi singkat untuk menarik minat pembaca..." required
-                          class="w-full bg-gray-50/80 border border-gray-100 rounded-3xl p-5 text-[14px] font-medium text-brand-dark placeholder-gray-400 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm"></textarea>
+                <textarea name="ringkasan" rows="3" required class="w-full bg-gray-50/80 border border-gray-100 rounded-3xl p-5 text-[14px] font-medium text-brand-dark placeholder-gray-400 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm">{{ old('ringkasan', $berita->ringkasan) }}</textarea>
             </div>
 
             <div>
-                <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Thumbnail Berita</label>
+                <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Thumbnail Berita (Abaikan jika tidak diganti)</label>
                 <label class="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-200 rounded-[2rem] bg-gray-50/50 hover:bg-gray-50 hover:border-brand-blue transition-all group overflow-hidden cursor-pointer">
                     
                     <input type="file" name="thumbnail" accept="image/*" @change="fileChosen" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
@@ -70,8 +68,8 @@
                         <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-dark mb-4 group-hover:scale-110 transition-transform">
                             <i data-feather="image" class="w-5 h-5"></i>
                         </div>
-                        <h4 class="font-extrabold text-brand-dark text-[15px] mb-1">Unggah Foto Utama</h4>
-                        <p class="text-[12px] font-medium text-gray-400 px-4">Rasio 16:9 disarankan.<br>Maksimal ukuran file 5MB (JPG, PNG).</p>
+                        <h4 class="font-extrabold text-brand-dark text-[15px] mb-1">Ganti Foto Utama</h4>
+                        <p class="text-[12px] font-medium text-gray-400 px-4">Klik untuk mengunggah gambar baru.<br>Maksimal ukuran file 5MB.</p>
                     </div>
 
                     <template x-if="imageUrl">
@@ -83,7 +81,6 @@
             <div>
                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Konten Artikel (Mendukung Format HTML)</label>
                 <div class="bg-white border border-gray-100 rounded-[2rem] shadow-sm overflow-hidden flex flex-col min-h-[400px]">
-                    
                     <div class="bg-gray-50/80 p-4 border-b border-gray-100 flex items-center gap-4 flex-wrap">
                         <div class="flex items-center gap-1">
                             <button type="button" @click="insertTag('h1')" class="px-3 py-1.5 rounded-lg text-[13px] font-black text-brand-dark hover:bg-white shadow-sm transition-colors">H1</button>
@@ -106,8 +103,9 @@
                             <button type="button" @click="insertTag('img')" class="p-2 rounded-lg text-gray-500 hover:bg-white transition-colors"><i data-feather="image" class="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    
-                    <textarea x-ref="editor" x-model="konten" name="konten" required class="w-full flex-1 p-8 outline-none resize-none text-[15px] font-medium text-brand-dark placeholder-gray-400 leading-relaxed" placeholder="Ketik konten artikel di sini. Blok teks lalu tekan tombol di atas untuk menebalkan (Bold) atau mengubah menjadi judul (H1)..."></textarea>
+                    <textarea x-ref="editor" x-model="konten" name="konten" required class="w-full flex-1 p-8 outline-none resize-none text-[15px] font-medium text-brand-dark placeholder-gray-400 leading-relaxed" placeholder="Mulai menulis di sini...">
+                        {{ old('konten', $berita->isi) }}
+                    </textarea>
                 </div>
             </div>
 
@@ -123,10 +121,10 @@
 
                 <div class="space-y-3">
                     <button type="submit" @click="status = 'Published'" class="w-full py-3.5 bg-brand-dark text-white rounded-xl font-black text-[13px] hover:bg-brand-blue transition-all shadow-md shadow-brand-dark/20">
-                        Publish Sekarang
+                        Update Berita
                     </button>
                     <button type="submit" @click="status = 'Draft'" class="w-full py-3.5 bg-gray-200 text-brand-dark rounded-xl font-black text-[13px] hover:bg-gray-300 transition-all">
-                        Simpan sebagai Draft
+                        Ubah jadi Draft
                     </button>
                 </div>
             </div>
@@ -134,8 +132,8 @@
             <div class="bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] shadow-sm">
                 <h3 class="text-[14px] font-extrabold text-brand-dark mb-5">Pengaturan SEO</h3>
                 <div class="mb-5">
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Permalink (Otomatis)</label>
-                    <input type="text" value="/berita/judul-artikel" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-brand-blue text-[12px] font-mono text-gray-500 shadow-sm" readonly>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Permalink</label>
+                    <input type="text" value="/berita/{{ $berita->slug }}" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-brand-blue text-[12px] font-mono text-gray-500 shadow-sm" readonly>
                 </div>
             </div>
 
@@ -146,12 +144,12 @@
 
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('beritaEditor', () => ({
-        status: 'Published',
-        imageUrl: null,
-        konten: '',
+    // Menerima data konten dan gambar dari Laravel ke dalam Alpine.js
+    Alpine.data('beritaEditor', (initialKonten, initialImage) => ({
+        status: '{{ $berita->status ?? "Published" }}',
+        imageUrl: initialImage,
+        konten: initialKonten,
 
-        // Fungsi Preview Gambar Upload
         fileChosen(event) {
             const file = event.target.files[0];
             if (file) {
@@ -163,7 +161,6 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Fungsi Memasukkan Tag HTML ke dalam Textarea
         insertTag(tag) {
             const textarea = this.$refs.editor;
             const start = textarea.selectionStart;
@@ -181,7 +178,7 @@ document.addEventListener('alpine:init', () => {
                 case 'u': formatted = `<u>${selectedText || 'Teks Garis Bawah'}</u>`; break;
                 case 'ul': formatted = `<ul>\n  <li>${selectedText || 'List Item'}</li>\n</ul>`; break;
                 case 'link': 
-                    const url = prompt('Masukkan URL Link (Contoh: https://google.com):');
+                    const url = prompt('Masukkan URL Link:');
                     if(url) formatted = `<a href="${url}" target="_blank" style="color: blue; text-decoration: underline;">${selectedText || 'Klik di sini'}</a>`;
                     else return;
                     break;
@@ -192,13 +189,9 @@ document.addEventListener('alpine:init', () => {
                     break;
             }
 
-            // Ganti teks di dalam textarea
             this.konten = text.substring(0, start) + formatted + text.substring(end);
             
-            // Kembalikan kursor ke dalam textarea
-            setTimeout(() => {
-                textarea.focus();
-            }, 50);
+            setTimeout(() => { textarea.focus(); }, 50);
         },
 
         previewArticle() {
@@ -208,10 +201,9 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 
-{{-- Render Feather Icons ulang --}}
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { if (typeof feather !== 'undefined') feather.replace(); }, 50);
     });
 </script>
-@endsection 
+@endsection

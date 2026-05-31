@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Berita;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File; // Wajib ditambahkan untuk menghapus file gambar lama
 
 class AdminBeritaController extends Controller
 {
@@ -21,7 +22,6 @@ class AdminBeritaController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi
         $request->validate([
             'judul' => 'required|string|max:255',
             'kategori' => 'required',
@@ -29,28 +29,84 @@ class AdminBeritaController extends Controller
             'thumbnail' => 'nullable|image|mimes:jpg,png,jpeg|max:5120',
         ]);
 
-        // 2. Handle Upload Gambar
         $fileName = null;
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
             $fileName = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
-            
-            // Pastikan folder public/uploads/berita sudah dibuat ya!
             $file->move(public_path('uploads/berita'), $fileName);
         }
 
-        // 3. Simpan ke Database
-        // Sesuai struktur PHPMyAdmin kamu: id, judul, kategori, ringkasan, isi, status, thumbnail, tanggal_publish
         Berita::create([
             'judul'           => $request->judul,
             'kategori'        => $request->kategori,
+            'slug'            => Str::slug($request->judul), // <--- Tambahkan baris ini (Membuat URL otomatis dari judul)
             'ringkasan'       => $request->ringkasan, 
-            'isi'             => $request->konten, // Mengambil 'konten' dari form, simpan ke 'isi' di DB
+            'konten'          => $request->konten, // <--- Ubah 'isi' menjadi 'konten'
             'status'          => $request->status ?? 'Published',
             'thumbnail'       => $fileName,
             'tanggal_publish' => $request->tanggal_publish ?? now(),
         ]);
 
         return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil diterbitkan!');
+    }
+
+    // FUNGSI EDIT
+    public function edit($id)
+    {
+        $berita = Berita::findOrFail($id);
+        return view('admin.berita-edit', compact('berita'));
+    }
+
+    // FUNGSI UPDATE
+    public function update(Request $request, $id)
+    {
+        $berita = Berita::findOrFail($id);
+
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'kategori' => 'required',
+            'konten' => 'required',
+            'thumbnail' => 'nullable|image|mimes:jpg,png,jpeg|max:5120',
+            
+        ]);
+
+        $data = [
+            'judul'     => $request->judul,
+            'kategori'  => $request->kategori,
+            'slug'      => Str::slug($request->judul), // <--- Tambahkan baris ini
+            'ringkasan' => $request->ringkasan,
+            'konten'    => $request->konten, // <--- Ubah 'isi' menjadi 'konten'
+        ];
+
+        // Jika ada gambar baru yang diupload
+        if ($request->hasFile('thumbnail')) {
+            // Hapus gambar lama dari folder public/uploads/berita
+            if ($berita->thumbnail && File::exists(public_path('uploads/berita/' . $berita->thumbnail))) {
+                File::delete(public_path('uploads/berita/' . $berita->thumbnail));
+            }
+
+            // Simpan gambar baru
+            $file = $request->file('thumbnail');
+            $fileName = time() . '_' . Str::slug($request->judul) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/berita'), $fileName);
+            $data['thumbnail'] = $fileName;
+        }
+
+        $berita->update($data);
+        return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil diperbarui!');
+    }
+
+    // FUNGSI DELETE
+    public function destroy($id)
+    {
+        $berita = Berita::findOrFail($id);
+
+        // Hapus file fisik gambar
+        if ($berita->thumbnail && File::exists(public_path('uploads/berita/' . $berita->thumbnail))) {
+            File::delete(public_path('uploads/berita/' . $berita->thumbnail));
+        }
+
+        $berita->delete();
+        return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil dihapus!');
     }
 }
