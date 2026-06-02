@@ -2,24 +2,24 @@
 
 @section('admin-content')
 <form action="{{ route('admin.berita.update', $berita->id) }}" method="POST" enctype="multipart/form-data" 
-      x-data="beritaEditor(`{!! addslashes($berita->isi) !!}`, `{{ $berita->thumbnail ? asset('uploads/berita/' . $berita->thumbnail) : '' }}`)">
+      x-data="beritaEditor(@js(old('konten', $berita->konten)), '{{ $berita->thumbnail ? asset('uploads/berita/' . $berita->thumbnail) : '' }}')">
     @csrf
-    @method('PUT') <input type="hidden" name="status" x-model="status">
+    @method('PUT') 
 
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
-            <a href="/admin/berita" class="p-2 bg-white border border-gray-200 rounded-full text-brand-dark hover:bg-gray-50 transition-colors shadow-sm">
+            <a href="{{ route('admin.berita.index') }}" class="p-2 bg-white border border-gray-200 rounded-full text-brand-dark hover:bg-gray-50 transition-colors shadow-sm">
                 <i data-feather="arrow-left" class="w-5 h-5"></i>
             </a>
             <div class="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-gray-400">
-                <a href="/admin" class="hover:text-brand-dark transition-colors">Dashboard</a>
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-brand-dark transition-colors">Dashboard</a>
                 <i data-feather="chevron-right" class="w-3 h-3"></i>
-                <a href="/admin/berita" class="hover:text-brand-dark transition-colors">Manajemen Berita</a>
+                <a href="{{ route('admin.berita.index') }}" class="hover:text-brand-dark transition-colors">Manajemen Berita</a>
                 <i data-feather="chevron-right" class="w-3 h-3"></i>
                 <span class="text-brand-dark">Edit Berita</span>
             </div>
         </div>
-        <button type="button" @click="previewArticle()" class="flex items-center gap-2 px-5 py-2.5 bg-brand-blue-light text-brand-blue rounded-xl font-bold text-[12px] hover:bg-blue-100 transition-all shadow-sm">
+        <button type="button" @click="showPreview = true" class="flex items-center gap-2 px-5 py-2.5 bg-brand-blue-light text-brand-blue rounded-xl font-bold text-[12px] hover:bg-blue-100 transition-all shadow-sm">
             <i data-feather="eye" class="w-4 h-4"></i> Preview Artikel
         </button>
     </div>
@@ -30,17 +30,18 @@
             
             <div>
                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Judul Berita</label>
-                <textarea name="judul" rows="2" required class="w-full bg-white border border-gray-100 rounded-3xl p-6 text-3xl font-extrabold text-brand-dark placeholder-gray-300 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm">{{ old('judul', $berita->judul) }}</textarea>
+                <textarea x-ref="judul" name="judul" rows="2" required class="w-full bg-white border border-gray-100 rounded-3xl p-6 text-3xl font-extrabold text-brand-dark placeholder-gray-300 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm">{{ old('judul', $berita->judul) }}</textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-6">
                 <div>
                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Kategori</label>
                     <div class="relative">
-                        <select name="kategori" required class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 appearance-none shadow-sm">
+                        <select x-ref="kategori" name="kategori" required class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 appearance-none shadow-sm">
                             <option value="Akademik" {{ $berita->kategori == 'Akademik' ? 'selected' : '' }}>Akademik</option>
                             <option value="Beasiswa" {{ $berita->kategori == 'Beasiswa' ? 'selected' : '' }}>Beasiswa</option>
                             <option value="Kegiatan" {{ $berita->kategori == 'Kegiatan' ? 'selected' : '' }}>Kegiatan</option>
+                            <option value="Informasi" {{ $berita->kategori == 'Informasi' ? 'selected' : '' }}>Informasi</option>
                         </select>
                         <i data-feather="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
                     </div>
@@ -103,9 +104,8 @@
                             <button type="button" @click="insertTag('img')" class="p-2 rounded-lg text-gray-500 hover:bg-white transition-colors"><i data-feather="image" class="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    <textarea x-ref="editor" x-model="konten" name="konten" required class="w-full flex-1 p-8 outline-none resize-none text-[15px] font-medium text-brand-dark placeholder-gray-400 leading-relaxed" placeholder="Mulai menulis di sini...">
-                        {{ old('konten', $berita->isi) }}
-                    </textarea>
+                    
+                    <textarea x-ref="editor" x-model="konten" name="konten" required class="w-full flex-1 p-8 outline-none resize-none text-[15px] font-medium text-brand-dark placeholder-gray-400 leading-relaxed" placeholder="Mulai menulis di sini..."></textarea>
                 </div>
             </div>
 
@@ -115,16 +115,16 @@
             
             <div class="bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] shadow-sm">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-[14px] font-extrabold text-brand-dark">Publikasi</h3>
-                    <span class="px-3 py-1 bg-brand-blue-light text-brand-blue rounded-full text-[9px] font-black uppercase tracking-widest" x-text="status"></span>
+                    <h3 class="text-[14px] font-extrabold text-brand-dark">Status Publikasi</h3>
+                    <span class="px-3 py-1 bg-brand-blue-light text-brand-blue rounded-full text-[9px] font-black uppercase tracking-widest">{{ $berita->status }}</span>
                 </div>
 
                 <div class="space-y-3">
-                    <button type="submit" @click="status = 'Published'" class="w-full py-3.5 bg-brand-dark text-white rounded-xl font-black text-[13px] hover:bg-brand-blue transition-all shadow-md shadow-brand-dark/20">
-                        Update Berita
+                    <button type="submit" name="status" value="Published" class="w-full py-3.5 bg-brand-dark text-white rounded-xl font-black text-[13px] hover:bg-brand-blue transition-all shadow-md shadow-brand-dark/20">
+                        Update & Publish
                     </button>
-                    <button type="submit" @click="status = 'Draft'" class="w-full py-3.5 bg-gray-200 text-brand-dark rounded-xl font-black text-[13px] hover:bg-gray-300 transition-all">
-                        Ubah jadi Draft
+                    <button type="submit" name="status" value="Draft" class="w-full py-3.5 bg-gray-200 text-brand-dark rounded-xl font-black text-[13px] hover:bg-gray-300 transition-all">
+                        Simpan sebagai Draft
                     </button>
                 </div>
             </div>
@@ -140,23 +140,39 @@
         </div>
 
     </div>
+
+    <div x-show="showPreview" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-brand-dark/80 backdrop-blur-sm" x-cloak>
+        <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-y-auto p-10 relative">
+            <button @click="showPreview = false" type="button" class="absolute top-6 right-6 p-2 bg-gray-100 rounded-full hover:bg-red-500 hover:text-white transition-colors">
+                <i data-feather="x"></i>
+            </button>
+            
+            <span class="px-3 py-1 bg-brand-blue-light text-brand-blue rounded-lg text-[10px] font-black uppercase tracking-widest" x-text="$refs.kategori.value || 'Kategori'"></span>
+            
+            <h1 class="text-4xl font-black text-brand-dark mt-4 mb-8 leading-tight" x-text="$refs.judul.value || 'Judul Belum Diisi'"></h1>
+            
+            <template x-if="imageUrl">
+                <img :src="imageUrl" class="w-full h-auto max-h-[400px] object-cover rounded-2xl mb-8 border border-gray-100">
+            </template>
+            
+            <div class="prose max-w-none text-gray-700 leading-relaxed font-medium" x-html="konten || '<i>Konten masih kosong...</i>'"></div>
+        </div>
+    </div>
 </form>
 
 <script>
 document.addEventListener('alpine:init', () => {
-    // Menerima data konten dan gambar dari Laravel ke dalam Alpine.js
+    // PERUBAHAN DI SINI: Menerima inisialisasi konten
     Alpine.data('beritaEditor', (initialKonten, initialImage) => ({
-        status: '{{ $berita->status ?? "Published" }}',
+        showPreview: false,
         imageUrl: initialImage,
-        konten: initialKonten,
+        konten: initialKonten || '',
 
         fileChosen(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.imageUrl = e.target.result;
-                };
+                reader.onload = (e) => { this.imageUrl = e.target.result; };
                 reader.readAsDataURL(file);
             }
         },
@@ -180,22 +196,17 @@ document.addEventListener('alpine:init', () => {
                 case 'link': 
                     const url = prompt('Masukkan URL Link:');
                     if(url) formatted = `<a href="${url}" target="_blank" style="color: blue; text-decoration: underline;">${selectedText || 'Klik di sini'}</a>`;
-                    else return;
                     break;
                 case 'img': 
                     const imgUrl = prompt('Masukkan URL Gambar dari Web:');
                     if(imgUrl) formatted = `<br><img src="${imgUrl}" alt="image" style="width: 100%; border-radius: 12px; margin-top: 15px; margin-bottom: 15px;"><br>`;
-                    else return;
                     break;
             }
 
-            this.konten = text.substring(0, start) + formatted + text.substring(end);
-            
+            if(formatted) {
+                this.konten = text.substring(0, start) + formatted + text.substring(end);
+            }
             setTimeout(() => { textarea.focus(); }, 50);
-        },
-
-        previewArticle() {
-            alert('Fitur Preview Berhasil! Nanti kita akan buat sistem membuka Tab Baru untuk melihat hasil artikelnya ya.');
         }
     }));
 });

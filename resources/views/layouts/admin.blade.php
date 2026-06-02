@@ -143,7 +143,7 @@
             </a>
             <a href="/admin/settings" @class(['flex items-center gap-3 px-4 py-3 font-bold rounded-xl transition-all relative', 'bg-brand-blue-light text-brand-blue' => request()->is('admin/settings*'), 'text-brand-gray hover:bg-gray-50' => !request()->is('admin/settings*')])>
                 <span class="flex items-center justify-center"><i data-feather="settings" class="w-5 h-5"></i></span>
-                <span class="text-[14px]">Settings</span>
+                <span class="text-[14px]">Pengaturan</span>
             </a>
             @endif
         </nav>

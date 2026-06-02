@@ -16,21 +16,37 @@ use App\Http\Middleware\CheckRole;
 // 1. HALAMAN UTAMA & PUBLIK
 // ==========================================
     Route::get('/', function () { 
-    // Menggunakan \App\Models\ secara langsung agar Laravel tidak kebingungan
-    $prodis = \App\Models\Prodi::take(3)->get();
-    $beritas = \App\Models\Berita::latest()->take(3)->get();
-    $faqs = \App\Models\Faq::take(5)->get();
-    
-    return view('dashboard', compact('prodis', 'beritas', 'faqs')); 
+        $prodis = \App\Models\Prodi::take(3)->get();
+        // Hanya ambil berita yang "Published" untuk halaman depan
+        $beritas = \App\Models\Berita::where('status', 'Published')->latest()->take(3)->get();
+        $faqs = \App\Models\Faq::take(5)->get();
+        
+        return view('dashboard', compact('prodis', 'beritas', 'faqs')); 
     });
 
     Route::get('/program-studi', function () { return view('prodi'); });
-    Route::get('/berita', function () { return view('berita'); });
+    
+    // --- RUTE INI SEBELUMNYA HILANG, SEKARANG SUDAH DIKEMBALIKAN ---
+    Route::get('/berita', function () { 
+        // Mengambil semua berita yang statusnya Published
+        $beritas = \App\Models\Berita::where('status', 'Published')->latest()->get();
+        return view('berita', compact('beritas')); 
+    });
+    // -----------------------------------------------------------------
 
-    // ==========================================
-    // 2. GUEST AREA (Hanya bisa diakses jika BELUM login)
-    // ==========================================
-    Route::middleware('guest')->group(function () {
+    Route::get('/berita/{slug}', function ($slug) { 
+        $berita = \App\Models\Berita::where('slug', $slug)->firstOrFail();
+        return view('berita-detail', compact('berita')); 
+    });
+    Route::get('/rekomendasi/mulai', function () { return view('user.rekomendasi-start'); }); 
+    Route::get('/rekomendasi/kuesioner', function () { return view('user.kuesioner'); });
+    Route::get('/rekomendasi/hasil', function () { return view('user.hasil-rekomendasi'); });
+
+
+// ==========================================
+// 2. GUEST AREA (Hanya bisa diakses jika BELUM login)
+// ==========================================
+Route::middleware('guest')->group(function () {
     Route::get('/login', function () { return view('login'); })->name('login');
     Route::get('/login-admin', function () { return view('login-admin'); });
     
@@ -71,10 +87,6 @@ Route::middleware([CheckRole::class.':user'])->group(function () {
     Route::get('/validasi-akhir/{id}', [DashboardUserController::class, 'tampilkanValidasiAkhir'])->name('pendaftaran.validasiakhir');
     Route::get('/sukses', [DashboardUserController::class, 'tampilkanSukses'])->name('pendaftaran.sukses'); 
 
-    // Rekomendasi
-    Route::get('/rekomendasi/mulai', function () { return view('user.rekomendasi-start'); }); 
-    Route::get('/rekomendasi/kuesioner', function () { return view('user.kuesioner'); });
-    Route::get('/rekomendasi/hasil', function () { return view('user.hasil-rekomendasi'); });
 
     // Pengumuman Hasil Kelulusan (USER)
     Route::get('/pengumuman-hasil', [DashboardUserController::class, 'tampilkanHasil'])->name('pengumuman.hasil');
@@ -91,7 +103,7 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
     Route::get('/pendaftar', [AdminPendaftarController::class, 'index'])->name('pendaftar.index');
     Route::get('/export-pendaftar', [AdminPendaftarController::class, 'exportCsv'])->name('export.csv');
 
-// Pengumuman Kelulusan (ADMIN)
+    // Pengumuman Kelulusan (ADMIN)
     Route::get('/pengumuman', [AdminPendaftarController::class, 'pengumumanIndex'])->name('pengumuman');
     Route::post('/pengumuman/tetapkan/{id}', [AdminPendaftarController::class, 'tetapkanKelulusan'])->name('pengumuman.tetapkan');
 
@@ -150,7 +162,9 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
         Route::delete('/prodi/{id}', [AdminProgramStudiController::class, 'destroy'])->name('prodi.destroy');
         
         Route::resource('tugas', AdminTugasController::class)->except(['create', 'show', 'edit']); 
-        
-        Route::get('/settings', function () { return view('admin.settings'); })->name('settings');
-    });
+        // Rute Pengaturan Sistem Terpadu
+        Route::get('/settings', [\App\Http\Controllers\AdminSettingController::class, 'index'])->name('settings');
+        Route::post('/settings/update', [\App\Http\Controllers\AdminSettingController::class, 'update'])->name('settings.update');
+        Route::post('/settings/password', [\App\Http\Controllers\AdminSettingController::class, 'updatePassword'])->name('settings.password');    
+        });
 });

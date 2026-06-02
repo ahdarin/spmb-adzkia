@@ -31,7 +31,7 @@
                         <td class="px-8 py-5">
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <i data-feather="book" class="w-5 h-5"></i>
+                                    <i data-feather="{{ $item->icon ?? 'book' }}" class="w-5 h-5"></i>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="font-bold text-brand-dark text-[15px]">{{ $item->nama }}</span>
@@ -93,6 +93,24 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-6 mb-8">
+                        
+                        <div class="col-span-2">
+                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Pilih Ikon Prodi</label>
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shrink-0 shadow-inner" 
+                                     x-html="`<i data-feather='${form.icon}' class='w-7 h-7'></i>`">
+                                </div>
+                                <div class="relative flex-1">
+                                    <select name="icon" x-model="form.icon" @change="updatePreview()" required class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-blue/20 transition-all font-bold text-sm appearance-none capitalize cursor-pointer">
+                                        <template x-for="icon in iconList" :key="icon">
+                                            <option :value="icon" x-text="icon.replace('-', ' ')"></option>
+                                        </template>
+                                    </select>
+                                    <i data-feather="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-span-2">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Nama Program Studi</label>
                             <input type="text" name="nama" x-model="form.nama" placeholder="Misal: Teknik Elektro" required class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-blue/20 transition-all font-bold text-sm">
@@ -105,7 +123,7 @@
 
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Jenjang</label>
-                            <select name="jenjang" x-model="form.jenjang" class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-sm appearance-none">
+                            <select name="jenjang" x-model="form.jenjang" class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-sm appearance-none cursor-pointer">
                                 <option value="S1">Sarjana (S1)</option>
                                 <option value="D3">Diploma (D3)</option>
                                 <option value="S2">Magister (S2)</option>
@@ -113,10 +131,12 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Akreditasi</label>
-                            <select name="akreditasi" x-model="form.akreditasi" class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-sm appearance-none">
+                            <select name="akreditasi" x-model="form.akreditasi" class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold text-sm appearance-none cursor-pointer">
                                 <option value="Unggul">Unggul</option>
                                 <option value="A">A</option>
                                 <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="Baik Sekali">Baik Sekali</option>
                             </select>
                         </div>
                         <div>
@@ -144,6 +164,13 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('prodiManager', () => ({
         modalOpen: false,
         isEdit: false,
+        // Daftar Ikon Keren yang bisa dipilih
+        iconList: [
+            'book-open', 'monitor', 'cpu', 'briefcase', 'heart', 'activity', 
+            'code', 'database', 'globe', 'layout', 'pen-tool', 'users', 
+            'bar-chart-2', 'tool', 'zap', 'award', 'target', 'compass', 
+            'book', 'layers', 'pie-chart', 'settings', 'camera'
+        ],
         form: {
             id: '',
             nama: '',
@@ -151,25 +178,39 @@ document.addEventListener('alpine:init', () => {
             akreditasi: 'Unggul',
             kuota: '',
             biaya: '',
-            deskripsi: '' // Tambahan state deskripsi
+            deskripsi: '',
+            icon: 'book-open' // Tambahan state ikon (default)
+        },
+
+        updatePreview() {
+            // Merender ulang ikon setiap kali dropdown dipilih
+            this.$nextTick(() => {
+                if (typeof feather !== 'undefined') feather.replace();
+            });
         },
 
         openAddModal() {
             this.isEdit = false;
-            this.form = { id: '', nama: '', jenjang: 'S1', akreditasi: 'Unggul', kuota: '', biaya: '', deskripsi: '' };
+            this.form = { id: '', nama: '', jenjang: 'S1', akreditasi: 'Unggul', kuota: '', biaya: '', deskripsi: '', icon: 'book-open' };
             this.modalOpen = true;
+            this.updatePreview();
         },
 
         openEditModal(data) {
             this.isEdit = true;
             this.form = { ...data };
-            // Jika data dari database deskripsinya null, kita jadikan string kosong agar rapi di form
-            if (!this.form.deskripsi) {
-                this.form.deskripsi = '';
-            }
+            if (!this.form.deskripsi) this.form.deskripsi = '';
+            if (!this.form.icon) this.form.icon = 'book-open';
             this.modalOpen = true;
+            this.updatePreview();
         }
     }));
 });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => { if (typeof feather !== 'undefined') feather.replace(); }, 50);
+    });
 </script>
 @endsection

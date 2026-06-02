@@ -3,11 +3,16 @@
 @section('title', 'SPMB Universitas Adzkia')
 
 @section('content')
+<!-- MENGAMBIL DATA SETTING GLOBAL DARI DATABASE -->
+@php
+    $globalSetting = \App\Models\Setting::firstOrCreate(['id' => 1]);
+@endphp
+
 <section class="px-16 py-8 bg-adzkia-bg" x-data="{ 
     activeSlide: 0, 
     slides: [
         { image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Selamat Datang di Universitas Adzkia', subtitle: 'Kampus Karakter, Mencetak Generasi Unggul dan Berakhlak Mulia' },
-        { image: 'https://images.unsplash.com/photo-1523050335102-c6744729ea24?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Pendaftaran Mahasiswa Baru 2024/2025', subtitle: 'Dapatkan Beasiswa Adzkia Unggul hingga 100% untuk Siswa Berprestasi' },
+        { image: 'https://images.unsplash.com/photo-1523050335102-c6744729ea24?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Pendaftaran Mahasiswa Baru {{ $globalSetting->tahun_akademik ?? '2024/2025' }}', subtitle: 'Dapatkan Beasiswa Adzkia Unggul hingga 100% untuk Siswa Berprestasi' },
         { image: 'https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Fasilitas Modern & Terpadu', subtitle: 'Lingkungan belajar yang nyaman didukung dengan laboratorium berstandar industri' }
     ],
     next() { this.activeSlide = (this.activeSlide + 1) % this.slides.length },
@@ -54,7 +59,7 @@
 <main class="px-16 py-12 flex items-center justify-between bg-adzkia-bg">
     <div class="w-1/2 pr-12">
         <div class="inline-block px-4 py-1.5 bg-adzkia-badge-bg text-adzkia-badge-txt text-[13px] font-bold rounded-full tracking-wide mb-6">
-            TAHUN AKADEMIK 2026/2027
+            TAHUN AKADEMIK {{ $globalSetting->tahun_akademik ?? '2026/2027' }}
         </div>
         <h1 class="text-[4.5rem] font-extrabold leading-[1.05] tracking-tight mb-6">
             <span class="text-adzkia-blue block">Penerimaan</span>
@@ -68,10 +73,10 @@
             <a href="/register" class="px-8 py-4 bg-adzkia-red text-white text-[15px] font-bold rounded-full hover:bg-red-700 transition-all shadow-xl shadow-red-600/20 active:scale-95">
                 Daftar Sekarang
             </a>
-            <button class="px-8 py-4 text-adzkia-blue text-[15px] font-bold rounded-full flex items-center gap-2 hover:bg-adzkia-badge-bg transition-colors">
+            <a href="{{ $globalSetting->brosur_path ? asset('uploads/docs/' . $globalSetting->brosur_path) : '#' }}" target="_blank" class="px-8 py-4 text-adzkia-blue text-[15px] font-bold rounded-full flex items-center gap-2 hover:bg-adzkia-badge-bg transition-colors">
                 Unduh Brosur 
                 <i data-feather="arrow-right" class="w-4 h-4"></i>
-            </button>
+            </a>
         </div>
     </div>
     <div class="w-1/2 relative flex justify-end">
@@ -84,7 +89,7 @@
             </div>
             <div>
                 <p class="text-[12px] text-gray-400 font-bold uppercase tracking-wide mb-0.5">Akreditasi</p>
-                <p class="text-xl font-extrabold text-adzkia-blue leading-none">B</p>
+                <p class="text-xl font-extrabold text-adzkia-blue leading-none">{{ $globalSetting->akreditasi ?? 'B' }}</p>
             </div>
         </div>
     </div>
@@ -107,7 +112,7 @@
 
     <div class="w-7/12 flex justify-end">
         <div @click="openVideo = true" class="relative w-full max-w-[650px] h-[360px] rounded-[2rem] overflow-hidden shadow-2xl group cursor-pointer border-4 border-white">
-            <img src="https://i.ytimg.com/vi/q-r5HNQrCG0/maxresdefault.jpg" 
+            <img src="https://i.ytimg.com/vi/{{ $globalSetting->video_profil ?? 'q-r5HNQrCG0' }}/maxresdefault.jpg" 
                  class="w-full h-full object-cover transition duration-700 group-hover:scale-105" 
                  alt="Video Profil Adzkia">
             <div class="absolute inset-0 bg-adzkia-blue/20 group-hover:bg-adzkia-blue/40 transition duration-500 flex items-center justify-center">
@@ -123,7 +128,7 @@
             <button @click="openVideo = false" class="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-adzkia-red transition-colors rounded-full text-white">
                 <i data-feather="x"></i>
             </button>
-            <iframe class="w-full h-full" src="https://www.youtube.com/embed/q-r5HNQrCG0?" allow="fullscreen" allowfullscreen></iframe>
+            <iframe class="w-full h-full" src="https://www.youtube.com/embed/{{ $globalSetting->video_profil ?? 'q-r5HNQrCG0' }}?" allow="fullscreen" allowfullscreen></iframe>
         </div>
     </div>
 </section>
@@ -143,7 +148,7 @@
                 <div>
                     <div class="flex justify-between items-start mb-6">
                         <div class="w-12 h-12 bg-adzkia-badge-bg rounded-[14px] flex items-center justify-center group-hover:bg-adzkia-blue transition-colors duration-300">
-                            <i data-feather="book-open" class="w-5 h-5 text-adzkia-blue group-hover:text-white transition-colors"></i>
+                            <i data-feather="{{ $prodi->icon ?? 'book-open' }}" class="w-5 h-5 text-adzkia-blue group-hover:text-white transition-colors"></i>                        
                         </div>
                         
                         <div class="px-3 py-1.5 bg-adzkia-blue text-white rounded-lg text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5">
@@ -165,6 +170,40 @@
             <div class="col-span-3 text-center py-8 text-gray-500 font-bold">Data Program Studi belum ditambahkan.</div>
         @endforelse
     </div>
+</section>
+
+<!-- BANNER REKOMENDASI JURUSAN -->
+<section class="w-full py-12 px-6 lg:px-16 max-w-7xl mx-auto">
+    <div class="bg-gradient-to-r from-adzkia-blue to-blue-600 rounded-[3rem] p-10 lg:p-14 text-white relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+        
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/4 blur-2xl"></div>
+        <div class="absolute bottom-0 left-10 w-40 h-40 bg-blue-300 opacity-20 rounded-full translate-y-1/2 blur-xl"></div>
+
+        <div class="relative z-10 max-w-2xl text-center md:text-left">
+            <span class="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md text-white rounded-xl text-[11px] font-black uppercase tracking-widest mb-4 border border-white/30">
+                Fitur AI Interaktif
+            </span>
+            <h2 class="text-3xl lg:text-4xl font-black mb-4 leading-tight">
+                Bingung Pilih Program Studi?
+            </h2>
+            <p class="text-blue-100 text-[15px] font-medium leading-relaxed mb-8">
+                Jawab beberapa pertanyaan singkat mengenai minat dan bakatmu, dan biarkan sistem kami merekomendasikan program studi yang paling cocok untuk masa depanmu di Universitas Adzkia!
+            </p>
+            
+            <a href="/rekomendasi/mulai" class="inline-flex items-center gap-3 px-8 py-4 bg-white text-adzkia-blue rounded-2xl font-extrabold text-[14px] hover:bg-gray-50 transition-all shadow-xl active:scale-95 group">
+                Mulai Tes Minat Bakat
+                <i data-feather="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+
+        <div class="relative z-10 hidden md:block">
+            <div class="w-48 h-48 bg-white/10 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center shadow-inner">
+                <i data-feather="compass" class="w-20 h-20 text-white opacity-90"></i>
+            </div>
+        </div>
+
+    </div>
+</section>
 
 <section id="fasilitas" class="px-16 py-24 bg-adzkia-blue text-white">
     <div class="text-center max-w-2xl mx-auto mb-16">
@@ -285,9 +324,28 @@
                 <div class="bg-white/10 p-8 rounded-2xl border border-white/20">
                     <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-4">Gelombang Pendaftaran</p>
                     <div class="space-y-3 font-medium">
-                        <div class="flex justify-between border-b border-white/10 pb-3"><span>Gelombang 1</span><span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">Jan - Mar</span></div>
-                        <div class="flex justify-between border-b border-white/10 pb-3"><span>Gelombang 2</span><span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">Apr - Jun</span></div>
-                        <div class="flex justify-between"><span>Gelombang 3</span><span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">Jul - Agt</span></div>
+                        
+                        <div class="flex justify-between border-b border-white/10 pb-3">
+                            <span>Gelombang 1</span>
+                            <span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">
+                                {{ $globalSetting->gelombang_1_buka && $globalSetting->gelombang_1_tutup ? \Carbon\Carbon::parse($globalSetting->gelombang_1_buka)->translatedFormat('M') . ' - ' . \Carbon\Carbon::parse($globalSetting->gelombang_1_tutup)->translatedFormat('M') : 'Segera Dibuka' }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between border-b border-white/10 pb-3">
+                            <span>Gelombang 2</span>
+                            <span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">
+                                {{ $globalSetting->gelombang_2_buka && $globalSetting->gelombang_2_tutup ? \Carbon\Carbon::parse($globalSetting->gelombang_2_buka)->translatedFormat('M') . ' - ' . \Carbon\Carbon::parse($globalSetting->gelombang_2_tutup)->translatedFormat('M') : 'Segera Dibuka' }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <span>Gelombang 3</span>
+                            <span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">
+                                {{ $globalSetting->gelombang_3_buka && $globalSetting->gelombang_3_tutup ? \Carbon\Carbon::parse($globalSetting->gelombang_3_buka)->translatedFormat('M') . ' - ' . \Carbon\Carbon::parse($globalSetting->gelombang_3_tutup)->translatedFormat('M') : 'Segera Dibuka' }}
+                            </span>
+                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -368,14 +426,14 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @forelse($beritas as $item)
-                <a href="/berita" class="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col">
+                <a href="/berita/{{ $item->slug }}" class="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col">
                     <div class="relative w-full h-48 overflow-hidden bg-gray-100">
                         <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-adzkia-blue text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-widest z-10">
                             {{ $item->kategori ?? 'Informasi' }}
                         </div>
                         <img src="{{ $item->thumbnail ? asset('uploads/berita/' . $item->thumbnail) : 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=500' }}" 
-                            alt="{{ $item->judul }}" 
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                             alt="{{ $item->judul }}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     </div>
                     <div class="p-6 flex flex-col flex-grow">
                         <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-3">
@@ -384,6 +442,9 @@
                         <h3 class="text-lg font-extrabold text-adzkia-blue group-hover:text-adzkia-red transition-colors mb-4 line-clamp-2">
                             {{ $item->judul }}
                         </h3>
+                        <p class="text-[13px] text-gray-500 font-medium line-clamp-2 mb-4">
+                            {{ $item->ringkasan }}
+                        </p>
                         <div class="mt-auto pt-4">
                             <p class="text-[12px] font-extrabold text-adzkia-red flex items-center gap-2 group-hover:gap-3 transition-all">
                                 Baca <i data-feather="arrow-right" class="w-3 h-3"></i>
@@ -430,7 +491,7 @@
             </div>
             
             <div class="space-y-8">
-                <div class="flex gap-6 items-start group cursor-pointer">
+                <div class="flex gap-6 items-start group">
                     <div class="w-12 h-12 bg-adzkia-badge-bg rounded-2xl flex items-center justify-center shrink-0 mt-1 group-hover:bg-adzkia-blue transition-colors duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-adzkia-blue group-hover:text-white transition-colors duration-300">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -440,12 +501,12 @@
                     <div>
                         <h4 class="font-extrabold text-adzkia-blue text-lg mb-1 group-hover:text-adzkia-red transition-colors">Alamat Kampus</h4>
                         <p class="text-gray-500 text-[14px] font-medium leading-relaxed">
-                            Jl. Raya Taratak Paneh No.7, Korong Gadang, Kec. Kuranji,<br>Kota Padang, Sumatera Barat 25147
+                            {!! $globalSetting->alamat ? nl2br(e($globalSetting->alamat)) : 'Jl. Raya Taratak Paneh No.7, Korong Gadang, Kec. Kuranji,<br>Kota Padang, Sumatera Barat 25147' !!}
                         </p>
                     </div>
                 </div>
 
-                <a href="https://wa.me/6281234567890" target="_blank" class="flex gap-6 items-start group cursor-pointer">
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $globalSetting->telepon ?? '6281234567890') }}" target="_blank" class="flex gap-6 items-start group cursor-pointer">
                     <div class="w-12 h-12 bg-adzkia-badge-bg rounded-2xl flex items-center justify-center shrink-0 mt-1 group-hover:bg-adzkia-blue transition-colors duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-adzkia-blue group-hover:text-white transition-colors duration-300">
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -453,11 +514,11 @@
                     </div>
                     <div>
                         <h4 class="font-extrabold text-adzkia-blue text-lg mb-1 group-hover:text-adzkia-red transition-colors">Telepon / WhatsApp</h4>
-                        <p class="text-gray-500 text-[14px] font-medium">(0751) 482121 / +62 812-3456-7890</p>
+                        <p class="text-gray-500 text-[14px] font-medium">{{ $globalSetting->telepon ?? '(0751) 482121 / +62 812-3456-7890' }}</p>
                     </div>
                 </a>
 
-                <a href="mailto:pmb@adzkia.ac.id" class="flex gap-6 items-start group cursor-pointer">
+                <a href="mailto:{{ $globalSetting->email ?? 'pmb@adzkia.ac.id' }}" class="flex gap-6 items-start group cursor-pointer">
                     <div class="w-12 h-12 bg-adzkia-badge-bg rounded-2xl flex items-center justify-center shrink-0 mt-1 group-hover:bg-adzkia-blue transition-colors duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-adzkia-blue group-hover:text-white transition-colors duration-300">
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -466,7 +527,7 @@
                     </div>
                     <div>
                         <h4 class="font-extrabold text-adzkia-blue text-lg mb-1 group-hover:text-adzkia-red transition-colors">Email Admisi</h4>
-                        <p class="text-gray-500 text-[14px] font-medium">pmb@adzkia.ac.id</p>
+                        <p class="text-gray-500 text-[14px] font-medium">{{ $globalSetting->email ?? 'pmb@adzkia.ac.id' }}</p>
                     </div>
                 </a>
             </div>
@@ -474,7 +535,7 @@
 
         <div class="relative w-full h-[450px] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-gray-50 group">
             <iframe 
-                src="https://maps.google.com/maps?q=Universitas+Adzkia+Padang&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                src="{{ $globalSetting->link_maps ?? 'https://maps.google.com/maps?q=Universitas+Adzkia+Padang&t=&z=15&ie=UTF8&iwloc=&output=embed' }}" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 

@@ -3,8 +3,6 @@
 @section('admin-content')
 <form action="{{ route('admin.berita.store') }}" method="POST" enctype="multipart/form-data" x-data="beritaEditor()">
     @csrf
-    
-    <input type="hidden" name="status" x-model="status">
 
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
@@ -19,7 +17,7 @@
                 <span class="text-brand-dark">Tambah Berita</span>
             </div>
         </div>
-        <button type="button" @click="previewArticle()" class="flex items-center gap-2 px-5 py-2.5 bg-brand-blue-light text-brand-blue rounded-xl font-bold text-[12px] hover:bg-blue-100 transition-all shadow-sm">
+        <button type="button" @click="showPreview = true" class="flex items-center gap-2 px-5 py-2.5 bg-brand-blue-light text-brand-blue rounded-xl font-bold text-[12px] hover:bg-blue-100 transition-all shadow-sm">
             <i data-feather="eye" class="w-4 h-4"></i> Preview Artikel
         </button>
     </div>
@@ -30,7 +28,7 @@
             
             <div>
                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Judul Berita</label>
-                <textarea name="judul" rows="2" placeholder="Masukkan judul artikel yang menarik..." required
+                <textarea x-ref="judul" name="judul" rows="2" placeholder="Masukkan judul artikel yang menarik..." required
                           class="w-full bg-white border border-gray-100 rounded-3xl p-6 text-3xl font-extrabold text-brand-dark placeholder-gray-300 outline-none focus:ring-2 focus:ring-brand-blue/10 resize-none shadow-sm"></textarea>
             </div>
 
@@ -38,10 +36,11 @@
                 <div>
                     <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Kategori</label>
                     <div class="relative">
-                        <select name="kategori" required class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 appearance-none shadow-sm">
+                        <select x-ref="kategori" name="kategori" required class="w-full bg-gray-50/80 border border-gray-100 rounded-2xl px-5 py-4 text-[14px] font-bold text-brand-dark outline-none focus:ring-2 focus:ring-brand-blue/10 appearance-none shadow-sm">
                             <option value="Akademik">Akademik</option>
                             <option value="Beasiswa">Beasiswa</option>
                             <option value="Kegiatan">Kegiatan</option>
+                            <option value="Informasi">Informasi</option>
                         </select>
                         <i data-feather="chevron-down" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
                     </div>
@@ -64,7 +63,7 @@
                 <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Thumbnail Berita</label>
                 <label class="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-200 rounded-[2rem] bg-gray-50/50 hover:bg-gray-50 hover:border-brand-blue transition-all group overflow-hidden cursor-pointer">
                     
-                    <input type="file" name="thumbnail" accept="image/*" @change="fileChosen" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                    <input type="file" name="thumbnail" accept="image/*" @change="fileChosen" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" required>
                     
                     <div class="flex flex-col items-center justify-center text-center z-10" x-show="!imageUrl">
                         <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand-dark mb-4 group-hover:scale-110 transition-transform">
@@ -117,37 +116,45 @@
             
             <div class="bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] shadow-sm">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-[14px] font-extrabold text-brand-dark">Publikasi</h3>
-                    <span class="px-3 py-1 bg-brand-blue-light text-brand-blue rounded-full text-[9px] font-black uppercase tracking-widest" x-text="status"></span>
+                    <h3 class="text-[14px] font-extrabold text-brand-dark">Aksi Publikasi</h3>
                 </div>
 
                 <div class="space-y-3">
-                    <button type="submit" @click="status = 'Published'" class="w-full py-3.5 bg-brand-dark text-white rounded-xl font-black text-[13px] hover:bg-brand-blue transition-all shadow-md shadow-brand-dark/20">
+                    <button type="submit" name="status" value="Published" class="w-full py-3.5 bg-brand-dark text-white rounded-xl font-black text-[13px] hover:bg-brand-blue transition-all shadow-md shadow-brand-dark/20">
                         Publish Sekarang
                     </button>
-                    <button type="submit" @click="status = 'Draft'" class="w-full py-3.5 bg-gray-200 text-brand-dark rounded-xl font-black text-[13px] hover:bg-gray-300 transition-all">
+                    <button type="submit" name="status" value="Draft" class="w-full py-3.5 bg-gray-200 text-brand-dark rounded-xl font-black text-[13px] hover:bg-gray-300 transition-all">
                         Simpan sebagai Draft
                     </button>
                 </div>
             </div>
 
-            <div class="bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] shadow-sm">
-                <h3 class="text-[14px] font-extrabold text-brand-dark mb-5">Pengaturan SEO</h3>
-                <div class="mb-5">
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Permalink (Otomatis)</label>
-                    <input type="text" value="/berita/judul-artikel" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-brand-blue text-[12px] font-mono text-gray-500 shadow-sm" readonly>
-                </div>
-            </div>
-
         </div>
+    </div>
 
+    <div x-show="showPreview" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-brand-dark/80 backdrop-blur-sm" x-cloak>
+        <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-y-auto p-10 relative">
+            <button @click="showPreview = false" type="button" class="absolute top-6 right-6 p-2 bg-gray-100 rounded-full hover:bg-red-500 hover:text-white transition-colors">
+                <i data-feather="x"></i>
+            </button>
+            
+            <span class="px-3 py-1 bg-brand-blue-light text-brand-blue rounded-lg text-[10px] font-black uppercase tracking-widest" x-text="$refs.kategori.value || 'Kategori'"></span>
+            
+            <h1 class="text-4xl font-black text-brand-dark mt-4 mb-8 leading-tight" x-text="$refs.judul.value || 'Judul Belum Diisi'"></h1>
+            
+            <template x-if="imageUrl">
+                <img :src="imageUrl" class="w-full h-auto max-h-[400px] object-cover rounded-2xl mb-8 border border-gray-100">
+            </template>
+            
+            <div class="prose max-w-none text-gray-700 leading-relaxed font-medium" x-html="konten || '<i>Konten masih kosong...</i>'"></div>
+        </div>
     </div>
 </form>
 
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('beritaEditor', () => ({
-        status: 'Published',
+        showPreview: false,
         imageUrl: null,
         konten: '',
 
@@ -199,10 +206,6 @@ document.addEventListener('alpine:init', () => {
             setTimeout(() => {
                 textarea.focus();
             }, 50);
-        },
-
-        previewArticle() {
-            alert('Fitur Preview Berhasil! Nanti kita akan buat sistem membuka Tab Baru untuk melihat hasil artikelnya ya.');
         }
     }));
 });
@@ -214,4 +217,4 @@ document.addEventListener('alpine:init', () => {
         setTimeout(() => { if (typeof feather !== 'undefined') feather.replace(); }, 50);
     });
 </script>
-@endsection 
+@endsection
