@@ -158,7 +158,7 @@
                     </div>
                     
                     <div class="text-[12px] font-extrabold text-gray-400 mb-1">{{ $prodi->jenjang ?? 'S1' }}</div>
-                    <h3 class="text-xl font-extrabold text-adzkia-blue mb-3 group-hover:text-adzkia-red transition-colors">{{ $prodi->nama_prodi }}</h3>
+                    <h3 class="text-xl font-extrabold text-adzkia-blue mb-3 group-hover:text-adzkia-red transition-colors">{{ $prodi->nama }}</h3>
                     <p class="text-gray-500 text-[13px] leading-relaxed mb-6 font-medium line-clamp-2">{{ $prodi->deskripsi ?? 'Program studi unggulan yang siap mencetak generasi profesional.' }}</p>
                 </div>
                 

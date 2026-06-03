@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminTugasController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\DashboardUserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RekomendasiController;
 use App\Http\Middleware\CheckRole; 
 
 // ==========================================
@@ -38,10 +39,18 @@ use App\Http\Middleware\CheckRole;
         $berita = \App\Models\Berita::where('slug', $slug)->firstOrFail();
         return view('berita-detail', compact('berita')); 
     });
-    Route::get('/rekomendasi/mulai', function () { return view('user.rekomendasi-start'); }); 
-    Route::get('/rekomendasi/kuesioner', function () { return view('user.kuesioner'); });
-    Route::get('/rekomendasi/hasil', function () { return view('user.hasil-rekomendasi'); });
 
+    // Rute Sistem Rekomendasi AI
+    Route::prefix('rekomendasi')->name('rekomendasi.')->group(function () {
+        Route::get('/mulai', [RekomendasiController::class, 'start'])->name('start');
+        Route::post('/mulai', [RekomendasiController::class, 'startSubmit'])->name('start.submit');
+        
+        Route::get('/kuesioner', [RekomendasiController::class, 'kuesioner'])->name('kuesioner');
+        Route::post('/kuesioner', [RekomendasiController::class, 'kuesionerSubmit'])->name('kuesioner.submit');
+        
+        Route::get('/hitung', [RekomendasiController::class, 'hitungRekomendasi'])->name('hitung');
+        Route::get('/hasil', [RekomendasiController::class, 'hasil'])->name('hasil');
+    });
 
 // ==========================================
 // 2. GUEST AREA (Hanya bisa diakses jika BELUM login)
