@@ -25,9 +25,7 @@ public function up()
         $table->date('gelombang_1_buka')->nullable();
         $table->date('gelombang_1_tutup')->nullable();
         $table->date('gelombang_2_buka')->nullable();
-        $table->date('gelombang_2_tutup')->nullable();
-        $table->date('gelombang_2_buka')->nullable();
-        $table->date('gelombang_2_tutup')->nullable();        
+        $table->date('gelombang_2_tutup')->nullable();       
         $table->date('gelombang_3_buka')->nullable();
         $table->date('gelombang_3_tutup')->nullable();
         $table->timestamps();

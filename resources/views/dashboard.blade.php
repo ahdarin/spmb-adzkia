@@ -112,7 +112,7 @@
 
     <div class="w-7/12 flex justify-end">
         <div @click="openVideo = true" class="relative w-full max-w-[650px] h-[360px] rounded-[2rem] overflow-hidden shadow-2xl group cursor-pointer border-4 border-white">
-            <img src="https://i.ytimg.com/vi/{{ $globalSetting->video_profil ?? 'q-r5HNQrCG0' }}/maxresdefault.jpg" 
+            <img src="https://i.ytimg.com/vi/{{ $globalSetting->video_profil }}/maxresdefault.jpg" 
                  class="w-full h-full object-cover transition duration-700 group-hover:scale-105" 
                  alt="Video Profil Adzkia">
             <div class="absolute inset-0 bg-adzkia-blue/20 group-hover:bg-adzkia-blue/40 transition duration-500 flex items-center justify-center">
@@ -128,7 +128,7 @@
             <button @click="openVideo = false" class="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-adzkia-red transition-colors rounded-full text-white">
                 <i data-feather="x"></i>
             </button>
-            <iframe class="w-full h-full" src="https://www.youtube.com/embed/{{ $globalSetting->video_profil ?? 'q-r5HNQrCG0' }}?" allow="fullscreen" allowfullscreen></iframe>
+            <iframe class="w-full h-full" src="https://www.youtube.com/embed/{{ $globalSetting->video_profil }}?" allow="fullscreen" allowfullscreen></iframe>
         </div>
     </div>
 </section>
