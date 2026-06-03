@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('akreditasi');
             $table->integer('kuota');
             $table->bigInteger('biaya');
-            $table->text('deskripsi')->nullable()->after('nama_prodi');
+            $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
     }

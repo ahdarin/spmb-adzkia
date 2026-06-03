@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('data_pendaftars', function (Blueprint $table) {
             // Ini kolom BARU khusus untuk kelulusan
             if (!Schema::hasColumn('data_pendaftars', 'status_kelulusan')) {
-                $table->string('status_kelulusan')->nullable()->after('status_pendaftaran');
+                $table->string('status_kelulusan')->nullable();
             }
         });
     }

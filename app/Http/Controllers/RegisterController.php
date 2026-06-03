@@ -7,6 +7,7 @@ use App\Models\DataPendaftar;
 use App\Models\Prodi;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class RegisterController extends Controller
 {
@@ -32,7 +33,6 @@ class RegisterController extends Controller
     }
 
     // Memproses data yang dikirim dari form
-// Memproses data yang dikirim dari form
     public function storeRegister(Request $request)
     {
         // 1. Validasi Input dari Form
@@ -56,12 +56,16 @@ class RegisterController extends Controller
         $nominalBiaya = ($request->jalur_pendaftaran === 'Reguler') ? 250000 : 0;
         $statusPembayaran = ($nominalBiaya == 0) ? 'Terverifikasi' : 'Belum Bayar';
 
-        // 3. Generate Nomor Pendaftaran Otomatis
+        // 3. Generate Nomor Pendaftaran Otomatis berdasarkan Jalur
         $tahun = date('Y');
-        $pendaftarTerakhir = DataPendaftar::whereYear('created_at', $tahun)->orderBy('id', 'desc')->first();
-        
+        $kode = $this->getKodeJalur($request->jalur_pendaftaran);
+
+        $pendaftarTerakhir = DataPendaftar::where('no_pendaftaran', 'like', "%{$kode}-{$tahun}%")
+                                        ->orderBy('id', 'desc')
+                                        ->first();
+
         $urutan = $pendaftarTerakhir ? ((int) substr($pendaftarTerakhir->no_pendaftaran, -4) + 1) : 1;
-        $noPendaftaran = 'REG-' . $tahun . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+        $noPendaftaran = $kode . '-' . $tahun . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
 
         // 4. Generate Password Acak 6 Karakter
         $rawPassword = Str::upper(Str::random(6));
@@ -83,25 +87,70 @@ class RegisterController extends Controller
             'status_pendaftaran' => 'Draft'
         ]);
 
-        // 6. AUTO-LOGIN SESSIONS
+        // 6. KIRIM WA NOTIFIKASI
+        if ($pendaftar->no_whatsapp) {
+            // Bersihkan nomor (mengubah 08... menjadi 628...)
+            $nomorHp = preg_replace('/^0/', '62', $pendaftar->no_whatsapp);
+            
+            $this->kirimNotifikasiWA(
+                $nomorHp, 
+                $pendaftar->nama_lengkap, 
+                $noPendaftaran, 
+                $rawPassword
+            );
+        }
+
+        // 7. AUTO-LOGIN SESSIONS
         session([
             'pendaftar_id' => $pendaftar->id,
             'nama_pendaftar' => $pendaftar->nama_lengkap,
             'role' => 'user' 
         ]);
 
-        // 7. LANGSUNG ARAHKAN KE TAHAP 2 (PEMBAYARAN)
-        // Kita selipkan informasi password di session 'success' agar muncul di halaman pembayaran
-        return redirect()->route('pembayaran.index')->with(
+        // 8. ARAHKAN KE PEMBAYARAN
+        return redirect()->route('login')->with(
             'success', 
-            "Pendaftaran Berhasil! Harap CATAT akses Anda untuk login berikutnya -> No. Pendaftaran: {$noPendaftaran} | Password: {$rawPassword}"
+            "Pendaftaran Berhasil! Silakan cek WhatsApp Anda untuk melihat No. Pendaftaran dan Password untuk login."
         );
     }
 
     private function kirimNotifikasiWA($nomor, $nama, $username, $password)
-    {
-        // Fitur ini bisa dikembangkan nanti menggunakan API (misal Fonnte / Wablas)
-        $isiPesan = "Halo {$nama}, Pendaftaran SPMB Universitas Adzkia Berhasil. No Pendaftaran: {$username}, Password: {$password}";
-        logger($isiPesan);
+{
+    $token = 'oNrEA5wZL2XwgeMtvQwV';
+    $url   = 'https://api.fonnte.com/send';
+    
+    $pesan = "*Pendaftaran SPMB Adzkia Berhasil!* 🎓\n\n" .
+             "Halo *{$nama}*,\n\n" .
+             "Selamat! Data Anda telah kami terima. Berikut adalah detail akun untuk melengkapi biodata dan pembayaran:\n\n" .
+             "👤 *No. Pendaftaran:* {$username}\n" .
+             "🔑 *Password:* *{$password}*\n\n" .
+             "Silakan login melalui link berikut:\n" .
+             "http://spmb.adzkia.ac.id/login\n\n" .
+             "⚠️ *PENTING:* Jangan berikan password ini kepada siapapun.\n" .
+             "Terima kasih.";
+
+    $response = Http::withHeaders([
+        'Authorization' => $token,
+    ])->post($url, [
+        'target'  => $nomor,
+        'message' => $pesan,
+    ]);
+
+    return $response->json();
+}
+
+    private function getKodeJalur($jalur)
+{
+    // Mengambil kata pertama atau singkatan
+    switch ($jalur) {
+        case 'Beasiswa Adzkia Unggul (BAU)': return 'BAU';
+        case 'Beasiswa PMDK': return 'PMD';
+        case 'Beasiswa Prestasi': return 'PRS';
+        case 'Beasiswa KIP-K': return 'KIP';
+        case 'RPL Afirmasi YASB': return 'RPL-YASB';
+        case 'RPL Afirmasi JSIT': return 'RPL-JSIT';
+        case 'RPL Kelas Khusus': return 'RPL-KK';
+        default: return 'REG'; 
     }
+}
 }

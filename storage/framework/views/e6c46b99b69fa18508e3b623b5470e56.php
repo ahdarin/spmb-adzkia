@@ -31,10 +31,10 @@
 </head>
 <body class="bg-gray-50 antialiased text-adzkia-dark min-h-screen flex flex-col" x-data="formulirApp()">
 
-    {{-- NAVBAR DASHBOARD USER --}}
+    
     <nav class="bg-white border-b border-gray-200 py-4 px-6 md:px-10 flex justify-between items-center sticky top-0 z-30">
-        <a href="{{ route('dashboard.user') }}" class="flex items-center gap-3 group">
-            <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo" class="h-10 w-auto group-hover:scale-105 transition-transform">
+        <a href="<?php echo e(route('dashboard.user')); ?>" class="flex items-center gap-3 group">
+            <img src="<?php echo e(asset('images/logo-adzkia.png')); ?>" alt="Logo" class="h-10 w-auto group-hover:scale-105 transition-transform">
             <div class="hidden md:flex flex-col">
                 <span class="text-[16px] font-black text-adzkia-blue leading-none">Dasbor</span>
                 <span class="text-[12px] font-bold text-adzkia-red">Calon Mahasiswa</span>
@@ -42,21 +42,21 @@
         </a>
         
         <div class="flex items-center gap-4 md:gap-6">
-            <a href="{{ route('dashboard.user') }}" class="flex items-center gap-2 text-[12px] md:text-[13px] font-bold text-gray-500 hover:text-adzkia-blue transition-colors bg-gray-50 px-4 py-2 rounded-lg">
+            <a href="<?php echo e(route('dashboard.user')); ?>" class="flex items-center gap-2 text-[12px] md:text-[13px] font-bold text-gray-500 hover:text-adzkia-blue transition-colors bg-gray-50 px-4 py-2 rounded-lg">
                 <i data-feather="arrow-left" class="w-4 h-4"></i> Kembali ke Dasbor
             </a>
             <div class="hidden md:block w-px h-6 bg-gray-200"></div>
             <div class="flex items-center gap-3">
                 <div class="text-right hidden md:block">
-                    <p class="text-[13px] font-extrabold text-adzkia-dark">{{ session('nama_pendaftar') }}</p>
-                    <p class="text-[11px] font-bold text-gray-400">ID: {{ $pendaftar->no_pendaftaran ?? 'ID Kosong' }}</p>
+                    <p class="text-[13px] font-extrabold text-adzkia-dark"><?php echo e(session('nama_pendaftar')); ?></p>
+                    <p class="text-[11px] font-bold text-gray-400">ID: <?php echo e($pendaftar->no_pendaftaran ?? 'ID Kosong'); ?></p>
                 </div>
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(session('nama_pendaftar')) }}&background=1e293b&color=fff" class="w-10 h-10 rounded-full border-2 border-gray-100">
+                <img src="https://ui-avatars.com/api/?name=<?php echo e(urlencode(session('nama_pendaftar'))); ?>&background=1e293b&color=fff" class="w-10 h-10 rounded-full border-2 border-gray-100">
             </div>
         </div>
     </nav>
 
-    {{-- STEP PROGRESS TRACKER --}}
+    
     <div class="w-full bg-white py-6 border-b border-gray-100 z-20">
         <div class="max-w-5xl mx-auto px-6">
             <div class="flex items-center justify-between relative">
@@ -79,7 +79,7 @@
 
     <main class="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
         
-        {{-- JUDUL HALAMAN --}}
+        
         <div class="mb-8 text-center md:text-left">
             <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black uppercase tracking-widest mb-3">STEP 04 / 07</span>
             <h1 class="text-3xl font-black text-adzkia-dark tracking-tight">Formulir Biodata Diri</h1>
@@ -88,22 +88,22 @@
 
         <div class="bg-white p-8 md:p-12 rounded-[2rem] shadow-sm border border-gray-100 mb-10">
             
-            <form action="{{ route('simpan-biodata') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="pendaftar_id" value="{{ $pendaftar->id ?? '' }}">
+            <form action="<?php echo e(route('simpan-biodata')); ?>" method="POST" enctype="multipart/form-data">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="pendaftar_id" value="<?php echo e($pendaftar->id ?? ''); ?>">
                 
-                @if ($errors->any())
+                <?php if($errors->any()): ?>
                     <div class="bg-red-50 border-l-4 border-adzkia-red p-4 mb-8 rounded-r-2xl">
                         <h3 class="text-sm font-black text-adzkia-red uppercase tracking-widest mb-2">Oops! Ada yang kurang:</h3>
                         <ul class="text-[13px] font-bold text-red-600 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
+                            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li><?php echo e($error); ?></li>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
                     </div>
-                @endif
+                <?php endif; ?>
                 
-                {{-- BAGIAN 1: DATA DIRI --}}
+                
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
@@ -115,22 +115,22 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>
-                            <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $pendaftar->nama_lengkap ?? '') }}" placeholder="Masukkan nama sesuai Ijazah" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="text" name="nama_lengkap" value="<?php echo e(old('nama_lengkap', $pendaftar->nama_lengkap ?? '')); ?>" placeholder="Masukkan nama sesuai Ijazah" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
                         
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">NIK (Nomor Induk Kependudukan)</label>
-                            <input type="text" name="nik" value="{{ old('nik', $pendaftar->nik ?? '') }}" placeholder="16 digit NIK" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="text" name="nik" value="<?php echo e(old('nik', $pendaftar->nik ?? '')); ?>" placeholder="16 digit NIK" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
                         
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Agama</label>
                             <div class="relative">
                                 <select name="agama" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
-                                    <option value="" disabled {{ empty($pendaftar->agama) ? 'selected' : '' }}>Pilih Agama</option>
-                                    @foreach(['Islam', 'Kristen Protestan', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'] as $agama)
-                                        <option value="{{ $agama }}" {{ old('agama', $pendaftar->agama ?? '') == $agama ? 'selected' : '' }}>{{ $agama }}</option>
-                                    @endforeach
+                                    <option value="" disabled <?php echo e(empty($pendaftar->agama) ? 'selected' : ''); ?>>Pilih Agama</option>
+                                    <?php $__currentLoopData = ['Islam', 'Kristen Protestan', 'Katolik', 'Hindu', 'Buddha', 'Konghucu']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $agama): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($agama); ?>" <?php echo e(old('agama', $pendaftar->agama ?? '') == $agama ? 'selected' : ''); ?>><?php echo e($agama); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                                 <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                             </div>
@@ -138,26 +138,26 @@
 
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Tempat Lahir</label>
-                            <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $pendaftar->tempat_lahir ?? '') }}" placeholder="Kota Kelahiran" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="text" name="tempat_lahir" value="<?php echo e(old('tempat_lahir', $pendaftar->tempat_lahir ?? '')); ?>" placeholder="Kota Kelahiran" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Tanggal Lahir</label>
-                            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $pendaftar->tanggal_lahir ?? '') }}" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-gray-500">
+                            <input type="date" name="tanggal_lahir" value="<?php echo e(old('tanggal_lahir', $pendaftar->tanggal_lahir ?? '')); ?>" required class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-gray-500">
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 px-1">Jenis Kelamin</label>
                             <div class="flex gap-6 px-1">
-                                @foreach(['Laki-laki', 'Perempuan'] as $gender)
+                                <?php $__currentLoopData = ['Laki-laki', 'Perempuan']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $gender): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <label class="flex items-center gap-3 cursor-pointer group">
                                         <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center group-hover:border-adzkia-blue transition-colors relative">
-                                            <input type="radio" name="gender" value="{{ $gender }}" class="peer sr-only" {{ old('gender', $pendaftar->gender ?? '') == $gender ? 'checked' : '' }}>
+                                            <input type="radio" name="gender" value="<?php echo e($gender); ?>" class="peer sr-only" <?php echo e(old('gender', $pendaftar->gender ?? '') == $gender ? 'checked' : ''); ?>>
                                             <div class="w-2.5 h-2.5 bg-adzkia-blue rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                                         </div>
-                                        <span class="text-[14px] font-bold text-adzkia-dark">{{ $gender }}</span>
+                                        <span class="text-[14px] font-bold text-adzkia-dark"><?php echo e($gender); ?></span>
                                     </label>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
                         </div>
                     </div>
@@ -165,7 +165,7 @@
 
                 <hr class="border-gray-100 my-10">
 
-                {{-- BAGIAN 2: KONTAK & ALAMAT --}}
+                
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
@@ -177,12 +177,12 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Email Aktif</label>
-                            <input type="email" name="email" value="{{ old('email', $pendaftar->email ?? '') }}" placeholder="example@email.com" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="email" name="email" value="<?php echo e(old('email', $pendaftar->email ?? '')); ?>" placeholder="example@email.com" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
                         
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">No. HP / WhatsApp</label>
-                            <input type="text" name="no_whatsapp" value="{{ old('no_whatsapp', $pendaftar->no_whatsapp ?? '') }}" placeholder="0812xxxx" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="text" name="no_whatsapp" value="<?php echo e(old('no_whatsapp', $pendaftar->no_whatsapp ?? '')); ?>" placeholder="0812xxxx" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
 
                         <div>
@@ -213,14 +213,14 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Alamat Lengkap Rumah</label>
-                            <textarea name="alamat_rumah" rows="3" placeholder="Jl. Sudirman No 123, RT 01 RW 02, Kec. Padang Barat..." class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark resize-none">{{ old('alamat_rumah', $pendaftar->alamat_rumah ?? '') }}</textarea>
+                            <textarea name="alamat_rumah" rows="3" placeholder="Jl. Sudirman No 123, RT 01 RW 02, Kec. Padang Barat..." class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark resize-none"><?php echo e(old('alamat_rumah', $pendaftar->alamat_rumah ?? '')); ?></textarea>
                         </div>
                     </div>
                 </section>
 
                 <hr class="border-gray-100 my-10">
 
-                {{-- BAGIAN 3: PENDIDIKAN --}}
+                
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
@@ -232,27 +232,27 @@
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                         <div class="md:col-span-12">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Asal Sekolah</label>
-                            <input type="text" name="sekolah_asal" value="{{ old('sekolah_asal', $pendaftar->sekolah_asal ?? '') }}" placeholder="Contoh: SMAN 1 Padang" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="text" name="sekolah_asal" value="<?php echo e(old('sekolah_asal', $pendaftar->sekolah_asal ?? '')); ?>" placeholder="Contoh: SMAN 1 Padang" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
 
                         <div class="md:col-span-6">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Jurusan di Sekolah</label>
-                            <input type="text" name="jurusan_sma" value="{{ old('jurusan_sma', $pendaftar->jurusan_sma ?? '') }}" placeholder="MIPA / IPS / RPL" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="text" name="jurusan_sma" value="<?php echo e(old('jurusan_sma', $pendaftar->jurusan_sma ?? '')); ?>" placeholder="MIPA / IPS / RPL" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
 
                         <div class="md:col-span-3">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Tahun Lulus</label>
-                            <input type="number" name="tahun_lulus" value="{{ old('tahun_lulus', $pendaftar->tahun_lulus ?? '') }}" placeholder="2024" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="number" name="tahun_lulus" value="<?php echo e(old('tahun_lulus', $pendaftar->tahun_lulus ?? '')); ?>" placeholder="2024" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
 
                         <div class="md:col-span-3">
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Rata-rata Nilai</label>
-                            <input type="number" step="0.01" name="nilai_akhir" value="{{ old('nilai_akhir', $pendaftar->nilai_akhir ?? '') }}" placeholder="85.50" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
+                            <input type="number" step="0.01" name="nilai_akhir" value="<?php echo e(old('nilai_akhir', $pendaftar->nilai_akhir ?? '')); ?>" placeholder="85.50" class="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[14px] text-adzkia-dark">
                         </div>
                     </div>
                 </section>
         
-                {{-- BAGIAN 4: PRODI (Dalam Kotak Khusus Biru Muda) --}}
+                
                 <section class="bg-[#F8FAFC] p-8 md:p-10 rounded-[2rem] border border-gray-100 my-10">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-white shadow-sm text-adzkia-blue rounded-xl flex items-center justify-center">
@@ -267,11 +267,12 @@
                             <div class="relative">
                                 <select name="pilihan_jurusan_1" required class="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
                                     <option value="" disabled>Pilih Jurusan Utama</option>
-                                    @foreach($prodis as $prodi)
-                                        <option value="{{ $prodi->nama }}" {{ old('pilihan_jurusan_1', $pendaftar->pilihan_jurusan_1 ?? '') == $prodi->nama ? 'selected' : '' }}>
-                                            {{ $prodi->nama }}
+                                    <?php $__currentLoopData = $prodis; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prodi): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($prodi->nama); ?>" <?php echo e(old('pilihan_jurusan_1', $pendaftar->pilihan_jurusan_1 ?? '') == $prodi->nama ? 'selected' : ''); ?>>
+                                            <?php echo e($prodi->nama); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                                 <i data-feather="chevron-down" class="w-5 h-5 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                             </div>
@@ -282,11 +283,12 @@
                             <div class="relative">
                                 <select name="pilihan_jurusan_2" required class="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer shadow-sm">
                                     <option value="" disabled>Pilih Jurusan Alternatif</option>
-                                    @foreach($prodis as $prodi)
-                                        <option value="{{ $prodi->nama }}" {{ old('pilihan_jurusan_2', $pendaftar->pilihan_jurusan_2 ?? '') == $prodi->nama ? 'selected' : '' }}>
-                                            {{ $prodi->nama }}
+                                    <?php $__currentLoopData = $prodis; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prodi): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($prodi->nama); ?>" <?php echo e(old('pilihan_jurusan_2', $pendaftar->pilihan_jurusan_2 ?? '') == $prodi->nama ? 'selected' : ''); ?>>
+                                            <?php echo e($prodi->nama); ?>
+
                                         </option>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                                 <i data-feather="chevron-down" class="w-5 h-5 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                             </div>
@@ -294,7 +296,7 @@
                     </div>
                 </section>
 
-                {{-- BAGIAN 5: UPLOAD BERKAS --}}
+                
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center">
@@ -323,11 +325,11 @@
                                 </div>
                                 <h4 class="text-[12px] font-extrabold text-adzkia-dark w-full px-2 text-center truncate" x-text="files.foto"></h4>
                                 <div class="flex gap-2 mt-3">
-                                    @if(!empty($pendaftar->pas_foto))
-                                    <a href="{{ asset('storage/' . $pendaftar->pas_foto) }}" target="_blank" x-show="files.foto === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
+                                    <?php if(!empty($pendaftar->pas_foto)): ?>
+                                    <a href="<?php echo e(asset('storage/' . $pendaftar->pas_foto)); ?>" target="_blank" x-show="files.foto === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
                                         Lihat File
                                     </a>
-                                    @endif
+                                    <?php endif; ?>
                                     <button type="button" @click.stop="$refs.fileFoto.click()" class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">Ganti</button>
                                 </div>
                             </div>
@@ -351,11 +353,11 @@
                                 </div>
                                 <h4 class="text-[12px] font-extrabold text-adzkia-dark w-full px-2 text-center truncate" x-text="files.ktp"></h4>
                                 <div class="flex gap-2 mt-3">
-                                    @if(!empty($pendaftar->scan_ktp))
-                                    <a href="{{ asset('storage/' .$pendaftar->scan_ktp) }}" target="_blank" x-show="files.ktp === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
+                                    <?php if(!empty($pendaftar->scan_ktp)): ?>
+                                    <a href="<?php echo e(asset('storage/' .$pendaftar->scan_ktp)); ?>" target="_blank" x-show="files.ktp === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
                                         Lihat File
                                     </a>
-                                    @endif
+                                    <?php endif; ?>
                                     <button type="button" @click.stop="$refs.fileKtp.click()" class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">Ganti</button>
                                 </div>
                             </div>
@@ -379,11 +381,11 @@
                                 </div>
                                 <h4 class="text-[12px] font-extrabold text-adzkia-dark w-full px-2 text-center truncate" x-text="files.ijazah"></h4>
                                 <div class="flex gap-2 mt-3">
-                                    @if(!empty($pendaftar->ijazah_skl))
-                                    <a href="{{ asset('storage/' . $pendaftar->ijazah_skl) }}" target="_blank" x-show="files.ijazah === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
+                                    <?php if(!empty($pendaftar->ijazah_skl)): ?>
+                                    <a href="<?php echo e(asset('storage/' . $pendaftar->ijazah_skl)); ?>" target="_blank" x-show="files.ijazah === 'Sudah Diunggah'" class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors" @click.stop>
                                         Lihat File
                                     </a>
-                                    @endif
+                                    <?php endif; ?>
                                     <button type="button" @click.stop="$refs.fileIjazah.click()" class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">Ganti</button>
                                 </div>
                             </div>
@@ -410,13 +412,13 @@
                 currentStep: 4,
                 provinces: [],
                 cities: [],
-                selectedProv: '{{ old('provinsi', $pendaftar->provinsi ?? '') }}',
-                selectedCity: '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}',
+                selectedProv: '<?php echo e(old('provinsi', $pendaftar->provinsi ?? '')); ?>',
+                selectedCity: '<?php echo e(old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '')); ?>',
 
                 files: {
-                    foto: '{{ !empty($pendaftar->pas_foto) ? "Sudah Diunggah" : "" }}',
-                    ktp: '{{ !empty($pendaftar->scan_ktp) ? "Sudah Diunggah" : "" }}',
-                    ijazah: '{{ !empty($pendaftar->ijazah_skl) ? "Sudah Diunggah" : "" }}'
+                    foto: '<?php echo e(!empty($pendaftar->pas_foto) ? "Sudah Diunggah" : ""); ?>',
+                    ktp: '<?php echo e(!empty($pendaftar->scan_ktp) ? "Sudah Diunggah" : ""); ?>',
+                    ijazah: '<?php echo e(!empty($pendaftar->ijazah_skl) ? "Sudah Diunggah" : ""); ?>'
                 },
 
                 steps: [
@@ -435,7 +437,7 @@
                             if (this.selectedProv) {
                                 await this.loadCities(this.selectedProv);
                                 this.$nextTick(() => {
-                                    this.selectedCity = '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}';
+                                    this.selectedCity = '<?php echo e(old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '')); ?>';
                                 });
                             }
                         }
@@ -481,4 +483,4 @@
         document.addEventListener('DOMContentLoaded', () => { feather.replace(); });
     </script>
 </body>
-</html>
+</html><?php /**PATH D:\Database\spmb-adzkia\resources\views/user/formulir.blade.php ENDPATH**/ ?>

@@ -103,9 +103,26 @@ class DashboardUserController extends Controller
         // Mencegah input 'pendaftar_id' dari form HTML ikut ter-save ke database
         $pendaftar->update($request->except(['_token', 'pas_foto', 'scan_ktp', 'ijazah_skl', 'pendaftar_id']));
 
-        if ($request->hasFile('pas_foto'))   $pendaftar->update(['pas_foto' => $request->file('pas_foto')->store('dokumen/foto', 'public')]);
-        if ($request->hasFile('scan_ktp'))   $pendaftar->update(['scan_ktp' => $request->file('scan_ktp')->store('dokumen/ktp', 'public')]);
-        if ($request->hasFile('ijazah_skl')) $pendaftar->update(['ijazah_skl' => $request->file('ijazah_skl')->store('dokumen/ijazah', 'public')]);
+        if ($request->hasFile('pas_foto')) {
+            $file = $request->file('pas_foto');
+            $namaFile = 'foto_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/foto'), $namaFile);
+            $pendaftar->update(['pas_foto' => 'uploads/foto/' . $namaFile]);
+        }
+
+        if ($request->hasFile('scan_ktp')) {
+            $file = $request->file('scan_ktp');
+            $namaFile = 'ktp_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/ktp'), $namaFile);
+            $pendaftar->update(['scan_ktp' => 'uploads/ktp/' . $namaFile]);
+        }
+
+        if ($request->hasFile('ijazah_skl')) {
+            $file = $request->file('ijazah_skl');
+            $namaFile = 'ijazah_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/ijazah'), $namaFile);
+            $pendaftar->update(['ijazah_skl' => 'uploads/ijazah/' . $namaFile]);
+        }
 
         return redirect()->route('konfirmasi-data', $pendaftar->id)->with('success', 'Data biodata berhasil tersimpan!');
     }
