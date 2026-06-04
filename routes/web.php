@@ -17,8 +17,7 @@ use App\Http\Middleware\CheckRole;
 // 1. HALAMAN UTAMA & PUBLIK
 // ==========================================
     Route::get('/', function () { 
-        $prodis = \App\Models\Prodi::take(3)->get();
-        // Hanya ambil berita yang "Published" untuk halaman depan
+        $prodis = \App\Models\Prodi::take(6)->get();
         $beritas = \App\Models\Berita::where('status', 'Published')->latest()->take(3)->get();
         $faqs = \App\Models\Faq::take(5)->get();
         
@@ -27,9 +26,7 @@ use App\Http\Middleware\CheckRole;
 
     Route::get('/program-studi', function () { return view('prodi'); });
     
-    // --- RUTE INI SEBELUMNYA HILANG, SEKARANG SUDAH DIKEMBALIKAN ---
     Route::get('/berita', function () { 
-        // Mengambil semua berita yang statusnya Published
         $beritas = \App\Models\Berita::where('status', 'Published')->latest()->get();
         return view('berita', compact('beritas')); 
     });
