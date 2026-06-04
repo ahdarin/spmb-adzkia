@@ -164,12 +164,11 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('prodiManager', () => ({
         modalOpen: false,
         isEdit: false,
-        // Daftar Ikon Keren yang bisa dipilih
         iconList: [
             'book-open', 'monitor', 'cpu', 'briefcase', 'heart', 'activity', 
             'code', 'database', 'globe', 'layout', 'pen-tool', 'users', 
             'bar-chart-2', 'tool', 'zap', 'award', 'target', 'compass', 
-            'book', 'layers', 'pie-chart', 'settings', 'camera'
+            'book', 'layers', 'pie-chart', 'settings', 'camera', 'dollar-sign'
         ],
         form: {
             id: '',
