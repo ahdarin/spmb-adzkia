@@ -17,7 +17,6 @@ class Prodi extends Model
         'akreditasi', 
         'kuota', 
         'biaya',
-        'deskripsi',
         'icon'
     ];
 }

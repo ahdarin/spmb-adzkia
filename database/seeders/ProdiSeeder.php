@@ -11,14 +11,6 @@ class ProdiSeeder extends Seeder
     {
         $prodis = [
             [
-                'nama' => 'Pendidikan Dasar',
-                'jenjang' => 'S2',
-                'akreditasi' => 'Baik',
-                'kuota' => 0,
-                'biaya' => 0,
-                'icon' => 'book-open',
-            ],
-            [
                 'nama' => 'Pendidikan Guru Sekolah Dasar (PGSD)',
                 'jenjang' => 'S1',
                 'akreditasi' => 'B',
@@ -65,14 +57,6 @@ class ProdiSeeder extends Seeder
                 'kuota' => 0,
                 'biaya' => 0,
                 'icon' => 'users',
-            ],
-            [
-                'nama' => 'Pendidikan Profesi Guru (PPG)',
-                'jenjang' => 'Vokasi',
-                'akreditasi' => '',
-                'kuota' => 0,
-                'biaya' => 0,
-                'icon' => 'briefcase',
             ],
             [
                 'nama' => 'Teknik Industri',
@@ -153,6 +137,22 @@ class ProdiSeeder extends Seeder
                 'kuota' => 0,
                 'biaya' => 0,
                 'icon' => 'camera',
+            ],
+            [
+                'nama' => 'Pendidikan Dasar',
+                'jenjang' => 'S2',
+                'akreditasi' => 'Baik',
+                'kuota' => 0,
+                'biaya' => 0,
+                'icon' => 'book-open',
+            ],
+            [
+                'nama' => 'Pendidikan Profesi Guru (PPG)',
+                'jenjang' => 'Vokasi',
+                'akreditasi' => '',
+                'kuota' => 0,
+                'biaya' => 0,
+                'icon' => 'briefcase',
             ]
             
         ];
