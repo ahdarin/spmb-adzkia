@@ -8,7 +8,7 @@
     <div class="px-6 md:px-16 grid grid-cols-1 md:grid-cols-4 gap-12 max-w-7xl mx-auto mb-16 relative z-10">
         <div class="space-y-6">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo Adzkia" class="h-12 w-auto brightness-0 invert">
+                <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo Adzkia" class="h-12 w-auto rounded-[0.5rem]">
                 <div class="flex flex-col">
                     <span class="text-xl font-black text-white tracking-tight leading-none">Universitas</span>
                     <span class="text-[15px] font-bold text-adzkia-red tracking-wider uppercase mt-0.5">Adzkia</span>
