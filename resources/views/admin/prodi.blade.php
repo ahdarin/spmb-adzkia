@@ -35,7 +35,7 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="font-bold text-brand-dark text-[15px]">{{ $item->nama }}</span>
-                                    <span class="text-[11px] font-medium text-gray-400 mt-0.5 truncate max-w-[200px]" title="{{ $item->deskripsi }}">{{ $item->deskripsi ?? 'Belum ada deskripsi.' }}</span>
+                                    
                                 </div>
                             </div>
                         </td>
@@ -115,11 +115,6 @@
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Nama Program Studi</label>
                             <input type="text" name="nama" x-model="form.nama" placeholder="Misal: Teknik Elektro" required class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-blue/20 transition-all font-bold text-sm">
                         </div>
-                        
-                        <div class="col-span-2">
-                            <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Deskripsi Singkat Prodi</label>
-                            <textarea name="deskripsi" x-model="form.deskripsi" rows="3" placeholder="Tuliskan penjelasan singkat mengenai prodi ini..." class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-brand-blue/20 transition-all font-bold text-sm resize-none"></textarea>
-                        </div>
 
                         <div>
                             <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Jenjang</label>
@@ -177,7 +172,6 @@ document.addEventListener('alpine:init', () => {
             akreditasi: 'Unggul',
             kuota: '',
             biaya: '',
-            deskripsi: '',
             icon: 'book-open' // Tambahan state ikon (default)
         },
 
@@ -190,7 +184,7 @@ document.addEventListener('alpine:init', () => {
 
         openAddModal() {
             this.isEdit = false;
-            this.form = { id: '', nama: '', jenjang: 'S1', akreditasi: 'Unggul', kuota: '', biaya: '', deskripsi: '', icon: 'book-open' };
+            this.form = { id: '', nama: '', jenjang: 'S1', akreditasi: 'Unggul', kuota: '', biaya: '', icon: 'book-open' };
             this.modalOpen = true;
             this.updatePreview();
         },
@@ -198,7 +192,6 @@ document.addEventListener('alpine:init', () => {
         openEditModal(data) {
             this.isEdit = true;
             this.form = { ...data };
-            if (!this.form.deskripsi) this.form.deskripsi = '';
             if (!this.form.icon) this.form.icon = 'book-open';
             this.modalOpen = true;
             this.updatePreview();

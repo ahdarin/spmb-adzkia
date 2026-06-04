@@ -11,21 +11,11 @@ class ProdiSeeder extends Seeder
     {
         $prodis = [
             [
-                'nama' => 'Pendidikan Dasar',
-                'jenjang' => 'S2',
-                'akreditasi' => 'Baik',
-                'kuota' => 0,
-                'biaya' => 0,
-                'deskripsi' => '',
-                'icon' => 'book-open',
-            ],
-            [
                 'nama' => 'Pendidikan Guru Sekolah Dasar (PGSD)',
                 'jenjang' => 'S1',
                 'akreditasi' => 'B',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'book',
             ],
             [
@@ -34,7 +24,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'B',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'book-open',
             ],
             [
@@ -43,7 +32,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'book',
             ],
             [
@@ -52,7 +40,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'pie-chart',
             ],
             [
@@ -61,7 +48,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'bar-chart-2',
             ],
             [
@@ -70,17 +56,7 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Ter Akreditasi LAMDIK',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'users',
-            ],
-            [
-                'nama' => 'Pendidikan Profesi Guru (PPG)',
-                'jenjang' => 'Vokasi',
-                'akreditasi' => '',
-                'kuota' => 0,
-                'biaya' => 0,
-                'deskripsi' => '',
-                'icon' => 'briefcase',
             ],
             [
                 'nama' => 'Teknik Industri',
@@ -88,7 +64,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'settings',
             ],
             [
@@ -97,7 +72,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'code',
             ],
             [
@@ -106,7 +80,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'cpu',
             ],
             [
@@ -115,7 +88,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'dollar-sign',
             ],
             [
@@ -124,7 +96,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'globe',
             ],
             [
@@ -133,7 +104,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'target',
             ],
             [
@@ -142,7 +112,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'heart',
             ],
             [
@@ -151,7 +120,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'book',
             ],
             [
@@ -160,7 +128,6 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Baik',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'tool',
             ],
             [
@@ -169,8 +136,23 @@ class ProdiSeeder extends Seeder
                 'akreditasi' => 'Terakreditasi Sementara',
                 'kuota' => 0,
                 'biaya' => 0,
-                'deskripsi' => '',
                 'icon' => 'camera',
+            ],
+            [
+                'nama' => 'Pendidikan Dasar',
+                'jenjang' => 'S2',
+                'akreditasi' => 'Baik',
+                'kuota' => 0,
+                'biaya' => 0,
+                'icon' => 'book-open',
+            ],
+            [
+                'nama' => 'Pendidikan Profesi Guru (PPG)',
+                'jenjang' => 'Vokasi',
+                'akreditasi' => '',
+                'kuota' => 0,
+                'biaya' => 0,
+                'icon' => 'briefcase',
             ]
             
         ];
