@@ -108,7 +108,7 @@ class RekomendasiController extends Controller
     public function kuesionerSubmit(Request $request)
     {
         $page = $request->input('page');
-        $answers = $request->input('jawaban'); // format: ['q1' => 4, 'q2' => 5]
+        $answers = $request->input('jawaban'); 
         
         $savedAnswers = session()->get('jawaban_kuesioner', []);
         foreach ($answers as $id => $val) {
@@ -116,7 +116,77 @@ class RekomendasiController extends Controller
         }
         session()->put('jawaban_kuesioner', $savedAnswers);
 
+        $questions = $this->getQuestions();
+        $totalPages = ceil(count($questions) / 5);
+
+        // Jika ini halaman terakhir kuesioner, arahkan ke halaman loading
+        if ($page >= $totalPages) {
+            return redirect()->route('rekomendasi.loading');
+        }
+
         return redirect()->route('rekomendasi.kuesioner', ['page' => $page + 1]);
+    }
+
+    public function loading()
+    {
+        return view('user.rekomendasi-loading');
+    }
+
+    // 3. Ubah hitungRekomendasi menjadi prosesAIAjax
+    public function prosesAIAjax()
+    {
+        $answers = session()->get('jawaban_kuesioner', []);
+        $questions = $this->getQuestions();
+        
+        $scoresByCategory = [];
+        foreach ($questions as $q) {
+            if (isset($answers[$q['id']])) {
+                $scoresByCategory[$q['cat']][] = (int) $answers[$q['id']];
+            }
+        }
+
+        $categories = ['logika', 'sosial', 'kreatif', 'bisnis', 'sains', 'komunikatif', 'teliti', 'empati', 'kepemimpinan'];
+        $averages = [];
+        
+        foreach ($categories as $cat) {
+            $avg = 0;
+            if (isset($scoresByCategory[$cat]) && count($scoresByCategory[$cat]) > 0) {
+                $avg = array_sum($scoresByCategory[$cat]) / count($scoresByCategory[$cat]);
+            }
+            $averages[] = round($avg, 2);
+        }
+
+        $scriptPath = base_path('app/Python/predict.py');
+        $modelPath = base_path('app/Python/model_rekomendasi.pkl');
+        
+        $arguments = array_merge([$modelPath], $averages);
+        $command = array_merge(['python', $scriptPath], $arguments);
+        
+        $env = [
+            'SystemRoot' => getenv('SystemRoot') ?: 'C:\\Windows',
+            'PATH' => getenv('PATH'),
+            'USERPROFILE' => getenv('USERPROFILE')
+        ];
+        
+        $process = new \Symfony\Component\Process\Process($command, null, $env);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            return response()->json(['success' => false, 'message' => 'Gagal menjalankan script Python.'], 500);
+        }
+
+        $output = json_decode($process->getOutput(), true);
+        
+        if (!$output || isset($output['error'])) {
+            $errorMessage = $output['error'] ?? 'Terjadi kesalahan tidak dikenal pada model AI.';
+            return response()->json(['success' => false, 'message' => $errorMessage], 500);
+        }
+        
+        session()->put('hasil_rekomendasi', $output);
+        session()->put('skor_kategori', array_combine($categories, $averages));
+
+        // Kembalikan JSON sukses agar JavaScript di halaman loading bisa melakukan redirect ke hasil
+        return response()->json(['success' => true]);
     }
 
     public function hitungRekomendasi()

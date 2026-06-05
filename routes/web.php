@@ -11,6 +11,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\DashboardUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RekomendasiController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Middleware\CheckRole; 
 
 // ==========================================
@@ -45,9 +46,15 @@ use App\Http\Middleware\CheckRole;
         Route::get('/kuesioner', [RekomendasiController::class, 'kuesioner'])->name('kuesioner');
         Route::post('/kuesioner', [RekomendasiController::class, 'kuesionerSubmit'])->name('kuesioner.submit');
         
-        Route::get('/hitung', [RekomendasiController::class, 'hitungRekomendasi'])->name('hitung');
+        // Rute Baru untuk Loading dan Proses AJAX
+        Route::get('/loading', [RekomendasiController::class, 'loading'])->name('loading');
+        Route::post('/proses', [RekomendasiController::class, 'prosesAIAjax'])->name('proses');
+        
         Route::get('/hasil', [RekomendasiController::class, 'hasil'])->name('hasil');
     });
+
+    // Rute Chatbot
+    Route::post('/api/chat-ai', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('rekomendasi.chat.ai');
 
 // ==========================================
 // 2. GUEST AREA (Hanya bisa diakses jika BELUM login)

@@ -109,9 +109,6 @@
                             <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest">
                                 Password
                             </label>
-                            <a href="#" class="text-[11px] font-extrabold text-adzkia-blue hover:text-adzkia-red hover:underline transition-colors">
-                                Lupa Password?
-                            </a>
                         </div>
                         <input type="password" 
                                name="password" 

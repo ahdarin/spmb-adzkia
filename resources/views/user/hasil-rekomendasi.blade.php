@@ -24,69 +24,12 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 @php
-    // Mengambil data Top 1 dari hasil prediksi AI
     $top1 = $hasil[0] ?? ['jurusan' => 'Belum ada data', 'score' => 0];
 @endphp
 
 <div class="bg-adzkia-bg antialiased text-adzkia-dark min-h-screen relative" x-data="rekomendasiResult()">
 
-    <div x-show="isLoading" 
-         x-transition:leave="transition ease-in duration-500"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-b from-white to-[#F0F4F8] px-6">
-        
-        <div class="w-16 h-16 bg-adzkia-dark rounded-2xl text-white flex items-center justify-center mb-6 shadow-xl shadow-adzkia-dark/20 animate-bounce">
-            <i data-feather="cpu" class="w-8 h-8"></i>
-        </div>
-        <h2 class="text-xl font-black text-adzkia-dark mb-12">Universitas Adzkia</h2>
-
-        <div class="w-full max-w-md mb-6">
-            <div class="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full bg-adzkia-dark transition-all duration-300 ease-out" :style="`width: ${progress}%`"></div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-10">
-            <span class="flex items-center gap-1.5" :class="progress > 10 ? 'text-adzkia-blue' : ''">
-                <i data-feather="activity" class="w-3.5 h-3.5"></i> Menganalisis Kognitif
-            </span>
-            <span class="flex items-center gap-1.5" :class="progress > 60 ? 'text-adzkia-blue' : ''">
-                <i data-feather="cpu" class="w-3.5 h-3.5"></i> Memetakan Profil
-            </span>
-        </div>
-
-        <div class="text-center max-w-lg mb-12">
-            <h1 class="text-3xl md:text-4xl font-black text-adzkia-dark tracking-tight mb-4">Sedang Menganalisis Jawaban Kamu...</h1>
-            <p class="text-[14px] font-medium text-gray-500 leading-relaxed">
-                Sistem kurasi kami sedang memetakan profil kognitif Anda ke dalam profil akademik terbaik untuk memberikan rekomendasi yang paling akurat.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mb-12">
-            <div class="bg-white py-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                <h3 class="text-xl font-black text-adzkia-dark mb-1">AI</h3>
-                <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Matriks Profil</p>
-            </div>
-            <div class="bg-white py-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                <h3 class="text-xl font-black text-adzkia-dark mb-1">Prediksi</h3>
-                <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Metode Kurasi</p>
-            </div>
-            <div class="bg-white py-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                <h3 class="text-xl font-black text-adzkia-dark mb-1" x-text="Math.floor(progress * 0.98) + '%'"></h3>
-                <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Kurasi Data</p>
-            </div>
-        </div>
-
-        <p class="text-[12px] font-bold text-gray-400 animate-pulse">Tunggu sebentar, kami sedang membangun masa depan akademis Anda.</p>
-    </div>
-
-
-    <div x-show="!isLoading" 
-         x-transition:enter="transition ease-out duration-700 delay-300"
-         x-transition:enter-start="opacity-0 translate-y-10"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         class="min-h-screen flex flex-col" x-cloak>
+    <div class="min-h-screen flex flex-col">
         
         <header class="w-full max-w-6xl mx-auto px-6 py-8 flex flex-col gap-8">
             <a href="{{ url('/') }}" class="w-10 h-10 flex items-center justify-center text-adzkia-dark hover:bg-gray-200 bg-white rounded-full shadow-sm transition-colors">
@@ -140,7 +83,7 @@
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        @foreach(array_slice($topTraits, 0, 4) as $trait)
+                        @foreach(array_slice($topTraits ?? [], 0, 4) as $trait)
                         <div>
                             <h4 class="text-[13px] font-black text-adzkia-dark mb-2 flex items-center gap-2 uppercase tracking-wide">
                                 <i data-feather="check-square" class="w-4 h-4 text-adzkia-blue"></i> {{ $trait }}
@@ -161,7 +104,6 @@
                 @for($i = 1; $i < min(3, count($hasil)); $i++)
                     @php 
                         $rek = $hasil[$i];
-                        // Mencari data prodi dari database untuk ambil icon (opsional)
                         $prodi = isset($sortedTopProdis) ? $sortedTopProdis->firstWhere('nama', $rek['jurusan']) : null;
                         $icon = $prodi && isset($prodi->icon) ? $prodi->icon : 'book-open';
                     @endphp
@@ -178,7 +120,6 @@
 
         </main>
     </div>
-
 
     <div x-show="showChatbot" class="fixed inset-0 z-[100] flex items-center justify-center px-4" style="display: none;" x-cloak>
         <div x-show="showChatbot" x-transition.opacity @click="showChatbot = false" class="absolute inset-0 bg-adzkia-dark/80 backdrop-blur-sm cursor-pointer"></div>
@@ -203,23 +144,47 @@
                 </button>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-6 bg-adzkia-bg space-y-4">
+            <div class="flex-1 overflow-y-auto p-6 bg-adzkia-bg space-y-4" id="chat-container">
                 <div class="flex gap-3 max-w-[85%]">
                     <div class="w-8 h-8 bg-adzkia-blue text-white rounded-full flex items-center justify-center shrink-0 mt-1">
                         <i data-feather="cpu" class="w-4 h-4"></i>
                     </div>
                     <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 text-[13px] font-medium text-gray-600 leading-relaxed">
                         Halo! Saya adalah Konsultan Pendidikan AI Adzkia. Berdasarkan data kuesioner Anda, saya merekomendasikan program studi <strong>{{ $top1['jurusan'] }}</strong>.<br><br>
-                        Tingkat kemampuan <strong><span class="uppercase">{{ $topTraits[0] ?? '' }}</span></strong> Anda berada di skor {{ session('skor_kategori')[$topTraits[0] ?? ''] ?? '-' }}, yang sangat cocok untuk menyelesaikan tantangan di program studi ini. Apakah Anda ingin mengetahui materi kuliah apa saja yang akan dipelajari di jurusan ini?
+                        Apakah Anda ingin mengetahui prospek kerja, materi kuliah, atau alasan spesifik mengapa jurusan ini cocok untuk Anda?
+                    </div>
+                </div>
+
+                <template x-for="(msg, index) in chatMessages" :key="index">
+                    <div :class="msg.role === 'user' ? 'flex gap-3 max-w-[85%] ml-auto justify-end' : 'flex gap-3 max-w-[85%]'">
+                        <div x-show="msg.role === 'ai'" class="w-8 h-8 bg-adzkia-blue text-white rounded-full flex items-center justify-center shrink-0 mt-1">
+                            <i data-feather="cpu" class="w-4 h-4"></i>
+                        </div>
+                        
+                        <div :class="msg.role === 'user' ? 'bg-adzkia-dark text-white rounded-tr-none' : 'bg-white text-gray-600 rounded-tl-none border border-gray-100'" 
+                             class="p-4 rounded-2xl shadow-sm text-[13px] font-medium leading-relaxed whitespace-pre-wrap" x-text="msg.text">
+                        </div>
+                    </div>
+                </template>
+
+                <div x-show="isTyping" class="flex gap-3 max-w-[85%]">
+                    <div class="w-8 h-8 bg-adzkia-blue text-white rounded-full flex items-center justify-center shrink-0 mt-1">
+                        <i data-feather="cpu" class="w-4 h-4"></i>
+                    </div>
+                    <div class="bg-white px-5 py-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 flex gap-1 items-center">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
                     </div>
                 </div>
             </div>
 
             <div class="p-4 border-t border-gray-100 bg-white rounded-b-[2rem]">
-                <form onsubmit="event.preventDefault(); alert('Fitur koneksi API LLM belum diimplementasikan.');" class="flex gap-2 relative">
-                    <input type="text" placeholder="Tanyakan seputar jurusan, prospek kerja, atau biaya..." class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold text-adzkia-dark focus:ring-2 focus:ring-adzkia-blue focus:border-adzkia-blue transition-all pr-14">
-                    <button type="submit" class="absolute right-2 top-2 p-2 bg-adzkia-blue text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i data-feather="send" class="w-4 h-4"></i>
+                <form @submit.prevent="sendMessage" class="flex gap-2 relative">
+                    <input type="text" x-model="userInput" :disabled="isTyping" placeholder="Tanyakan seputar jurusan, prospek kerja, atau biaya..." class="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold text-adzkia-dark focus:ring-2 focus:ring-adzkia-blue focus:border-adzkia-blue transition-all pr-14 disabled:opacity-50">
+                    
+                    <button type="submit" :disabled="isTyping || userInput.trim() === ''" class="absolute right-2 top-2 h-10 w-10 flex items-center justify-center bg-adzkia-blue text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </form>
             </div>
@@ -231,29 +196,55 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('rekomendasiResult', () => ({
-            isLoading: true,
-            progress: 0,
             showChatbot: false,
+            userInput: '',
+            isTyping: false,
+            chatMessages: [],
+            jurusanRekomendasi: '{{ $top1['jurusan'] }}',
 
-            init() {
-                // Simulasi proses analisis AI
-                let interval = setInterval(() => {
-                    this.progress += Math.floor(Math.random() * 15) + 5; 
-                    
-                    if (this.progress >= 100) {
-                        this.progress = 100;
-                        clearInterval(interval);
-                        
-                        setTimeout(() => {
-                            this.isLoading = false;
-                            
-                            this.$nextTick(() => {
-                                if(window.feather) feather.replace();
-                            });
-                            
-                        }, 500); 
+            async sendMessage() {
+                if (this.userInput.trim() === '') return;
+
+                const message = this.userInput;
+                this.chatMessages.push({ role: 'user', text: message });
+                this.userInput = ''; 
+                this.isTyping = true; 
+                this.scrollToBottom();
+
+                try {
+                    const response = await fetch('{{ route('rekomendasi.chat.ai') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            jurusan: this.jurusanRekomendasi
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.chatMessages.push({ role: 'ai', text: data.reply });
+                    } else {
+                        this.chatMessages.push({ role: 'ai', text: 'Maaf, sistem AI gagal merespon: ' + data.message });
                     }
-                }, 300); 
+                } catch (error) {
+                    this.chatMessages.push({ role: 'ai', text: 'Koneksi terputus. Pastikan server Ollama sedang berjalan di terminal.' });
+                } finally {
+                    this.isTyping = false;
+                    this.scrollToBottom();
+                    this.$nextTick(() => { if(window.feather) feather.replace(); });
+                }
+            },
+
+            scrollToBottom() {
+                this.$nextTick(() => {
+                    const container = document.getElementById('chat-container');
+                    if(container) container.scrollTop = container.scrollHeight;
+                });
             }
         }));
     });
