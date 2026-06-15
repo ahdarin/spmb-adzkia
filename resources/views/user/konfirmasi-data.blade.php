@@ -89,8 +89,7 @@
             <div class="lg:col-span-4 space-y-6">
                 <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm flex flex-col items-center text-center">
                     
-                    <img src="{{ !empty($pendaftar->pas_foto) ? asset('storage/' . $pendaftar->pas_foto) : 'https://ui-avatars.com/api/?name=' . urlencode($pendaftar->nama_lengkap) . '&background=F1F5F9&color=1e293b&size=128' }}" 
-                         alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100 object-cover">
+                <img src="{{ !empty($pendaftar->pas_foto) ? asset($pendaftar->pas_foto) : 'https://ui-avatars.com/api/?name=' . urlencode($pendaftar->nama_lengkap) . '&background=F1F5F9&color=1e293b&size=128' }}"                         alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100 object-cover">
                      
                     <h2 class="text-2xl font-black text-adzkia-dark mb-1">{{ $pendaftar->nama_lengkap }}</h2>
                     <p class="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-6">No. Registrasi: {{ $pendaftar->no_pendaftaran }}</p>
@@ -208,11 +207,10 @@
                         {{-- Thumbnail Pas Foto --}}
                         <div class="border border-gray-200 rounded-xl p-3 flex items-center gap-4 hover:border-adzkia-blue transition-colors group">
                             <div class="w-14 h-14 bg-gray-50 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-gray-100">
-                                <img src="{{ asset('storage/' . $pendaftar->pas_foto) }}" alt="Pas Foto" class="w-full h-full object-cover">
-                            </div>
+                                <img src="{{ asset($pendaftar->pas_foto) }}" alt="Pas Foto" class="w-full h-full object-cover">                            </div>
                             <div class="flex flex-col">
                                 <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest">Pas Foto</span>
-                                <a href="{{ asset('storage/' . $pendaftar->pas_foto) }}" target="_blank" class="text-[11px] font-bold text-adzkia-blue hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
+                                <a href="{{ asset($pendaftar->pas_foto) }}" target="_blank" class="text-[11px] font-bold text-adzkia-blue hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
                                     Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
                                 </a>
                             </div>
@@ -224,12 +222,12 @@
                                 @if(Str::endsWith($pendaftar->scan_ktp, '.pdf'))
                                     <i data-feather="file-text" class="w-6 h-6 text-gray-400"></i>
                                 @else
-                                    <img src="{{ asset('storage/' . $pendaftar->scan_ktp) }}" alt="KTP" class="w-full h-full object-cover">
+<img src="{{ asset($pendaftar->scan_ktp) }}" alt="KTP" class="w-full h-full object-cover">
                                 @endif
                             </div>
                             <div class="flex flex-col">
                                 <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest">Scan KTP</span>
-                                <a href="{{ asset('storage/' . $pendaftar->scan_ktp) }}" target="_blank" class="text-[11px] font-bold text-indigo-600 hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
+                                <a href="{{ asset($pendaftar->scan_ktp) }}" target="_blank" class="text-[11px] font-bold text-indigo-600 hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
                                     Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
                                 </a>
                             </div>
@@ -241,12 +239,12 @@
                                 @if(Str::endsWith($pendaftar->ijazah_skl, '.pdf'))
                                     <i data-feather="file-text" class="w-6 h-6 text-gray-400"></i>
                                 @else
-                                    <img src="{{ asset('storage/' . $pendaftar->ijazah_skl) }}" alt="Ijazah" class="w-full h-full object-cover">
+                                    <img src="{{ asset($pendaftar->ijazah_skl) }}" alt="Ijazah" class="w-full h-full object-cover">
                                 @endif
                             </div>
                             <div class="flex flex-col">
                                 <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest">Ijazah / SKL</span>
-                                <a href="{{ asset('storage/' . $pendaftar->ijazah_skl) }}" target="_blank" class="text-[11px] font-bold text-green-600 hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
+                                <a href="{{ asset($pendaftar->ijazah_skl) }}" target="_blank" class="text-[11px] font-bold text-green-600 hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
                                     Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
                                 </a>
                             </div>
@@ -288,7 +286,7 @@
                                 :disabled="!canProceed"
                                 class="w-full py-4 rounded-2xl font-black text-[15px] transition-all"
                                 :class="canProceed ? 'bg-adzkia-blue text-white hover:bg-blue-700 shadow-xl shadow-blue-600/20 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
-                            Konfirmasi & Kirim Data ke Admin
+                            Konfirmasi & Kirim Data
                         </button>
                     </form>
                     

@@ -208,7 +208,7 @@
                             @foreach($berita as $b)
                             <a href="#" class="flex gap-4 group">
                                 <div class="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                                    <img src="{{ asset('storage/' . $b->gambar) }}" alt="{{ $b->judul }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <img src="{{ asset($b->gambar) }}" alt="{{ $b->judul }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 </div>
                                 <div class="flex flex-col justify-center">
                                     <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">{{ \Carbon\Carbon::parse($b->created_at)->format('d M Y') }}</p>
@@ -264,7 +264,7 @@
                 <div class="text-center pb-6 border-b border-gray-50 relative z-10 pt-4">
                     <div class="w-24 h-24 bg-white border-4 border-white shadow-md rounded-2xl mx-auto flex items-center justify-center mb-4 overflow-hidden">
                         @if($pendaftar->pas_foto)
-                            <img src="{{ asset('storage/' . $pendaftar->pas_foto) }}" alt="Foto" class="w-full h-full object-cover">
+                            <img src="{{ asset($pendaftar->pas_foto) }}" alt="Foto" class="w-full h-full object-cover">
                         @else
                             <i data-feather="user" class="w-8 h-8 text-gray-300"></i>
                         @endif

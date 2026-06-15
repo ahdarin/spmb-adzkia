@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DataPendaftar;
 use Carbon\Carbon;
+use App\Services\FonnteService;
 
 class AdminPendaftarController extends Controller
 {
+    public function __construct(private FonnteService $wa) {}
+
 // ==========================================
     // 1. DASHBOARD & STATISTIK ADMIN
     // ==========================================
@@ -168,29 +171,51 @@ class AdminPendaftarController extends Controller
     }
 
 // Fungsi untuk menyetujui (Sudah ada di controller Anda, pastikan sesuai)
-    public function setujuiPembayaran($id)
+public function setujuiPembayaran($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->status_pembayaran = 'Terverifikasi';
         $pendaftar->save();
 
-        return redirect()->back()->with('success', 'Pembayaran atas nama ' . $pendaftar->nama_lengkap . ' berhasil diverifikasi.');
+        $pesan = "*Pembayaran Terverifikasi ✅*\n\n" .
+                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                 "Pembayaran biaya pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *BERHASIL DIVERIFIKASI* oleh panitia SPMB Universitas Adzkia.\n\n" .
+                 "Silakan login dan lanjutkan ke tahap *pengisian biodata & unggah berkas*:\n" .
+                 "http://spmb.adzkia.ac.id/login\n\n" .
+                 "Terima kasih.";
+
+        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WhatsApp telah dikirim.' : '(Notifikasi WA gagal terkirim, cek koneksi Fonnte).';
+
+        return redirect()->back()->with('success',
+            'Pembayaran atas nama ' . $pendaftar->nama_lengkap . ' berhasil diverifikasi. ' . $info);
     }
 
     // Fungsi BARU untuk menolak
-    public function tolakPembayaran($id)
+public function tolakPembayaran($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
-        // Kembalikan statusnya ke awal agar mereka bisa memilih bank dan unggah ulang
-        $pendaftar->status_pembayaran = 'Belum Bayar'; 
-        // Hapus file lama yang tidak valid (Opsional)
+        // Kembalikan ke awal agar bisa unggah ulang
+        $pendaftar->status_pembayaran = 'Belum Bayar';
+
         if ($pendaftar->bukti_bayar) {
             \Illuminate\Support\Facades\Storage::delete('public/' . $pendaftar->bukti_bayar);
             $pendaftar->bukti_bayar = null;
         }
         $pendaftar->save();
 
-        return redirect()->back()->with('error', 'Pembayaran ditolak. Pendaftar telah diminta mengunggah ulang bukti pembayaran.');
+        $pesan = "*Verifikasi Pembayaran Ditolak ⚠️*\n\n" .
+                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                 "Mohon maaf, bukti pembayaran Anda (No. {$pendaftar->no_pendaftaran}) *belum dapat kami verifikasi*.\n\n" .
+                 "Silakan login kembali lalu *unggah ulang* bukti pembayaran yang valid dan jelas:\n" .
+                 "http://spmb.adzkia.ac.id/login\n\n" .
+                 "Bila ada kendala, hubungi panitia SPMB. Terima kasih.";
+
+        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
+
+        return redirect()->back()->with('error',
+            'Pembayaran ditolak. Pendaftar diminta mengunggah ulang. ' . $info);
     }
 
     // ==========================================
@@ -212,6 +237,14 @@ class AdminPendaftarController extends Controller
         $pendaftar->status_pendaftaran = 'Selesai';
         $pendaftar->save();
 
+            $pesan = "*Biodata & Berkas Terverifikasi ✅*\n\n" .
+                    "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                    "Biodata dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *BERHASIL DIVERIFIKASI* oleh tim akademik SPMB Universitas Adzkia.\n\n" .
+                    "Selamat! Anda telah menyelesaikan seluruh proses pendaftaran SPMB. Nantikan pengumuman kelulusan melalui dashboard Anda.\n\n" .
+                    "Terima kasih.";
+        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
+
         return redirect()->back()->with('success', 'Berkas pendaftar telah diverifikasi.');
     }
 
@@ -223,6 +256,18 @@ class AdminPendaftarController extends Controller
             'status_pendaftaran' => 'Revisi',
             'pesan_revisi'       => $request->pesan_revisi
         ]);
+
+        $pesan = "*Revisi Biodata & Berkas ⚠️*\n\n" .
+                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                 "Setelah kami tinjau, biodata atau berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) *memerlukan revisi* agar sesuai dengan persyaratan SPMB Universitas Adzkia.\n\n" .
+                 "Berikut adalah pesan dari tim akademik:\n" .
+                 "📌 *Pesan Revisi:* {$request->pesan_revisi}\n\n" .
+                 "Silakan login kembali dan perbaiki biodata atau berkas Anda sesuai dengan pesan di atas:\n" .
+                 "http://spmb.adzkia.ac.id/login\n\n" .
+                 "Terima kasih.";
+        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
+
         return back()->with('success', 'Pesan revisi berhasil dikirim ke pendaftar.');
     }
 
@@ -248,15 +293,43 @@ class AdminPendaftarController extends Controller
         return view('admin.pengumuman', compact('pendaftar'));
     }
 
-    public function tetapkanKelulusan(Request $request, $id)
+public function tetapkanKelulusan(Request $request, $id)
     {
+        $request->validate([
+            'status_kelulusan' => 'required|in:Lulus Pilihan 1,Lulus Pilihan 2,Tidak Lulus',
+        ]);
+
         $pendaftar = DataPendaftar::findOrFail($id);
-        
-        // Value dari form: 'Lulus Pilihan 1', 'Lulus Pilihan 2', atau 'Tidak Lulus'
         $pendaftar->status_kelulusan = $request->status_kelulusan;
         $pendaftar->save();
 
-        return redirect()->back()->with('success', 'Status kelulusan atas nama ' . $pendaftar->nama_lengkap . ' berhasil ditetapkan.');
+        $lulus = in_array($request->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']);
+
+        if ($lulus) {
+            $prodiLulus = $request->status_kelulusan === 'Lulus Pilihan 2'
+                ? $pendaftar->pilihan_jurusan_2
+                : $pendaftar->pilihan_jurusan_1;
+
+            $pesan = "*SELAMAT! Anda Dinyatakan LULUS 🎉*\n\n" .
+                     "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                     "Berdasarkan hasil seleksi SPMB Universitas Adzkia, Anda dinyatakan *LULUS* pada program studi:\n" .
+                     "🎓 *{$prodiLulus}*\n\n" .
+                     "Silakan login untuk melihat pengumuman resmi dan mengunduh *Surat Kelulusan (LoA)*:\n" .
+                     "http://spmb.adzkia.ac.id/login\n\n" .
+                     "Sampai jumpa di kampus. Terima kasih.";
+        } else {
+            $pesan = "*Pengumuman Hasil Seleksi SPMB*\n\n" .
+                     "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                     "Terima kasih atas partisipasi Anda dalam SPMB Universitas Adzkia.\n\n" .
+                     "Setelah melalui proses seleksi, dengan berat hati kami sampaikan bahwa Anda *belum berkesempatan* diterima pada periode ini.\n\n" .
+                     "Tetap semangat, Anda dapat mencoba kembali pada gelombang berikutnya. Terima kasih.";
+        }
+
+        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
+
+        return redirect()->back()->with('success',
+            'Status kelulusan atas nama ' . $pendaftar->nama_lengkap . ' berhasil ditetapkan. ' . $info);
     }
 
 public function updateKelulusan(Request $request, $id)

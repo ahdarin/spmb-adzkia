@@ -114,30 +114,49 @@ class RegisterController extends Controller
         );
     }
 
-    private function kirimNotifikasiWA($nomor, $nama, $username, $password)
-{
-    $token = 'oNrEA5wZL2XwgeMtvQwV';
-    $url   = 'https://api.fonnte.com/send';
-    
-    $pesan = "*Pendaftaran SPMB Adzkia Berhasil!* 🎓\n\n" .
-             "Halo *{$nama}*,\n\n" .
-             "Selamat! Data Anda telah kami terima. Berikut adalah detail akun untuk melengkapi biodata dan pembayaran:\n\n" .
-             "👤 *No. Pendaftaran:* {$username}\n" .
-             "🔑 *Password:* *{$password}*\n\n" .
-             "Silakan login melalui link berikut:\n" .
-             "http://spmb.adzkia.ac.id/login\n\n" .
-             "⚠️ *PENTING:* Jangan berikan password ini kepada siapapun.\n" .
-             "Terima kasih.";
+private function kirimNotifikasiWA($nomor, $nama, $username, $password)
+    {
+        // Ambil token dari .env
+        $token = env('FONNTE_TOKEN', 'oNrEA5wZL2XwgeMtvQwV');
+        $url   = 'https://api.fonnte.com/send';
 
-    $response = Http::withHeaders([
-        'Authorization' => $token,
-    ])->post($url, [
-        'target'  => $nomor,
-        'message' => $pesan,
-    ]);
+        $pesan = "*Pendaftaran SPMB Adzkia Berhasil!* 🎓\n\n" .
+                 "Halo *{$nama}*,\n\n" .
+                 "Selamat! Data Anda telah kami terima. Berikut adalah detail akun untuk melengkapi biodata dan pembayaran:\n\n" .
+                 "👤 *No. Pendaftaran:* {$username}\n" .
+                 "🔑 *Password:* *{$password}*\n\n" .
+                 "Silakan login melalui link berikut:\n" .
+                 "http://spmb.adzkia.ac.id/login\n\n" .
+                 "⚠️ *PENTING:* Jangan berikan password ini kepada siapapun.\n" .
+                 "Terima kasih.";
 
-    return $response->json();
-}
+        try {
+            // Tembak API Fonnte dengan timeout 5 detik
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()
+                ->timeout(5) 
+                ->withHeaders([
+                    'Authorization' => $token,
+                ])->post($url, [
+                    'target'  => $nomor,
+                    'message' => $pesan,
+                ]);
+
+            if ($response->failed()) {
+                \Illuminate\Support\Facades\Log::warning('Fonnte gagal mengirim WA Registrasi', [
+                    'nomor'  => $nomor,
+                    'status' => $response->status()
+                ]);
+                return false;
+            }
+            
+            return true;
+
+        } catch (\Throwable $e) {
+            // Jika Fonnte Mati / Timeout, error ditangkap diam-diam di sini!
+            \Illuminate\Support\Facades\Log::error('Fonnte Error di Register: ' . $e->getMessage());
+            return false;
+        }
+    }
 
     private function getKodeJalur($jalur)
 {

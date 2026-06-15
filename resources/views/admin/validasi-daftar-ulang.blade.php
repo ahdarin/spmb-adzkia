@@ -126,9 +126,9 @@
                                 '{{ $data->pilihan_jurusan_1 ?? $data->program_studi ?? '-' }}', 
                                 '{{ $data->pilihan_jurusan_2 ?? '-' }}', 
                                 '{{ $data->status_pendaftaran ?? 'Belum Lengkap' }}',
-                                '{{ $data->pas_foto ? asset('storage/' . $data->pas_foto) : '' }}',
-                                '{{ $data->scan_ktp ? asset('storage/' . $data->scan_ktp) : '' }}',
-                                '{{ $data->ijazah_skl ? asset('storage/' . $data->ijazah_skl) : '' }}'
+                                '{{ $data->pas_foto ? asset($data->pas_foto) : '' }}',
+                                '{{ $data->scan_ktp ? asset($data->scan_ktp) : '' }}',
+                                '{{ $data->ijazah_skl ? asset($data->ijazah_skl) : '' }}'
                             )" class="px-5 py-2 bg-brand-dark text-white rounded-lg font-bold text-[11px] hover:bg-brand-blue transition-colors shadow-sm">
                                 Lihat Detail
                             </button>

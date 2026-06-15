@@ -133,8 +133,10 @@
                     <h4 class="text-[14px] font-extrabold text-adzkia-dark">{{ $pendaftar->nama_lengkap }}</h4>
                 </div>
                 <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Program Studi</p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Program Studi 1</p>
                     <h4 class="text-[14px] font-extrabold text-adzkia-dark">{{ $pendaftar->pilihan_jurusan_1 }}</h4>
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Program Studi 2</p>
+                    <h4 class="text-[14px] font-extrabold text-adzkia-dark">{{ $pendaftar->pilihan_jurusan_2 }}</h4>
                 </div>
                 <div>
                     <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Tanggal Kirim</p>
