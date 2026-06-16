@@ -5,13 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DataPendaftar;
 use Carbon\Carbon;
-use App\Services\FonnteService;
 
 class AdminPendaftarController extends Controller
 {
-    public function __construct(private FonnteService $wa) {}
-
-// ==========================================
+    // ==========================================
     // 1. DASHBOARD & STATISTIK ADMIN
     // ==========================================
     public function dashboard(Request $request)
@@ -118,6 +115,7 @@ class AdminPendaftarController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
     public function index()
     {
         $users = DataPendaftar::latest()->get(); 
@@ -170,8 +168,8 @@ class AdminPendaftarController extends Controller
         return view('admin.validasi-pembayaran', compact('pendaftarPending'));
     }
 
-// Fungsi untuk menyetujui (Sudah ada di controller Anda, pastikan sesuai)
-public function setujuiPembayaran($id)
+    // Fungsi untuk menyetujui (Sudah ada di controller Anda, pastikan sesuai)
+    public function setujuiPembayaran($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->status_pembayaran = 'Terverifikasi';
@@ -184,7 +182,8 @@ public function setujuiPembayaran($id)
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
 
-        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        // Panggil fungsi kirimNotifikasiWA internal
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WhatsApp telah dikirim.' : '(Notifikasi WA gagal terkirim, cek koneksi Fonnte).';
 
         return redirect()->back()->with('success',
@@ -192,7 +191,7 @@ public function setujuiPembayaran($id)
     }
 
     // Fungsi BARU untuk menolak
-public function tolakPembayaran($id)
+    public function tolakPembayaran($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
         // Kembalikan ke awal agar bisa unggah ulang
@@ -211,7 +210,8 @@ public function tolakPembayaran($id)
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Bila ada kendala, hubungi panitia SPMB. Terima kasih.";
 
-        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        // Panggil fungsi kirimNotifikasiWA internal
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
 
         return redirect()->back()->with('error',
@@ -237,15 +237,18 @@ public function tolakPembayaran($id)
         $pendaftar->status_pendaftaran = 'Selesai';
         $pendaftar->save();
 
-            $pesan = "*Biodata & Berkas Terverifikasi ✅*\n\n" .
-                    "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                    "Biodata dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *BERHASIL DIVERIFIKASI* oleh tim akademik SPMB Universitas Adzkia.\n\n" .
-                    "Selamat! Anda telah menyelesaikan seluruh proses pendaftaran SPMB. Nantikan pengumuman kelulusan melalui dashboard Anda.\n\n" .
-                    "Terima kasih.";
-        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        $pesan = "*Biodata & Berkas Terverifikasi ✅*\n\n" .
+                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                 "Biodata dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *BERHASIL DIVERIFIKASI* oleh tim akademik SPMB Universitas Adzkia.\n\n" .
+                 "Selamat! Anda telah menyelesaikan seluruh proses pendaftaran SPMB. Nantikan pengumuman kelulusan melalui dashboard Anda.\n\n" .
+                 "Terima kasih.";
+                 
+        // Panggil fungsi kirimNotifikasiWA internal
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
 
-        return redirect()->back()->with('success', 'Berkas pendaftar telah diverifikasi.');
+        // Menambahkan response pesan ke frontend
+        return redirect()->back()->with('success', 'Berkas pendaftar telah diverifikasi. ' . $info);
     }
 
     public function revisiDaftarUlang(Request $request, $id)
@@ -265,15 +268,14 @@ public function tolakPembayaran($id)
                  "Silakan login kembali dan perbaiki biodata atau berkas Anda sesuai dengan pesan di atas:\n" .
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
-        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+                 
+        // Panggil fungsi kirimNotifikasiWA internal
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
 
-        return back()->with('success', 'Pesan revisi berhasil dikirim ke pendaftar.');
+        return back()->with('success', 'Pesan revisi berhasil dikirim ke pendaftar. ' . $info);
     }
 
-    // ==========================================
-    // PENGUMUMAN KELULUSAN
-    // ==========================================
     // ==========================================
     // MODUL PENGUMUMAN KELULUSAN
     // ==========================================
@@ -293,7 +295,7 @@ public function tolakPembayaran($id)
         return view('admin.pengumuman', compact('pendaftar'));
     }
 
-public function tetapkanKelulusan(Request $request, $id)
+    public function tetapkanKelulusan(Request $request, $id)
     {
         $request->validate([
             'status_kelulusan' => 'required|in:Lulus Pilihan 1,Lulus Pilihan 2,Tidak Lulus',
@@ -325,14 +327,15 @@ public function tetapkanKelulusan(Request $request, $id)
                      "Tetap semangat, Anda dapat mencoba kembali pada gelombang berikutnya. Terima kasih.";
         }
 
-        $terkirim = $this->wa->kirim($pendaftar->no_whatsapp, $pesan);
+        // Panggil fungsi kirimNotifikasiWA internal
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
 
         return redirect()->back()->with('success',
             'Status kelulusan atas nama ' . $pendaftar->nama_lengkap . ' berhasil ditetapkan. ' . $info);
     }
 
-public function updateKelulusan(Request $request, $id)
+    public function updateKelulusan(Request $request, $id)
     {
         // Validasi disesuaikan dengan 3 opsi baru
         $request->validate([
@@ -345,4 +348,40 @@ public function updateKelulusan(Request $request, $id)
         
         return redirect()->back()->with('success', 'Status kelulusan berhasil diperbarui!');
     }   
+
+    // ==========================================
+    // FUNGSI HELPER WA (Fonnte API Private)
+    // ==========================================
+    private function kirimNotifikasiWA($nomor, $pesan)
+    {
+        $token = env('FONNTE_TOKEN', 'oNrEA5wZL2XwgeMtvQwV');
+        $url   = 'https://api.fonnte.com/send';
+
+        try {
+            // Tembak API Fonnte dengan timeout 5 detik dan matikan verify SSL
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()
+                ->timeout(5) 
+                ->withHeaders([
+                    'Authorization' => $token,
+                ])->post($url, [
+                    'target'  => $nomor,
+                    'message' => $pesan,
+                ]);
+
+            if ($response->failed()) {
+                \Illuminate\Support\Facades\Log::warning('Fonnte gagal mengirim WA Admin', [
+                    'nomor'  => $nomor,
+                    'status' => $response->status()
+                ]);
+                return false;
+            }
+            
+            return true;
+
+        } catch (\Throwable $e) {
+            // Jika Fonnte Mati / Timeout, error ditangkap diam-diam di sini!
+            \Illuminate\Support\Facades\Log::error('Fonnte Error di Admin: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

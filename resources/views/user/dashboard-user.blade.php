@@ -208,7 +208,7 @@
                             @foreach($berita as $b)
                             <a href="#" class="flex gap-4 group">
                                 <div class="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                                    <img src="{{ asset($b->gambar) }}" alt="{{ $b->judul }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                    <img src="{{ $b->thumbnail ? asset('uploads/berita/' . $b->thumbnail) : asset('images/default-news.jpg') }}" alt="{{ $b->judul }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 </div>
                                 <div class="flex flex-col justify-center">
                                     <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">{{ \Carbon\Carbon::parse($b->created_at)->format('d M Y') }}</p>
@@ -305,7 +305,7 @@
                 <i data-feather="help-circle" class="w-6 h-6 text-blue-200 mb-3 relative z-10"></i>
                 <h4 class="font-extrabold text-sm relative z-10">Pusat Bantuan PMB</h4>
                 <p class="text-[11px] text-blue-100 font-medium mt-1.5 leading-relaxed relative z-10">Apabila mengalami kendala sistem atau kesalahan input data, segera hubungi admin panitia kami.</p>
-                <a href="#" class="block w-full text-center py-3 bg-white text-adzkia-blue font-black text-[12px] rounded-xl mt-5 hover:bg-blue-50 transition-all shadow-sm relative z-10">Hubungi via WhatsApp</a>
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $globalSetting->telepon ?? '6281234567890') }}" class="block w-full text-center py-3 bg-white text-adzkia-blue font-black text-[12px] rounded-xl mt-5 hover:bg-blue-50 transition-all shadow-sm relative z-10">Hubungi via WhatsApp</a>
             </div>
         </div>
 

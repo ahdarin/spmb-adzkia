@@ -4,6 +4,22 @@
 
 @section('content')
 
+@php
+    // Pindahkan proses pemetaan data ke blok PHP agar compiler Blade tidak error
+    $beritaData = $beritas->map(function($item, $index) {
+        return [
+            'id'          => $item->id,
+            'slug'        => $item->slug,
+            'title'       => $item->judul,
+            'category'    => $item->kategori ?? 'Informasi',
+            'image'       => $item->thumbnail ? asset('uploads/berita/' . $item->thumbnail) : 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=500',
+            'date'        => \Carbon\Carbon::parse($item->created_at)->translatedFormat('d F Y'),
+            'excerpt'     => $item->ringkasan,
+            'isHighlight' => $index === 0 // Menjadikan berita paling baru sebagai highlight
+        ];
+    });
+@endphp
+
 <main x-data="halamanBerita()" class="px-16 py-12 min-h-screen bg-adzkia-bg">
     
     <div class="mb-8 flex items-center text-[13px] font-extrabold text-adzkia-muted">
@@ -61,9 +77,9 @@
                     <h2 class="text-3xl font-extrabold text-adzkia-blue mb-4 leading-tight group-hover:text-adzkia-red transition-colors" x-text="highlightNews.title"></h2>
                     <p class="text-gray-500 font-medium leading-relaxed mb-8" x-text="highlightNews.excerpt"></p>
                     <div>
-                        <button class="bg-adzkia-badge-bg text-adzkia-blue text-[13px] font-bold px-6 py-2.5 rounded-full hover:bg-adzkia-blue hover:text-white transition-colors">
+                        <a :href="'/berita/' + highlightNews.slug" class="bg-adzkia-badge-bg text-adzkia-blue text-[13px] font-bold px-6 py-2.5 rounded-full hover:bg-adzkia-blue hover:text-white transition-colors inline-block">
                             Baca Selengkapnya
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -83,16 +99,16 @@
                     <p class="text-[14px] text-gray-500 font-medium leading-relaxed line-clamp-3 mb-8" x-text="item.excerpt"></p>
                     
                     <div class="mt-auto">
-                        <button class="bg-adzkia-badge-bg text-adzkia-blue text-[12px] font-bold px-5 py-2 rounded-full hover:bg-adzkia-blue hover:text-white transition-colors">
+                        <a :href="'/berita/' + item.slug" class="bg-adzkia-badge-bg text-adzkia-blue text-[12px] font-bold px-5 py-2 rounded-full hover:bg-adzkia-blue hover:text-white transition-colors inline-block">
                             Baca Berita
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
         </template>
     </div>
 
-    <div x-show="filteredNews.length === 0" class="text-center py-20" style="display: none;">
+    <div x-show="isDataEmpty" class="text-center py-20" style="display: none;">
         <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-adzkia-blue">
             <i data-feather="search" class="w-8 h-8"></i>
         </div>
@@ -110,17 +126,26 @@
 
 <script>
     function halamanBerita() {
+        // Ambil data langsung dari Controller (Database) dan parsing menjadi JSON JavaScript
+        const databaseBerita = @json($beritaData);
+
+        // Secara otomatis mengambil kategori yang tersedia di database
+        const uniqueCategories = ['Semua', ...new Set(databaseBerita.map(item => item.category))];
+
         return {
             searchQuery: '',
             activeCategory: 'Semua',
-            categories: ['Semua', 'Akademik', 'Prestasi', 'Event'],
+            categories: uniqueCategories.length > 1 ? uniqueCategories : ['Semua', 'Akademik', 'Prestasi', 'Event'],
+            beritaDataAsli: databaseBerita,
             
             get highlightNews() {
-                return Alpine.store('kampus').berita.find(b => b.isHighlight);
+                // Mengambil berita highlight dari data database
+                return this.beritaDataAsli.find(b => b.isHighlight);
             },
 
             get filteredNews() {
-                let result = Alpine.store('kampus').berita;
+                // Mengambil sisa berita dari data database
+                let result = this.beritaDataAsli;
                 
                 if (this.activeCategory === 'Semua' && this.searchQuery === '') {
                     result = result.filter(b => !b.isHighlight);
@@ -138,6 +163,23 @@
                     );
                 }
                 return result;
+            },
+
+            // --- TAMBAHKAN FUNGSI INI ---
+            get isDataEmpty() {
+                // Jika sedang di tab "Semua" dan tidak mencari apa-apa
+                if (this.activeCategory === 'Semua' && this.searchQuery === '') {
+                    // Cek apakah highlight kosong DAN sisa berita kosong
+                    return !this.highlightNews && this.filteredNews.length === 0;
+                }
+                // Jika sedang mencari atau di tab kategori tertentu
+                return this.filteredNews.length === 0;
+            },
+            
+            init() {
+                this.$nextTick(() => {
+                    if (window.feather) feather.replace();
+                });
             }
         }
     }

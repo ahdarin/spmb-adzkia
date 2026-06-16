@@ -193,40 +193,16 @@ public function tampilkanValidasiAkhir($id)
         if (!$pendaftar) return redirect()->route('dashboard')->with('error', 'Data tidak ditemukan.');
         return view('user.sukses', compact('pendaftar'));
     }
-public function cetakLoA()
+    
+    public function cetakLoA()
     {
         $pendaftar = DataPendaftar::find(session('pendaftar_id'));
-
-        // Guard: hanya peserta LULUS yang boleh mencetak.
-        // Pakai in_array agar 'Tidak Lulus' (yang juga mengandung kata "Lulus") tidak lolos.
-        if (!$pendaftar || !in_array($pendaftar->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2'])) {
-            return redirect()->route('dashboard.user')
-                ->with('error', 'Surat Keterangan Lulus belum tersedia.');
+        
+        // Mencegah pendaftar yang belum lulus mencetak surat
+        if (!$pendaftar || strpos($pendaftar->status_kelulusan, 'Lulus') === false || $pendaftar->status_kelulusan == 'Tidak Lulus') {
+            return redirect()->route('dashboard.user')->with('error', 'Surat Keterangan Lulus belum tersedia.');
         }
 
-        // Tentukan prodi yang diterima sesuai pilihan yang lulus
-        $prodiDiterima = $pendaftar->status_kelulusan === 'Lulus Pilihan 2'
-            ? $pendaftar->pilihan_jurusan_2
-            : $pendaftar->pilihan_jurusan_1;
-
-        // Sisipkan logo sebagai base64 agar pasti tampil di PDF.
-        // Aman: jika file logo tidak ada, $logoBase64 = null dan template menyembunyikannya.
-        $logoBase64 = null;
-        $logoPath = public_path('images/logo-adzkia.png');
-        if (is_file($logoPath)) {
-            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
-        }
-
-        $pdf = Pdf::loadView('user.loa-pdf', [
-            'pendaftar'     => $pendaftar,
-            'prodiDiterima' => $prodiDiterima,
-            'logoBase64'    => $logoBase64,
-        ])->setPaper('a4', 'portrait');
-
-        $namaFile = 'LoA_' . str_replace(['/', ' '], '_', $pendaftar->no_pendaftaran) . '.pdf';
-
-        // Langsung unduh. Ganti ->download() menjadi ->stream() bila ingin
-        // ditampilkan dulu di tab browser sebelum disimpan.
-        return $pdf->download($namaFile);
+        return view('user.cetak-loa', compact('pendaftar'));
     }
 }
