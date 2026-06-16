@@ -20,7 +20,7 @@ use App\Http\Middleware\CheckRole;
     Route::get('/', function () { 
         $prodis = \App\Models\Prodi::take(6)->get();
         $beritas = \App\Models\Berita::where('status', 'Published')->latest()->take(3)->get();
-        $faqs = \App\Models\Faq::take(5)->get();
+        $faqs = \App\Models\Faq::where('kategori', 'Dashboard Utama')->take(5)->get();
         
         return view('dashboard', compact('prodis', 'beritas', 'faqs')); 
     });
