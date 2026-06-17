@@ -12,7 +12,7 @@ return new class extends Migration
 public function up()
 {
     Schema::table('prodis', function (Blueprint $table) {
-        $table->string('icon')->nullable()->default('book-open')->after('nama_prodi');
+        $table->string('icon')->nullable()->default('book-open')->after('nama');
     });
 }
 
