@@ -169,7 +169,17 @@ class RekomendasiController extends Controller
         $process->run();
 
         if (!$process->isSuccessful()) {
-            return response()->json(['success' => false, 'message' => 'Gagal menjalankan script Python AI.'], 500);
+            // Tangkap pesan error asli dari terminal server
+            $errorAsli = $process->getErrorOutput(); 
+            
+            // Catat di log Laravel (storage/logs/laravel.log)
+            \Illuminate\Support\Facades\Log::error("Python Error di Production: " . $errorAsli);
+
+            return response()->json([
+                'success' => false, 
+                'message' => 'Gagal menjalankan script Python AI.',
+                'debug_error' => $errorAsli // Menampilkan error asli ke inspect element/network browser
+            ], 500);
         }
 
         $output = json_decode($process->getOutput(), true);
