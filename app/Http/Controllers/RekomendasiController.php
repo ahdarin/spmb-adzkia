@@ -157,7 +157,7 @@ class RekomendasiController extends Controller
         
         // Kita gunakan array_values agar urutannya berurutan menjadi argumen python
         $arguments = array_merge([$modelPath], array_values($averages));
-        $command = array_merge(['python', $scriptPath], $arguments);
+        $command = array_merge(['python3', $scriptPath], $arguments);
         
         $env = [
             'SystemRoot' => getenv('SystemRoot') ?: 'C:\\Windows',
