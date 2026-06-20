@@ -232,7 +232,7 @@
                         this.chatMessages.push({ role: 'ai', text: 'Maaf, sistem AI gagal merespon: ' + data.message });
                     }
                 } catch (error) {
-                    this.chatMessages.push({ role: 'ai', text: 'Koneksi terputus. Pastikan server Ollama sedang berjalan di terminal.' });
+                    this.chatMessages.push({ role: 'ai', text: 'Koneksi terputus. Pastikan perangkat Anda terhubung ke internet atau coba beberapa saat lagi.' });
                 } finally {
                     this.isTyping = false;
                     this.scrollToBottom();

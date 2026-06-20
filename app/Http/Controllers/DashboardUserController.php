@@ -94,7 +94,7 @@ public function simpanBiodata(Request $request)
         // GUARD PENGUNCIAN BIODATA (TUGAS 3)
         // Cegah simpan/update data jika status bukan 'Draft'
         // -------------------------------------------------------------
-        if ($pendaftar->status_pendaftaran !== 'Draft') {
+        if (!in_array($pendaftar->status_pendaftaran, ['Draft', 'Revisi'])) {
             return redirect()->route('konfirmasi-data', $pendaftar->id)
                 ->with('error', 'Biodata Anda telah terkunci karena sudah berada pada tahap ' . $pendaftar->status_pendaftaran . '. Anda tidak dapat mengubah data lagi.');
         }

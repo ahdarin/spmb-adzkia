@@ -3,6 +3,25 @@
 @section('title', 'Kuesioner Minat & Bakat - SPMB Adzkia')
 
 @section('content')
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Manrope', 'sans-serif'] },
+                colors: {
+                    'adzkia-red': '#d9241c',
+                    'adzkia-blue': '#2c7ebd',
+                    'adzkia-dark': '#1e293b',
+                    'adzkia-muted': '#64748b',
+                    'adzkia-badge-bg': '#eff6ff',
+                    'adzkia-badge-txt': '#2c7ebd',
+                    'adzkia-bg': '#FAFBFC',
+                }
+            }
+        }
+    }
+</script>
+
 <div class="max-w-4xl mx-auto px-6 py-12 md:py-16">
     
     <div class="mb-10 text-center">
@@ -19,7 +38,7 @@
         <input type="hidden" name="page" value="{{ $page }}">
         
         <div class="space-y-6">
-            @foreach($currentQuestions as $index => $q)
+            @foreach($pagedQuestions as $index => $q)
                 <div class="bg-white rounded-[2rem] p-6 md:p-8 border border-gray-100 shadow-sm transition-all hover:shadow-md">
                     <h3 class="text-[16px] font-extrabold text-adzkia-dark leading-relaxed mb-5">
                         <span class="text-adzkia-blue mr-2">{{ ($page - 1) * 5 + $loop->iteration }}.</span> {{ $q['text'] }}
@@ -27,8 +46,12 @@
                     
                     <div class="grid grid-cols-5 gap-2 md:gap-4">
                         @for($i = 1; $i <= 5; $i++)
+                            @php
+                                // Mengecek apakah user sudah pernah menjawab pertanyaan ini
+                                $isChecked = isset($savedAnswers[$q['id']]) && $savedAnswers[$q['id']] == $i;
+                            @endphp
                             <label class="cursor-pointer">
-                                <input type="radio" name="jawaban[{{ $q['id'] }}]" value="{{ $i }}" class="peer sr-only" required>
+                                <input type="radio" name="jawaban[{{ $q['id'] }}]" value="{{ $i }}" class="peer sr-only" required {{ $isChecked ? 'checked' : '' }}>
                                 <div class="h-12 md:h-14 flex items-center justify-center rounded-xl border-2 border-gray-100 bg-gray-50 
                                             peer-checked:bg-adzkia-blue peer-checked:border-adzkia-blue peer-checked:text-white 
                                             hover:border-adzkia-blue/30 hover:bg-blue-50 transition-all text-sm md:text-lg font-black text-gray-400">
@@ -48,9 +71,9 @@
         
         <div class="mt-10 flex justify-between items-center max-w-4xl mx-auto">
             @if($page > 1)
-                <button type="button" onclick="history.back()" class="px-6 py-4 bg-white border border-gray-200 text-adzkia-dark font-black text-[14px] rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2">
+                <a href="{{ route('rekomendasi.kuesioner', ['page' => $page - 1]) }}" class="px-6 py-4 bg-white border border-gray-200 text-adzkia-dark font-black text-[14px] rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2">
                     <i data-feather="arrow-left" class="w-4 h-4"></i> Kembali
-                </button>
+                </a>
             @else
                 <div></div>
             @endif
@@ -61,4 +84,10 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if(window.feather) feather.replace();
+    });
+</script>
 @endsection
