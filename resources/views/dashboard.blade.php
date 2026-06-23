@@ -17,7 +17,7 @@
     activeSlide: 0, 
     slides: [
         { image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Selamat Datang di Universitas Adzkia', subtitle: 'Kampus Karakter, Mencetak Generasi Unggul dan Berakhlak Mulia' },
-        { image: 'https://images.unsplash.com/photo-1523050335102-c6744729ea24?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Pendaftaran Mahasiswa Baru {{ $globalSetting->tahun_akademik ?? '2024/2025' }}', subtitle: 'Dapatkan Beasiswa Adzkia Unggul hingga 100% untuk Siswa Berprestasi' },
+        { image: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Pendaftaran Mahasiswa Baru {{ $globalSetting->tahun_akademik ?? '2024/2025' }}', subtitle: 'Dapatkan Beasiswa Adzkia Unggul hingga 100% untuk Siswa Berprestasi' },
         { image: 'https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1280&h=720&auto=format&fit=crop', title: 'Fasilitas Modern & Terpadu', subtitle: 'Lingkungan belajar yang nyaman didukung dengan laboratorium berstandar industri' }
     ],
     next() { this.activeSlide = (this.activeSlide + 1) % this.slides.length },
