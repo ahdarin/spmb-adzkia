@@ -13,6 +13,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RekomendasiController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Middleware\CheckRole; 
+use App\Http\Controllers\AdminMasterController;
 
 // ==========================================
 // 1. HALAMAN UTAMA & PUBLIK
@@ -165,7 +166,7 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
         return back()->with('success', 'FAQ berhasil dihapus!');
     });
 
-    // ------------------------------------------
+// ------------------------------------------
     // EKSKLUSIF SUPER ADMIN
     // ------------------------------------------
     Route::middleware([CheckRole::class.':super_admin'])->group(function () {
@@ -175,9 +176,26 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
         Route::delete('/prodi/{id}', [AdminProgramStudiController::class, 'destroy'])->name('prodi.destroy');
         
         Route::resource('tugas', AdminTugasController::class)->except(['create', 'show', 'edit']); 
+        
         // Rute Pengaturan Sistem Terpadu
         Route::get('/settings', [\App\Http\Controllers\AdminSettingController::class, 'index'])->name('settings');
         Route::post('/settings/update', [\App\Http\Controllers\AdminSettingController::class, 'update'])->name('settings.update');
         Route::post('/settings/password', [\App\Http\Controllers\AdminSettingController::class, 'updatePassword'])->name('settings.password');    
+        
+        // ==========================================
+        // RUTE MASTER DATA (GELOMBANG & BIAYA) - BARU
+        // ==========================================
+        Route::prefix('master')->name('master.')->group(function () {
+            // Master Gelombang
+            Route::get('/gelombang', [AdminMasterController::class, 'indexGelombang'])->name('gelombang.index');
+            Route::post('/gelombang', [AdminMasterController::class, 'storeGelombang'])->name('gelombang.store');
+            Route::put('/gelombang/{id}', [AdminMasterController::class, 'updateGelombang'])->name('gelombang.update');
+            Route::delete('/gelombang/{id}', [AdminMasterController::class, 'destroyGelombang'])->name('gelombang.destroy');
+
+            // Master Biaya Kuliah
+            Route::get('/biaya', [AdminMasterController::class, 'indexBiaya'])->name('biaya.index');
+            Route::post('/biaya/{prodi_id}', [AdminMasterController::class, 'updateBiaya'])->name('biaya.update');
         });
+        
+    });
 });

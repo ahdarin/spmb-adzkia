@@ -28,4 +28,12 @@ class DataPendaftar extends Authenticatable
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id', 'id');
     }
+
+    // === TAMBAHAN BARU UNTUK SISTEM DAFTAR ULANG ===
+    
+    // Relasi ke Gelombang pendaftaran
+    public function gelombang()
+    {
+        return $this->belongsTo(Gelombang::class, 'gelombang_id', 'id');
+    }
 }

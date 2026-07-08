@@ -1,14 +1,16 @@
-<nav x-data="navbarData()" @scroll.window="onScroll()" class="flex items-center justify-between px-6 md:px-16 py-4 md:py-5 bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100 transition-all duration-300">
+<nav x-data="navbarData()" @scroll.window="onScroll()" class="flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-5 bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100 transition-all duration-300">
     
-    <a href="/" class="flex items-center gap-3 group z-50">
-        <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo Universitas Adzkia" class="h-11 w-auto transition-transform group-hover:scale-105 duration-300">
+    {{-- LOGO --}}
+    <a href="/" class="flex items-center gap-2 sm:gap-3 group z-50 flex-shrink-0">
+        <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo Universitas Adzkia" class="h-9 sm:h-11 w-auto transition-transform group-hover:scale-105 duration-300">
         <div class="flex flex-col">
-            <span class="text-[18px] md:text-xl font-black text-adzkia-blue tracking-tight leading-none">SPMB</span>
-            <span class="text-[13px] md:text-[15px] font-bold text-adzkia-red tracking-tight">Universitas Adzkia</span>
+            <span class="text-base sm:text-[18px] md:text-xl font-black text-adzkia-blue tracking-tight leading-none">SPMB</span>
+            <span class="text-[11px] sm:text-[13px] md:text-[15px] font-bold text-adzkia-red tracking-tight">Universitas Adzkia</span>
         </div>
     </a>
 
-    <div class="hidden lg:flex items-center gap-7 text-[14px] font-bold text-adzkia-muted mt-1">
+    {{-- NAV LINKS (Desktop) --}}
+    <div class="hidden lg:flex items-center gap-5 xl:gap-7 text-[13px] xl:text-[14px] font-bold text-adzkia-muted mt-1">
         <a href="/" @click="activeTab = 'beranda'" :class="activeTab === 'beranda' ? 'text-adzkia-blue border-b-[3px] border-adzkia-blue pb-1.5' : 'hover:text-adzkia-blue transition-colors pb-1.5'">Beranda</a>
         <a href="/#prodi" @click="activeTab = 'prodi'" :class="activeTab === 'prodi' ? 'text-adzkia-blue border-b-[3px] border-adzkia-blue pb-1.5' : 'hover:text-adzkia-blue transition-colors pb-1.5'">Program Studi</a>
         <a href="/#fasilitas" @click="activeTab = 'fasilitas'" :class="activeTab === 'fasilitas' ? 'text-adzkia-blue border-b-[3px] border-adzkia-blue pb-1.5' : 'hover:text-adzkia-blue transition-colors pb-1.5'">Fasilitas</a>
@@ -18,18 +20,17 @@
         <a href="/#kontak" @click="activeTab = 'kontak'" :class="activeTab === 'kontak' ? 'text-adzkia-blue border-b-[3px] border-adzkia-blue pb-1.5' : 'hover:text-adzkia-blue transition-colors pb-1.5'">Kontak</a>
     </div>
 
-{{-- TOMBOL AUTH DESKTOP --}}
-    <div class="hidden lg:flex items-center gap-3">
+    {{-- TOMBOL AUTH DESKTOP --}}
+    <div class="hidden lg:flex items-center gap-3 flex-shrink-0">
         @if(session('is_pendaftar'))
-            {{-- Jika Login sebagai Pendaftar, arahkan ke dasbornya --}}
-            <a href="/dashboard-user" class="px-6 py-2.5 bg-adzkia-blue text-white font-bold rounded-full hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 transition-all text-[14px]">Dasbor Saya</a>
+            <a href="/dashboard-user" class="px-5 xl:px-6 py-2.5 bg-adzkia-blue text-white font-bold rounded-full hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 transition-all text-[13px] xl:text-[14px]">Dasbor Saya</a>
         @else
-            {{-- Tampilan Default (Bisa dilihat Guest atau Admin yang sedang iseng buka halaman depan) --}}
-            <a href="/login" class="px-6 py-2.5 border-2 border-adzkia-blue text-adzkia-blue font-bold rounded-full hover:bg-adzkia-badge-bg transition-all text-[14px]">Masuk</a>
-            <a href="/register" class="px-6 py-2.5 bg-adzkia-red text-white font-bold rounded-full hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20 active:scale-95 transition-all text-[14px]">Daftar</a>
+            <a href="/login" class="px-5 xl:px-6 py-2.5 border-2 border-adzkia-blue text-adzkia-blue font-bold rounded-full hover:bg-adzkia-badge-bg transition-all text-[13px] xl:text-[14px]">Masuk</a>
+            <a href="/register" class="px-5 xl:px-6 py-2.5 bg-adzkia-red text-white font-bold rounded-full hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20 active:scale-95 transition-all text-[13px] xl:text-[14px]">Daftar</a>
         @endif
     </div>
 
+    {{-- HAMBURGER (Mobile) --}}
     <div class="lg:hidden flex items-center z-50">
         <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-adzkia-blue focus:outline-none p-2 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
             <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,36 +42,35 @@
         </button>
     </div>
 
+    {{-- MOBILE MENU DROPDOWN --}}
     <div x-show="mobileMenuOpen" 
          x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-full"
+         x-transition:enter-start="opacity-0 -translate-y-4"
          x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 -translate-y-full"
-         class="absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-xl px-6 py-4 flex flex-col gap-4 lg:hidden"
+         x-transition:leave-end="opacity-0 -translate-y-4"
+         class="absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-xl px-5 py-4 flex flex-col gap-3 lg:hidden"
          style="display: none;"
          @click.outside="mobileMenuOpen = false">
         
-        <div class="flex flex-col gap-1 font-bold text-[15px] text-adzkia-muted">
-            <a href="/" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 text-adzkia-blue">Beranda</a>
-            <a href="/#prodi" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 hover:text-adzkia-blue">Program Studi</a>
-            <a href="/#fasilitas" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 hover:text-adzkia-blue">Fasilitas</a>
-            <a href="/#jalur-pendaftaran" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 hover:text-adzkia-blue">Jalur Pendaftaran</a>
-            <a href="/#berita" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 hover:text-adzkia-blue">Berita</a>
-            <a href="/#faq" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 hover:text-adzkia-blue">FAQ</a>
-            <a href="/#kontak" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-50 hover:text-adzkia-blue">Kontak</a>
+        <div class="flex flex-col gap-0.5 font-bold text-[14px] text-adzkia-muted">
+            <a href="/" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 text-adzkia-blue">Beranda</a>
+            <a href="/#prodi" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">Program Studi</a>
+            <a href="/#fasilitas" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">Fasilitas</a>
+            <a href="/#jalur-pendaftaran" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">Jalur Pendaftaran</a>
+            <a href="/#berita" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">Berita</a>
+            <a href="/#faq" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">FAQ</a>
+            <a href="/#kontak" @click="mobileMenuOpen = false" class="py-3 hover:text-adzkia-blue transition-colors">Kontak</a>
         </div>
         
-{{-- TOMBOL AUTH MOBILE --}}
-        <div class="flex flex-col gap-3 pt-2">
+        {{-- TOMBOL AUTH MOBILE --}}
+        <div class="flex flex-col gap-2.5 pt-1">
             @if(session('is_pendaftar'))
-                {{-- Jika Login sebagai Pendaftar --}}
-                <a href="/dashboard-user" class="text-center w-full py-3 bg-adzkia-blue text-white font-bold rounded-full hover:bg-blue-700 transition-all shadow-md">Dasbor Saya</a>
+                <a href="/dashboard-user" class="text-center w-full py-3 bg-adzkia-blue text-white font-bold rounded-full hover:bg-blue-700 transition-all shadow-md text-[14px]">Dasbor Saya</a>
             @else
-                {{-- Tampilan Default --}}
-                <a href="/login" class="text-center w-full py-3 border-2 border-adzkia-blue text-adzkia-blue font-bold rounded-full hover:bg-adzkia-badge-bg transition-all">Masuk</a>
-                <a href="/register" class="text-center w-full py-3 bg-adzkia-red text-white font-bold rounded-full hover:bg-red-700 transition-all shadow-md">Daftar Sekarang</a>
+                <a href="/login" class="text-center w-full py-3 border-2 border-adzkia-blue text-adzkia-blue font-bold rounded-full hover:bg-adzkia-badge-bg transition-all text-[14px]">Masuk</a>
+                <a href="/register" class="text-center w-full py-3 bg-adzkia-red text-white font-bold rounded-full hover:bg-red-700 transition-all shadow-md text-[14px]">Daftar Sekarang</a>
             @endif
         </div>
     </div>

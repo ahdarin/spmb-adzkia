@@ -19,4 +19,9 @@ class Prodi extends Model
         'biaya',
         'icon'
     ];
+    // Relasi ke Komponen Biaya (Setiap prodi punya 1 set biaya)
+    public function komponenBiaya()
+    {
+        return $this->hasOne(KomponenBiaya::class, 'prodi_id');
+    }
 }
