@@ -107,11 +107,11 @@ class RegisterController extends Controller
             'role' => 'user' 
         ]);
 
-        // 8. ARAHKAN KE PEMBAYARAN
-        return redirect()->route('login')->with(
-            'success', 
-            "Pendaftaran Berhasil! Silakan cek WhatsApp Anda untuk melihat No. Pendaftaran dan Password untuk login."
-        );
+        // 8. ARAHKAN KE LOGIN DENGAN DATA AKUN DI SESSION
+        return redirect()->route('login')->with('success_register', [
+            'username' => $noPendaftaran,
+            'password' => $rawPassword,
+        ]);
     }
 
 private function kirimNotifikasiWA($nomor, $nama, $username, $password)

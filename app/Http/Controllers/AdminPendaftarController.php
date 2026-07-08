@@ -17,7 +17,7 @@ class AdminPendaftarController extends Controller
         $filter = $request->query('filter', 'Bulan Ini');
         
         $query = \App\Models\DataPendaftar::query();
-        $now = \Carbon\Carbon::now();
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
 
         // 2. Terapkan logika Filter Waktu pada Database
         if ($filter == 'Hari Ini') {
@@ -55,6 +55,7 @@ class AdminPendaftarController extends Controller
         // Grafik selalu mengambil data Tahun Ini agar grafiknya terlihat penuh
         // ==========================================
         $semuaPendaftarTahunIni = \App\Models\DataPendaftar::whereYear('created_at', $now->year)->get();
+        // Catatan: $now sudah dalam timezone WIB (Asia/Jakarta)
 
         $jurusanData = $semuaPendaftarTahunIni->groupBy('pilihan_jurusan_1')
             ->map(function ($row) { return $row->count(); })

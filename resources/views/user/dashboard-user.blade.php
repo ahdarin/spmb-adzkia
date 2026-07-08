@@ -82,10 +82,33 @@
                             <p class="text-[12px] sm:text-[13px] font-medium text-green-50 leading-relaxed mb-4 sm:mb-5">
                                 Selamat datang di kampus Universitas Adzkia! Berdasarkan hasil seleksi, Anda dinyatakan lulus dan diterima di program studi <strong class="text-white bg-green-700/50 px-2 py-0.5 rounded">{{ $jurusanDiterima }}</strong> ({{ str_replace('Lulus ', '', $pendaftar->status_kelulusan) }}).
                             </p>
-                            {{-- Ubah: tombol full width di mobile --}}
-                            <a href="{{ route('cetak.loa') }}" target="_blank" class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white text-green-600 hover:bg-gray-50 font-black text-[13px] rounded-xl transition-all shadow-md w-full sm:w-auto active:scale-[0.98]">
-                                <i data-feather="download" class="w-4 h-4"></i> Unduh Surat Kelulusan
-                            </a>
+                            {{-- Tombol aksi --}}
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <a href="{{ route('cetak.loa') }}" target="_blank"
+                                   class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white text-green-600 hover:bg-gray-50 font-black text-[13px] rounded-xl transition-all shadow-md w-full sm:w-auto active:scale-[0.98]">
+                                    <i data-feather="download" class="w-4 h-4"></i> Unduh Surat Kelulusan
+                                </a>
+
+                                @php $statusDU = strtolower($pendaftar->status_daftar_ulang ?? 'belum'); @endphp
+
+                                @if(in_array($statusDU, ['selesai', 'terverifikasi', 'disetujui']))
+                                    <span class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white/10 border border-white/20 text-white/70 font-black text-[13px] rounded-xl w-full sm:w-auto cursor-default">
+                                        <i data-feather="check" class="w-4 h-4"></i> Daftar Ulang Selesai
+                                    </span>
+                                @else
+                                    <a href="{{ route('daftar-ulang.data-ortu') }}"
+                                       class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white/20 hover:bg-white/30 border border-white/40 text-white font-black text-[13px] rounded-xl transition-all w-full sm:w-auto active:scale-[0.98] backdrop-blur-sm">
+                                        <i data-feather="user-check" class="w-4 h-4"></i>
+                                        @if(in_array($statusDU, ['menunggu validasi', 'menunggu verifikasi']))
+                                            Cek Status Daftar Ulang
+                                        @elseif($statusDU === 'revisi')
+                                            Perbaiki Berkas Daftar Ulang
+                                        @else
+                                            Daftar Ulang Sekarang
+                                        @endif
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

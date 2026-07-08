@@ -58,6 +58,28 @@ use App\Http\Controllers\AdminMasterController;
     Route::post('/api/chat-ai', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('rekomendasi.chat.ai');
 
 // ==========================================
+// 1b. ROUTE SERVE FILE UPLOAD (Admin & User)
+// File disimpan di public/uploads/ → akses via /uploads/{folder}/{file}
+// Jika terkena 403, gunakan route ini sebagai fallback eksplisit.
+// ==========================================
+Route::get('/uploads/{folder}/{filename}', function ($folder, $filename) {
+    // Hanya izinkan folder yang dikenal
+    $allowedFolders = ['bukti_pembayaran', 'bukti_daftar_ulang', 'biodata', 'dokumen'];
+    if (!in_array($folder, $allowedFolders)) {
+        abort(404);
+    }
+
+    $path = public_path("uploads/{$folder}/{$filename}");
+
+    if (!file_exists($path)) {
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    $mime = mime_content_type($path);
+    return response()->file($path, ['Content-Type' => $mime]);
+})->middleware([CheckRole::class . ':user,admin,super_admin'])->name('uploads.file');
+
+// ==========================================
 // 2. GUEST AREA (Hanya bisa diakses jika BELUM login)
 // ==========================================
 Route::middleware('guest')->group(function () {
@@ -105,8 +127,14 @@ Route::middleware([CheckRole::class.':user'])->group(function () {
     // Pengumuman Hasil Kelulusan (USER)
     Route::get('/pengumuman-hasil', [DashboardUserController::class, 'tampilkanHasil'])->name('pengumuman.hasil');
     Route::get('/cetak-loa', [DashboardUserController::class, 'cetakLoA'])->name('cetak.loa');
+    Route::prefix('daftar-ulang')->name('daftar-ulang.')->group(function () {
+        Route::get('/data-ortu', [\App\Http\Controllers\DaftarUlangController::class, 'dataOrtuIndex'])->name('data-ortu');
+        Route::post('/data-ortu', [\App\Http\Controllers\DaftarUlangController::class, 'simpanDataOrtu'])->name('simpan-ortu');
+        
+        Route::get('/pembayaran', [\App\Http\Controllers\DaftarUlangController::class, 'pembayaranIndex'])->name('pembayaran');
+        Route::post('/pembayaran', [\App\Http\Controllers\DaftarUlangController::class, 'prosesUploadBukti'])->name('proses-bukti');
+    });
 });
-
 
 // ==========================================
 // 4. AREA ADMIN (Sistem Validasi & Pengumuman)

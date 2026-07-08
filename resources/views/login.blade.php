@@ -69,14 +69,84 @@
                     <p class="text-gray-500 font-medium text-[15px]">Masuk ke akun Anda</p>
                 </div>
 
-                @if(session('no_pendaftaran'))
-                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-xl">
-                    <p class="font-bold text-green-700">{{ session('success') }}</p>
-                    <p class="text-sm text-green-600 mt-1">Simpan data akun Anda untuk login:</p>
-                    <ul class="mt-2 text-sm text-green-800 bg-green-100/50 p-3 rounded-lg border border-green-200">
-                        <li>No. Pendaftaran: <strong class="text-adzkia-blue">{{ session('no_pendaftaran') }}</strong></li>
-                        <li>Password: <strong class="text-adzkia-blue">{{ session('password') }}</strong></li>
-                    </ul>
+                @if(session('success_register'))
+                @php $reg = session('success_register'); @endphp
+                <div x-data="{
+                        copied: null,
+                        copyText(text, key) {
+                            navigator.clipboard.writeText(text).then(() => {
+                                this.copied = key;
+                                setTimeout(() => this.copied = null, 2000);
+                            });
+                        }
+                     }"
+                     class="mb-8 rounded-2xl border border-adzkia-blue/20 bg-adzkia-badge-bg overflow-hidden shadow-sm">
+
+                    {{-- Header --}}
+                    <div class="flex items-center gap-3 px-5 py-4 bg-adzkia-blue">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                            <i data-feather="check-circle" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-extrabold text-[14px] leading-tight">Pendaftaran Berhasil! 🎉</p>
+                            <p class="text-blue-100 text-[11px] font-medium mt-0.5">Data akun Anda telah dikirim via WhatsApp</p>
+                        </div>
+                        <div class="ml-auto flex items-center gap-1.5 bg-white/15 px-2.5 py-1 rounded-full">
+                            <i data-feather="message-circle" class="w-3 h-3 text-white"></i>
+                            <span class="text-white text-[10px] font-extrabold uppercase tracking-wide">WhatsApp</span>
+                        </div>
+                    </div>
+
+                    {{-- Body --}}
+                    <div class="px-5 py-4 space-y-3">
+                        <p class="text-[12px] font-semibold text-adzkia-muted leading-relaxed">
+                            Simpan kredensial berikut untuk masuk. Gunakan tombol salin agar tidak salah ketik.
+                        </p>
+
+                        {{-- No. Pendaftaran --}}
+                        <div class="flex items-center justify-between gap-3 bg-white rounded-xl px-4 py-3 border border-adzkia-blue/10 shadow-sm">
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-black text-adzkia-muted uppercase tracking-widest mb-0.5">No. Pendaftaran</p>
+                                <p class="text-adzkia-blue font-extrabold text-[15px] tracking-wide truncate">{{ $reg['username'] }}</p>
+                            </div>
+                            <button type="button"
+                                    @click="copyText('{{ $reg['username'] }}', 'username')"
+                                    class="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all"
+                                    :class="copied === 'username'
+                                        ? 'bg-green-100 text-green-700 border border-green-300'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-adzkia-blue hover:text-white border border-transparent'">
+                                <i data-feather="copy" class="w-3.5 h-3.5" x-show="copied !== 'username'"></i>
+                                <i data-feather="check" class="w-3.5 h-3.5" x-show="copied === 'username'"></i>
+                                <span x-text="copied === 'username' ? 'Tersalin!' : 'Salin'"></span>
+                            </button>
+                        </div>
+
+                        {{-- Password --}}
+                        <div class="flex items-center justify-between gap-3 bg-white rounded-xl px-4 py-3 border border-adzkia-blue/10 shadow-sm">
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-black text-adzkia-muted uppercase tracking-widest mb-0.5">Password</p>
+                                <p class="text-adzkia-blue font-extrabold text-[15px] tracking-widest truncate font-mono">{{ $reg['password'] }}</p>
+                            </div>
+                            <button type="button"
+                                    @click="copyText('{{ $reg['password'] }}', 'password')"
+                                    class="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all"
+                                    :class="copied === 'password'
+                                        ? 'bg-green-100 text-green-700 border border-green-300'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-adzkia-blue hover:text-white border border-transparent'">
+                                <i data-feather="copy" class="w-3.5 h-3.5" x-show="copied !== 'password'"></i>
+                                <i data-feather="check" class="w-3.5 h-3.5" x-show="copied === 'password'"></i>
+                                <span x-text="copied === 'password' ? 'Tersalin!' : 'Salin'"></span>
+                            </button>
+                        </div>
+
+                        {{-- Tip WA --}}
+                        <div class="flex items-start gap-2 pt-1">
+                            <i data-feather="info" class="w-3.5 h-3.5 text-adzkia-blue shrink-0 mt-0.5"></i>
+                            <p class="text-[11px] font-medium text-adzkia-muted">
+                                Detail ini juga sudah dikirimkan ke nomor WhatsApp Anda. Jangan bagikan password kepada siapapun.
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 @endif
 
@@ -104,18 +174,24 @@
                                class="w-full bg-gray-50 text-adzkia-dark px-5 py-4 rounded-xl border-2 border-transparent focus:bg-white focus:border-adzkia-blue focus:ring-0 outline-none transition-all font-medium placeholder-gray-400 text-[14px]">
                     </div>
 
-                    <div class="mt-6">
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest">
-                                Password
-                            </label>
+                    <div class="mt-6" x-data="{ showPass: false }">
+                        <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input :type="showPass ? 'text' : 'password'"
+                                   name="password" 
+                                   required 
+                                   placeholder="••••••••" 
+                                   class="w-full bg-gray-50 text-adzkia-dark px-5 py-4 pr-14 rounded-xl border-2 border-transparent focus:bg-white focus:border-adzkia-blue focus:ring-0 outline-none transition-all font-medium placeholder-gray-400 text-[14px]">
+                            <button type="button"
+                                    @click="showPass = !showPass"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-adzkia-blue transition-colors p-1"
+                                    :title="showPass ? 'Sembunyikan password' : 'Tampilkan password'">
+                                <i x-show="!showPass" data-feather="eye"      class="w-5 h-5 pointer-events-none"></i>
+                                <i x-show="showPass"  data-feather="eye-off"  class="w-5 h-5 pointer-events-none"></i>
+                            </button>
                         </div>
-                        <input type="password" 
-                               name="password" 
-                               required 
-                               value="{{ session('password') }}"
-                               placeholder="••••••••" 
-                               class="w-full bg-gray-50 text-adzkia-dark px-5 py-4 rounded-xl border-2 border-transparent focus:bg-white focus:border-adzkia-blue focus:ring-0 outline-none transition-all font-medium placeholder-gray-400 text-[14px]">
                     </div>
 
                     <div class="flex items-center gap-3 pt-4 pb-6">
@@ -152,10 +228,17 @@
         </div>
     </footer>
 
+    {{-- Alpine HARUS dimuat sebelum feather agar x-show bekerja di render pertama --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
-        window.addEventListener('load', function() {
-            feather.replace();
+        // Jalankan feather.replace() setelah Alpine selesai mount
+        document.addEventListener('alpine:init', function () {
+            setTimeout(() => feather.replace(), 0);
+        });
+        // Fallback untuk halaman tanpa Alpine
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.feather) feather.replace();
         });
     </script>
 </body>

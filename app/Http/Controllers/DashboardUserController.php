@@ -8,6 +8,7 @@ use App\Models\Jalur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardUserController extends Controller
 {
@@ -30,7 +31,6 @@ class DashboardUserController extends Controller
 
     // ==========================================================
     // 2. FORMULIR PENDAFTARAN AWAL (STEP 1)
-    //    Pilih Jalur + Biodata Utama + Upload Dokumen Dinamis
     // ==========================================================
     public function formulirIndex()
     {
@@ -39,20 +39,20 @@ class DashboardUserController extends Controller
             return redirect('/login')->with('error', 'Sesi Anda telah habis, silakan login kembali.');
         }
 
-        // Kalau sudah masuk tahap verifikasi/lulus, tidak boleh ubah jalur/dokumen lagi
         $isLocked = !in_array($pendaftar->status_pendaftaran, ['Draft', 'Revisi']);
+        $prodis   = Prodi::all();
 
-        $prodis = Prodi::all();
-        $jalurs = Jalur::where('is_active', true)->orderBy('nama')->get();
+        $jalurs = Jalur::where('is_active', true)
+            ->orderBy('nama_jalur')
+            ->get();
 
-        // Dikirim ke Alpine.js di view untuk render dokumen dinamis
         $jalursJson = $jalurs->map(function ($j) {
             return [
-                'id'                    => $j->id,
-                'nama'                  => $j->nama,
-                'is_free_registration'  => (bool) $j->is_free_registration,
-                'has_exam'              => (bool) $j->has_exam,
-                'dokumen_syarat'        => is_array($j->dokumen_syarat)
+                'id'                   => $j->id,
+                'nama'                 => $j->nama_jalur,
+                'is_free_registration' => (bool) $j->is_free_registration,
+                'has_exam'             => (bool) $j->has_exam,
+                'dokumen_syarat'       => is_array($j->dokumen_syarat)
                     ? $j->dokumen_syarat
                     : (json_decode($j->dokumen_syarat, true) ?? []),
             ];
@@ -61,14 +61,9 @@ class DashboardUserController extends Controller
         return view('user.formulir', compact('pendaftar', 'prodis', 'jalurs', 'jalursJson', 'isLocked'));
     }
 
-    /**
-     * Proses simpan Pendaftaran Awal.
-     * - Simpan biodata utama (TANPA data ortu)
-     * - Validasi & upload dokumen dinamis sesuai dokumen_syarat jalur
-     * - Jika is_free_registration -> status_pembayaran = 'Valid' (lunas otomatis)
-     * - Jika berbayar -> status_pembayaran = 'Belum Bayar', arahkan ke halaman
-     *   upload bukti pembayaran manual (pembayaranIndex)
-     */
+    // ==========================================================
+    // 3. SIMPAN PENDAFTARAN AWAL
+    // ==========================================================
     public function simpanPendaftaran(Request $request)
     {
         $pendaftarId = session('pendaftar_id');
@@ -79,9 +74,6 @@ class DashboardUserController extends Controller
                 ->with('error', 'Data Anda telah terkunci karena sudah berada pada tahap ' . $pendaftar->status_pendaftaran . '.');
         }
 
-        // -----------------------------------------------------
-        // VALIDASI DASAR (biodata utama saja, TANPA data ortu)
-        // -----------------------------------------------------
         $request->validate([
             'jalur_id'          => 'required|exists:jalurs,id',
             'nama_lengkap'      => 'required|string|max:255',
@@ -109,15 +101,12 @@ class DashboardUserController extends Controller
             ? $jalur->dokumen_syarat
             : (json_decode($jalur->dokumen_syarat, true) ?? []);
 
-        // -----------------------------------------------------
-        // VALIDASI UPLOAD DOKUMEN DINAMIS
-        // -----------------------------------------------------
         $berkasLama  = json_decode($pendaftar->berkas_dokumen ?? '{}', true) ?? [];
         $uploadRules = [];
 
         foreach ($dokumenSyarat as $dokumen) {
-            $fieldName    = 'doc_' . $this->slugifyDokumen($dokumen);
-            $sudahAda     = !empty($berkasLama[$dokumen]);
+            $fieldName           = 'doc_' . $this->slugifyDokumen($dokumen);
+            $sudahAda            = !empty($berkasLama[$dokumen]);
             $uploadRules[$fieldName] = ($sudahAda ? 'nullable' : 'required')
                 . '|file|mimes:jpg,jpeg,png,pdf|max:2048';
         }
@@ -129,15 +118,12 @@ class DashboardUserController extends Controller
         DB::beginTransaction();
 
         try {
-            // -----------------------------------------------------
-            // UPLOAD DOKUMEN DINAMIS
-            // -----------------------------------------------------
             $berkasUpdate = $berkasLama;
 
             foreach ($dokumenSyarat as $dokumen) {
                 $fieldName = 'doc_' . $this->slugifyDokumen($dokumen);
 
-                if ($request->hasFile($fieldName)) {
+                if ($request->hasFile($fieldName) && $request->file($fieldName)->isValid()) {
                     $file     = $request->file($fieldName);
                     $folder   = 'uploads/dokumen/' . $pendaftar->id;
                     $namaFile = $this->slugifyDokumen($dokumen) . '_' . time() . '.' . $file->getClientOriginalExtension();
@@ -147,18 +133,8 @@ class DashboardUserController extends Controller
                 }
             }
 
-            // -----------------------------------------------------
-            // TENTUKAN STATUS PEMBAYARAN AWAL
-            // Gratis (KIP/BAU) -> langsung Valid
-            // Berbayar -> Belum Bayar, nanti diupload manual di step Pembayaran
-            // -----------------------------------------------------
             $statusPembayaran = $jalur->is_free_registration ? 'Valid' : 'Belum Bayar';
 
-            // -----------------------------------------------------
-            // SIMPAN BIODATA UTAMA + JALUR
-            // (field diambil eksplisit, TIDAK pakai update massal $request->all()
-            //  supaya data ortu / field lain tidak ikut ke sini)
-            // -----------------------------------------------------
             $pendaftar->update([
                 'jalur_id'          => $jalur->id,
                 'nama_lengkap'      => $request->nama_lengkap,
@@ -184,25 +160,23 @@ class DashboardUserController extends Controller
 
             DB::commit();
 
-            // -----------------------------------------------------
-            // REDIRECT SESUAI JENIS JALUR
-            // -----------------------------------------------------
             if ($jalur->is_free_registration) {
-                // Gratis -> langsung ke konfirmasi data, skip pembayaran
                 return redirect()->route('konfirmasi-data', $pendaftar->id)
-                    ->with('success', 'Pendaftaran berhasil! Jalur ' . $jalur->nama . ' tidak memerlukan pembayaran.');
+                    ->with('success', 'Pendaftaran berhasil! Jalur ' . $jalur->nama_jalur . ' tidak memerlukan pembayaran.');
             }
 
-            // Berbayar -> arahkan ke halaman upload bukti pembayaran manual
             return redirect()->route('pembayaran.index')
-                ->with('success', 'Biodata tersimpan. Silakan lanjutkan pembayaran untuk jalur ' . $jalur->nama . '.');
+                ->with('success', 'Biodata tersimpan. Silakan lanjutkan pembayaran untuk jalur ' . $jalur->nama_jalur . '.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal proses pendaftaran awal: ' . $e->getMessage());
+            Log::error('Gagal proses pendaftaran awal: ' . $e->getMessage(), [
+                'pendaftar_id' => $pendaftarId,
+                'trace'        => $e->getTraceAsString(),
+            ]);
 
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage())
+                ->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.')
                 ->withInput();
         }
     }
@@ -228,8 +202,7 @@ class DashboardUserController extends Controller
     }
 
     // ==========================================================
-    // 3. PEMBAYARAN MANUAL (STEP 2 & 3)
-    //    Hanya diakses jalur berbayar (is_free_registration = false)
+    // 4. PEMBAYARAN MANUAL (STEP 2 untuk jalur berbayar)
     // ==========================================================
     public function pembayaranIndex()
     {
@@ -242,9 +215,10 @@ class DashboardUserController extends Controller
     public function prosesUploadBukti(Request $request)
     {
         $request->validate([
-            'bukti_pembayaran' => 'required|image|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bukti_pembayaran' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
             'bukti_pembayaran.required' => 'File bukti pembayaran wajib diisi.',
+            'bukti_pembayaran.mimes'    => 'Format file harus JPG, PNG, atau PDF.',
             'bukti_pembayaran.max'      => 'Ukuran file maksimal 2MB.',
         ]);
 
@@ -254,11 +228,11 @@ class DashboardUserController extends Controller
             $pendaftar->metode_pembayaran = $request->metode_pembayaran;
         }
 
-        if ($request->hasFile('bukti_pembayaran')) {
+        if ($request->hasFile('bukti_pembayaran') && $request->file('bukti_pembayaran')->isValid()) {
             $file     = $request->file('bukti_pembayaran');
             $filename = $pendaftar->id . '_' . time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
             $file->move(public_path('uploads/bukti_bayar'), $filename);
-            $pendaftar->bukti_pembayaran  = $filename;
+            $pendaftar->bukti_pembayaran  = 'uploads/bukti_bayar/' . $filename;
             $pendaftar->status_pembayaran = 'Menunggu Validasi';
         }
 
@@ -267,7 +241,139 @@ class DashboardUserController extends Controller
     }
 
     // ==========================================================
-    // 4. KONFIRMASI
+    // 5. BIODATA LANJUTAN
+    //    Route: GET /formulir-biodata → pendaftaran.biodata
+    // ==========================================================
+    public function biodataIndex()
+    {
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+
+        if (!$pendaftar) {
+            return redirect()->route('login')
+                ->with('error', 'Sesi Anda telah habis, silakan login kembali.');
+        }
+
+        $prodis = Prodi::all();
+        $jalurs = Jalur::where('is_active', true)->orderBy('nama_jalur')->get();
+
+        // ── Auto-resolve jalur_id dari string jalur_pendaftaran ──────────────
+        // Saat registrasi awal, user memilih jalur via string (misal "Reguler").
+        // Jika jalur_id belum tersimpan di DB, coba cocokkan dari nama_jalur.
+        if (empty($pendaftar->jalur_id) && !empty($pendaftar->jalur_pendaftaran)) {
+            $namaJalurBersih = trim(explode(' - ', $pendaftar->jalur_pendaftaran)[0]);
+
+            $jalurMatch = $jalurs->first(function ($j) use ($namaJalurBersih) {
+                return strtolower($j->nama_jalur) === strtolower($namaJalurBersih)
+                    || strtolower($j->kode_nim)   === strtolower($namaJalurBersih);
+            });
+
+            if ($jalurMatch) {
+                // Simpan ke DB hanya jika kolom jalur_id sudah ada
+                if (Schema::hasColumn('data_pendaftars', 'jalur_id')) {
+                    $pendaftar->jalur_id = $jalurMatch->id;
+                    $pendaftar->saveQuietly();
+                } else {
+                    // Kolom belum ada — inject ke object saja agar view bisa baca
+                    $pendaftar->setAttribute('jalur_id', $jalurMatch->id);
+                }
+            }
+        }
+
+        $jalursJson = $jalurs->map(function ($j) {
+            return [
+                'id'                   => $j->id,
+                'nama'                 => $j->nama_jalur,
+                'is_free_registration' => (bool) $j->is_free_registration,
+                'has_exam'             => (bool) $j->has_exam,
+                'dokumen_syarat'       => is_array($j->dokumen_syarat)
+                    ? $j->dokumen_syarat
+                    : (json_decode($j->dokumen_syarat, true) ?? []),
+            ];
+        })->values()->toJson();
+
+        $isLocked = !in_array($pendaftar->status_pendaftaran, ['Draft', 'Revisi']);
+
+        return view('user.formulir', compact('pendaftar', 'prodis', 'jalurs', 'jalursJson', 'isLocked'));
+    }
+
+    public function simpanBiodata(Request $request)
+    {
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+
+        if (!$pendaftar) {
+            return redirect()->route('login')
+                ->with('error', 'Sesi Anda telah habis, silakan login kembali.');
+        }
+
+        $validated = $request->validate([
+            'tempat_lahir'    => 'required|string|max:100',
+            'tanggal_lahir'   => 'required|date',
+            'gender'          => 'required|in:Laki-laki,Perempuan',
+            'agama'           => 'required|string|max:50',
+            'no_whatsapp'     => 'required|string|max:20',
+            'sekolah_asal'    => 'required|string|max:255',
+            'jurusan_sma'     => 'nullable|string|max:255',
+            'tahun_lulus'     => 'required|digits:4|integer',
+            'alamat_rumah'    => 'required|string',
+        ]);
+
+        $pendaftar->update($validated);
+
+        return redirect()->route('konfirmasi-data', $pendaftar->id)
+            ->with('success', 'Biodata berhasil disimpan!');
+    }
+
+    public function editBiodata()
+    {
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+
+        if (!$pendaftar) {
+            return redirect()->route('login')
+                ->with('error', 'Sesi Anda telah habis, silakan login kembali.');
+        }
+
+        return view('user.edit-biodata', compact('pendaftar'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pendaftar = DataPendaftar::findOrFail($id);
+
+        if ($pendaftar->id !== (int) session('pendaftar_id')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $validated = $request->validate([
+            'tempat_lahir'    => 'required|string|max:100',
+            'tanggal_lahir'   => 'required|date',
+            'gender'          => 'required|in:Laki-laki,Perempuan',
+            'agama'           => 'required|string|max:50',
+            'no_whatsapp'     => 'required|string|max:20',
+            'sekolah_asal'    => 'required|string|max:255',
+            'jurusan_sma'     => 'nullable|string|max:255',
+            'tahun_lulus'     => 'required|digits:4|integer',
+            'alamat_rumah'    => 'required|string',
+        ]);
+
+        $pendaftar->update($validated);
+
+        return redirect()->route('konfirmasi-data', $pendaftar->id)
+            ->with('success', 'Biodata berhasil diperbarui!');
+    }
+
+    // ==========================================================
+    // 6. VALIDASI USER (halaman status pembayaran user)
+    // ==========================================================
+    public function validasiUser()
+    {
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+        if (!$pendaftar) return redirect('/login')->with('error', 'Sesi Anda telah habis.');
+
+        return view('user.validasi-pembayaran', compact('pendaftar'));
+    }
+
+    // ==========================================================
+    // 7. KONFIRMASI DATA
     // ==========================================================
     public function tampilkanKonfirmasi($id)
     {
@@ -299,7 +405,7 @@ class DashboardUserController extends Controller
     }
 
     // ==========================================================
-    // 5. VALIDASI AKHIR & HASIL
+    // 8. VALIDASI AKHIR & HASIL
     // ==========================================================
     public function tampilkanValidasiAkhir($id)
     {
@@ -318,6 +424,9 @@ class DashboardUserController extends Controller
         return view('user.sukses', compact('pendaftar'));
     }
 
+    // ==========================================================
+    // 9. CETAK LoA
+    // ==========================================================
     public function cetakLoA()
     {
         $pendaftar = DataPendaftar::find(session('pendaftar_id'));
@@ -327,5 +436,32 @@ class DashboardUserController extends Controller
         }
 
         return view('user.cetak-loa', compact('pendaftar'));
+    }
+
+    // ==========================================================
+    // 10. PENGUMUMAN HASIL (USER)
+    // ==========================================================
+    public function tampilkanHasil()
+    {
+        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+        if (!$pendaftar) return redirect('/login')->with('error', 'Sesi Anda telah habis.');
+
+        return view('user.pengumuman-hasil', compact('pendaftar'));
+    }
+
+    // ==========================================================
+    // 11. INDEX (alias dashboard)
+    // ==========================================================
+    public function index()
+    {
+        return $this->dashboardUser();
+    }
+
+    // ==========================================================
+    // 12. PROSES PEMBAYARAN (alias upload bukti)
+    // ==========================================================
+    public function prosesPembayaran(Request $request)
+    {
+        return $this->prosesUploadBukti($request);
     }
 }

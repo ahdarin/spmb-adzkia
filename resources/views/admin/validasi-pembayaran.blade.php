@@ -119,7 +119,7 @@
                                         'Rp {{ number_format($data->nominal_biaya ?? 0, 0, ',', '.') }}', 
                                         '{{ $data->created_at->format('d M Y H:i') }}',
                                         '{{ $data->jalur_pendaftaran }}',
-                                        '{{ $data->bukti_pembayaran ? asset('uploads/bukti_bayar/' . $data->bukti_pembayaran) : '' }}'
+                                        '{{ $data->bukti_pembayaran ? asset($data->bukti_pembayaran) : '' }}'
                                     )" 
                                     class="px-4 py-2 bg-brand-dark text-white rounded-lg font-bold text-[11px] hover:bg-brand-blue transition-colors shadow-sm">
                                 Validasi

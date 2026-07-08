@@ -396,7 +396,8 @@
                                     @foreach($jalurs as $jalur)
                                         <option value="{{ $jalur->id }}"
                                                 {{ old('jalur_id', $pendaftar->jalur_id ?? '') == $jalur->id ? 'selected' : '' }}>
-                                            {{ $jalur->nama }}
+                                            {{ $jalur->nama_jalur }}
+                                            {{ $jalur->is_free_registration ? '(Gratis)' : '' }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -406,10 +407,35 @@
                             </div>
 
                             {{-- Info badge jalur yang dipilih --}}
-                            <div x-show="selectedJalur" x-cloak
-                                 class="mt-3 flex items-center gap-2 text-[12px] font-bold text-adzkia-blue bg-adzkia-badge-bg px-4 py-2.5 rounded-xl">
-                                <i data-feather="info" class="w-4 h-4 shrink-0"></i>
-                                <span>Jalur ini memerlukan <strong x-text="selectedJalur ? selectedJalur.dokumen_syarat.length : 0"></strong> dokumen syarat. Pastikan semua dokumen Anda siap sebelum mengunggah.</span>
+                            <div x-show="selectedJalur" x-cloak class="mt-3 space-y-2">
+
+                                {{-- Baris dokumen --}}
+                                <div class="flex items-center gap-2 text-[12px] font-bold text-adzkia-blue bg-adzkia-badge-bg px-4 py-2.5 rounded-xl">
+                                    <i data-feather="info" class="w-4 h-4 shrink-0"></i>
+                                    <span>Jalur ini memerlukan <strong x-text="selectedJalur ? selectedJalur.dokumen_syarat.length : 0"></strong> dokumen syarat. Pastikan semua dokumen Anda siap sebelum mengunggah.</span>
+                                </div>
+
+                                {{-- Badge: Gratis --}}
+                                <div x-show="selectedJalur && selectedJalur.is_free_registration" x-cloak
+                                     class="flex items-center gap-2 text-[12px] font-bold text-green-700 bg-green-50 border border-green-200 px-4 py-2.5 rounded-xl">
+                                    <i data-feather="check-circle" class="w-4 h-4 shrink-0 text-green-500"></i>
+                                    <span>Jalur ini <strong>GRATIS</strong> — setelah biodata tersimpan, Anda langsung diarahkan ke halaman konfirmasi data.</span>
+                                </div>
+
+                                {{-- Badge: Berbayar --}}
+                                <div x-show="selectedJalur && !selectedJalur.is_free_registration" x-cloak
+                                     class="flex items-center gap-2 text-[12px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-xl">
+                                    <i data-feather="credit-card" class="w-4 h-4 shrink-0 text-amber-500"></i>
+                                    <span>Jalur ini <strong>berbayar</strong> — setelah biodata tersimpan, Anda akan diarahkan ke halaman unggah bukti pembayaran.</span>
+                                </div>
+
+                                {{-- Badge: Ada ujian --}}
+                                <div x-show="selectedJalur && selectedJalur.has_exam" x-cloak
+                                     class="flex items-center gap-2 text-[12px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-4 py-2.5 rounded-xl">
+                                    <i data-feather="edit-3" class="w-4 h-4 shrink-0 text-purple-500"></i>
+                                    <span>Jalur ini mensyaratkan <strong>ujian masuk</strong>. Jadwal ujian akan diinformasikan setelah verifikasi berkas.</span>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -498,9 +524,16 @@
                 {{-- ================================================ --}}
                 <div class="pt-7 sm:pt-10 border-t border-gray-100 flex flex-col items-center gap-3 sm:gap-6 mt-7 sm:mt-10">
                     @if(!$isLocked)
+                        {{-- Label tombol berubah dinamis sesuai jenis jalur --}}
                         <button type="submit"
                                 class="w-full py-3.5 sm:py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex justify-center items-center gap-2 active:scale-[0.98]">
-                            Simpan Biodata & Lanjutkan
+                            <span x-show="!selectedJalur">Simpan Biodata & Lanjutkan</span>
+                            <span x-show="selectedJalur && selectedJalur.is_free_registration" x-cloak>
+                                Simpan &amp; Lanjut ke Konfirmasi
+                            </span>
+                            <span x-show="selectedJalur && !selectedJalur.is_free_registration" x-cloak>
+                                Simpan &amp; Lanjut ke Pembayaran
+                            </span>
                             <i data-feather="arrow-right" class="w-4 h-4"></i>
                         </button>
                     @else
@@ -539,7 +572,8 @@
             selectedCity: '',
 
             // --- JALUR PENDAFTARAN ---
-            // jalursData dikirim dari controller dalam bentuk JSON string
+            // jalursData dikirim dari controller (sudah di-map dengan key 'nama')
+            // key: id, nama, is_free_registration, has_exam, dokumen_syarat
             jalursData:      {!! $jalursJson !!},
             selectedJalurId: '{{ old('jalur_id', $pendaftar->jalur_id ?? '') }}',
             selectedJalur:   null,
@@ -594,6 +628,7 @@
                 if (!this.selectedJalur) return;
 
                 // Inisialisasi uploadedFiles: isi dari DB jika ada, kosong jika belum
+                // berkasDb key = nama dokumen (misal: "KTP", "Rapor Semester 3-5")
                 this.uploadedFiles = {};
                 this.selectedJalur.dokumen_syarat.forEach(dok => {
                     this.uploadedFiles[dok] = this.berkasDb[dok]

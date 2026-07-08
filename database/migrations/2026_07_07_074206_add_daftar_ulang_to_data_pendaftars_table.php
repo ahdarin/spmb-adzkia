@@ -10,22 +10,30 @@ public function up(): void
 {
     Schema::table('data_pendaftars', function (Blueprint $table) {
         // Relasi ke gelombang saat dia mendaftar
-        $table->foreignId('gelombang_id')->nullable()->constrained('gelombangs')->onDelete('set null');
-        
-        // Status dan Bukti Daftar Ulang
-        $table->enum('status_daftar_ulang', ['Belum', 'Menunggu Verifikasi', 'Selesai'])->default('Belum');
-        $table->string('bukti_daftar_ulang')->nullable();
-        
+        // (kolom status_daftar_ulang & bukti_daftar_ulang sudah ditambahkan
+        //  oleh migration 000001, jadi tidak perlu diulang di sini)
+        if (!Schema::hasColumn('data_pendaftars', 'gelombang_id')) {
+            $table->foreignId('gelombang_id')->nullable()->constrained('gelombangs')->onDelete('set null');
+        }
+
         // Output Akhir (NIM)
-        $table->string('nim', 50)->nullable()->unique();
+        if (!Schema::hasColumn('data_pendaftars', 'nim')) {
+            $table->string('nim', 50)->nullable()->unique();
+        }
     });
 }
 
 public function down(): void
 {
     Schema::table('data_pendaftars', function (Blueprint $table) {
-        $table->dropForeign(['gelombang_id']);
-        $table->dropColumn(['gelombang_id', 'status_daftar_ulang', 'bukti_daftar_ulang', 'nim']);
+        if (Schema::hasColumn('data_pendaftars', 'gelombang_id')) {
+            $table->dropForeign(['gelombang_id']);
+            $table->dropColumn('gelombang_id');
+        }
+
+        if (Schema::hasColumn('data_pendaftars', 'nim')) {
+            $table->dropColumn('nim');
+        }
     });
 }
 };

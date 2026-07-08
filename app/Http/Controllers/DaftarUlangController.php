@@ -144,8 +144,29 @@ class DaftarUlangController extends Controller
                 ->with('error', 'Silakan lengkapi data orang tua/wali terlebih dahulu.');
         }
 
-        // Ambil nominal biaya daftar ulang sesuai jalur pendaftar
-        $biaya = BiayaDaftarUlang::where('jalur_id', $pendaftar->jalur_id)->first();
+        // Cari biaya berdasarkan kombinasi prodi + jalur + gelombang + tahun
+        // Prodi diambil dari pilihan_jurusan_1 (nama), cocokkan ke tabel prodis
+        $prodi = \App\Models\Prodi::where('nama', $pendaftar->pilihan_jurusan_1)->first();
+
+        // Gelombang aktif tahun ini
+        $gelombang = \App\Models\Gelombang::where('tahun', date('Y'))
+                        ->where('is_active', true)->first()
+                  ?? \App\Models\Gelombang::where('tahun', date('Y'))->first();
+
+        $biaya = null;
+
+        if ($prodi && $pendaftar->jalur_id && $gelombang) {
+            $biaya = BiayaDaftarUlang::where('prodi_id',     $prodi->id)
+                                     ->where('jalur_id',     $pendaftar->jalur_id)
+                                     ->where('gelombang_id', $gelombang->id)
+                                     ->where('tahun',        date('Y'))
+                                     ->first();
+        }
+
+        // Fallback: cari hanya berdasarkan jalur_id jika kombinasi lengkap tidak ditemukan
+        if (!$biaya && $pendaftar->jalur_id) {
+            $biaya = BiayaDaftarUlang::where('jalur_id', $pendaftar->jalur_id)->first();
+        }
 
         return view('user.daftar-ulang.pembayaran', compact('pendaftar', 'biaya'));
     }
