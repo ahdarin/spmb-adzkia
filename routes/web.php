@@ -156,7 +156,10 @@ Route::middleware([CheckRole::class.':admin,super_admin'])->prefix('admin')->nam
     Route::get('/validasi-daftar-ulang', [AdminPendaftarController::class, 'daftarUlangIndex'])->name('validasi.daftarulang');
     Route::post('/setujui-daftar-ulang/{id}', [AdminPendaftarController::class, 'setujuiDaftarUlang'])->name('setujui-daftar-ulang');
     Route::post('/revisi-daftar-ulang/{id}', [AdminPendaftarController::class, 'revisiDaftarUlang'])->name('revisi-daftar-ulang');
-    
+        // Di dalam grup admin
+    Route::get('/validasi-formulir', [AdminPendaftarController::class, 'formulirIndex'])->name('validasi.formulir');
+    Route::post('/setujui-formulir/{id}', [AdminPendaftarController::class, 'setujuiFormulir'])->name('setujui-formulir');
+    Route::post('/revisi-formulir/{id}', [AdminPendaftarController::class, 'revisiFormulir'])->name('revisi-formulir');
     // Pengumuman & Berita (Informasi Umum)
     Route::get('/berita', [AdminBeritaController::class, 'index'])->name('berita.index');
     Route::get('/berita/create', [AdminBeritaController::class, 'create'])->name('berita.create');

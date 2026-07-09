@@ -222,15 +222,19 @@ class AdminPendaftarController extends Controller
     // ==========================================
     // VALIDASI BIODATA (AKADEMIK / VERIFIKATOR)
     // ==========================================
-    public function daftarUlangIndex()
-    {
-        $pendaftarDaftarUlang = DataPendaftar::where('status_pembayaran', 'Terverifikasi')
-                                ->whereIn('status_pendaftaran', ['menunggu verifikasi', 'Selesai', 'Revisi'])  
-                                ->latest()
-                                ->get();
+public function daftarUlangIndex()
+{
+    $pendaftarDaftarUlang = DataPendaftar::whereIn('status_daftar_ulang', [
+                                'Menunggu Validasi',
+                                'Revisi',
+                                'Selesai',
+                            ])
+                            ->whereNotNull('bukti_daftar_ulang')
+                            ->latest()
+                            ->get();
 
-        return view('admin.validasi-daftar-ulang', compact('pendaftarDaftarUlang'));
-    }
+    return view('admin.validasi-daftar-ulang', compact('pendaftarDaftarUlang'));
+}
 
     public function setujuiDaftarUlang($id)
     {
@@ -349,6 +353,76 @@ class AdminPendaftarController extends Controller
         
         return redirect()->back()->with('success', 'Status kelulusan berhasil diperbarui!');
     }   
+
+    // ==========================================
+    // VALIDASI FORMULIR (VERIFIKATOR BERKAS)
+    // ==========================================
+    public function formulirIndex(Request $request)
+    {
+        $query = DataPendaftar::whereIn('status_pendaftaran', [
+            'menunggu verifikasi', 'Selesai', 'Revisi'
+        ]);
+
+        if ($request->filled('status')) {
+            $query->where('status_pendaftaran', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('no_pendaftaran', 'like', "%{$search}%");
+            });
+        }
+
+        $pendaftarFormulir = $query->latest()->get();
+
+        return view('admin.validasi-formulir', compact('pendaftarFormulir'));
+    }
+
+    public function setujuiFormulir($id)
+    {
+        $pendaftar = DataPendaftar::findOrFail($id);
+        $pendaftar->update(['status_pendaftaran' => 'Selesai']);
+
+        $pesan = "*Formulir Terverifikasi ✅*\n\n" .
+                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                 "Biodata dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *DIVERIFIKASI* oleh tim akademik.\n\n" .
+                 "Nantikan pengumuman hasil seleksi melalui dashboard Anda:\n" .
+                 "http://spmb.adzkia.ac.id/login\n\n" .
+                 "Terima kasih.";
+
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
+
+        return back()->with('success',
+            'Formulir ' . $pendaftar->nama_lengkap . ' berhasil diverifikasi. ' . $info);
+    }
+
+    public function revisiFormulir(Request $request, $id)
+    {
+        $request->validate(['pesan_revisi' => 'required|string']);
+
+        $pendaftar = DataPendaftar::findOrFail($id);
+        $pendaftar->update([
+            'status_pendaftaran' => 'Revisi',
+            'pesan_revisi'       => $request->pesan_revisi,
+        ]);
+
+        $pesan = "*Revisi Formulir Pendaftaran ⚠️*\n\n" .
+                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
+                 "Formulir pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) *memerlukan perbaikan*.\n\n" .
+                 "📌 *Pesan Admin:* {$request->pesan_revisi}\n\n" .
+                 "Silakan login dan perbaiki formulir Anda:\n" .
+                 "http://spmb.adzkia.ac.id/login\n\n" .
+                 "Terima kasih.";
+
+        $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
+        $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
+
+        return back()->with('success',
+            'Pesan revisi berhasil dikirim ke ' . $pendaftar->nama_lengkap . '. ' . $info);
+    }
 
     // ==========================================
     // FUNGSI HELPER WA (Fonnte API Private)

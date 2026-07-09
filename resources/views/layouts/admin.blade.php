@@ -40,8 +40,9 @@
         $divisi = $user ? $user->divisi : '';
 
         $pendingPembayaran = \App\Models\DataPendaftar::where('status_pembayaran', 'Menunggu Validasi')->count();
-        $pendingBerkas = \App\Models\DataPendaftar::where('status_pendaftaran', 'menunggu verifikasi')->count();
-        $totalPending = $pendingPembayaran + $pendingBerkas;
+        $pendingFormulir   = \App\Models\DataPendaftar::where('status_pendaftaran', 'menunggu verifikasi')->count();
+        $pendingBerkas     = \App\Models\DataPendaftar::whereIn('status_daftar_ulang', ['Menunggu Validasi'])->whereNotNull('bukti_daftar_ulang')->count();
+        $totalPending = $pendingPembayaran + $pendingFormulir + $pendingBerkas;
     @endphp
 
     {{-- OVERLAY MOBILE (klik untuk tutup sidebar) --}}
@@ -106,8 +107,17 @@
                     @endif
 
                     @if($isSuperAdmin || $divisi === 'Verifikator Berkas')
+                    <a href="/admin/validasi-formulir" class="flex items-center justify-between pr-4 py-2 text-[13px] font-bold {{ request()->is('admin/validasi-formulir') ? 'text-brand-blue' : 'text-brand-gray hover:text-brand-dark' }}">
+                        <span>Formulir</span>
+                        @if($pendingFormulir > 0)
+                            <span class="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">{{ $pendingFormulir }}</span>
+                        @endif
+                    </a>
+                    @endif
+
+                    @if($isSuperAdmin || $divisi === 'Verifikator Berkas')
                     <a href="/admin/validasi-daftar-ulang" class="flex items-center justify-between pr-4 py-2 text-[13px] font-bold {{ request()->is('admin/validasi-daftar-ulang') ? 'text-brand-blue' : 'text-brand-gray hover:text-brand-dark' }}">
-                        <span>Daftar Ulang</span>
+                        <span>Berkas Daftar Ulang</span>
                         @if($pendingBerkas > 0)
                             <span class="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">{{ $pendingBerkas }}</span>
                         @endif

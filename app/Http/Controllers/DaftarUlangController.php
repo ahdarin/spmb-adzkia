@@ -15,7 +15,9 @@ class DaftarUlangController extends Controller
      */
     private function guardKelulusan(DataPendaftar $pendaftar)
     {
-        if (strtolower($pendaftar->status_kelulusan) !== 'lulus') {
+        $statusLulus = ['lulus pilihan 1', 'lulus pilihan 2'];
+
+        if (!in_array(strtolower($pendaftar->status_kelulusan ?? ''), $statusLulus)) {
             return redirect()->route('dashboard.user')
                 ->with('error', 'Fitur Daftar Ulang hanya bisa diakses oleh pendaftar yang telah dinyatakan Lulus.');
         }
@@ -194,16 +196,39 @@ class DaftarUlangController extends Controller
         try {
             $file     = $request->file('bukti_daftar_ulang');
             $filename = 'daftarulang_' . $pendaftar->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+            // Pastikan folder ada
+            if (!file_exists(public_path('uploads/bukti_daftar_ulang'))) {
+                mkdir(public_path('uploads/bukti_daftar_ulang'), 0755, true);
+            }
+
             $file->move(public_path('uploads/bukti_daftar_ulang'), $filename);
 
-            $pendaftar->update([
+            $updateData = [
                 'bukti_daftar_ulang'  => $filename,
                 'metode_daftar_ulang' => $request->metode_daftar_ulang,
                 'status_daftar_ulang' => 'Menunggu Validasi',
-            ]);
+            ];
+
+            // Auto-set pas_foto dari berkas_dokumen jika belum ada
+            // Cari key yang mengandung kata "foto" atau "pas foto"
+            if (empty($pendaftar->pas_foto) && !empty($pendaftar->berkas_dokumen)) {
+                $berkas = is_array($pendaftar->berkas_dokumen)
+                    ? $pendaftar->berkas_dokumen
+                    : (json_decode($pendaftar->berkas_dokumen, true) ?? []);
+
+                foreach ($berkas as $namaDoc => $pathDoc) {
+                    if (stripos($namaDoc, 'foto') !== false || stripos($namaDoc, 'pas') !== false) {
+                        $updateData['pas_foto'] = $pathDoc;
+                        break;
+                    }
+                }
+            }
+
+            $pendaftar->update($updateData);
 
             return redirect()->route('dashboard.user')
-                ->with('success', 'Bukti pembayaran daftar ulang berhasil diunggah! Harap tunggu proses validasi oleh Admin.');
+                ->with('success', '✅ Bukti pembayaran daftar ulang berhasil diunggah! Harap tunggu proses validasi oleh Admin. Anda akan mendapatkan NIM setelah berkas diverifikasi.');
 
         } catch (\Exception $e) {
             Log::error('Gagal upload bukti daftar ulang: ' . $e->getMessage());
