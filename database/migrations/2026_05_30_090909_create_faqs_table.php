@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->text('pertanyaan');
             $table->text('jawaban');
-            $table->string('kategori')->default('Dashboard Utama'); // Kategori untuk User atau Utama
+            $table->string('kategori')->default('Dashboard Utama');
             $table->timestamps();
         });
     }

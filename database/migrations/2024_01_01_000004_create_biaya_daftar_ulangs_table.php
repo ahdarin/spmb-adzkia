@@ -17,10 +17,11 @@ return new class extends Migration
             $table->unsignedBigInteger('spp_semester')->default(0)->comment('Biaya SPP per semester');
             $table->unsignedBigInteger('biaya_sarpras')->default(0)->comment('Biaya sarana prasarana');
             $table->unsignedBigInteger('biaya_seragam_orientasi')->default(0)->comment('Biaya seragam dan orientasi');
-            $table->unsignedBigInteger('total_biaya')->storedAs('spp_semester + biaya_sarpras + biaya_seragam_orientasi')->comment('Dikalkulasi otomatis oleh database');
+            $table->unsignedBigInteger('total_biaya')
+                ->storedAs('spp_semester + biaya_sarpras + biaya_seragam_orientasi')
+                ->comment('Dikalkulasi otomatis oleh database');
             $table->timestamps();
 
-            // Satu kombinasi prodi+jalur+gelombang+tahun harus unik
             $table->unique(['prodi_id', 'jalur_id', 'gelombang_id', 'tahun'], 'biaya_unique');
         });
     }

@@ -10,18 +10,12 @@ return new class extends Migration
     {
         Schema::create('metode_pembayarans', function (Blueprint $table) {
             $table->id();
-            // Menyimpan jenis: 'Bank Transfer', 'Virtual Account', atau 'E-Wallet'
-            $table->string('kategori'); 
-            // Menyimpan nama: 'MANDIRI', 'BNI', 'DANA', 'OVO'
-            $table->string('nama_provider'); 
-            // Menyimpan nama bank resmi lengkap: 'Bank Mandiri', 'Bank Central Asia'
-            $table->string('nama_bank_lengkap')->nullable(); 
-            // Menyimpan nomor rekening / nomor VA / nomor HP e-wallet
-            $table->string('nomor_tujuan'); 
-            // Menyimpan atas nama rekening: 'SPMB ADMISSION'
-            $table->string('atas_nama'); 
-            // Untuk mengontrol apakah metode ini sedang diaktifkan atau dinonaktifkan oleh admin
-            $table->boolean('is_active')->default(true); 
+            $table->string('kategori'); // 'Bank Transfer', 'Virtual Account', 'E-Wallet'
+            $table->string('nama_provider'); // 'MANDIRI', 'BNI', 'DANA', 'OVO'
+            $table->string('nama_bank_lengkap')->nullable();
+            $table->string('nomor_tujuan');
+            $table->string('atas_nama');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
