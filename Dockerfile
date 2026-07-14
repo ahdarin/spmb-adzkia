@@ -20,5 +20,9 @@ RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 8080
 
+RUN mkdir -p storage/framework/{sessions,views,cache/data} && \
+    chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data storage bootstrap/cache
+    
 CMD php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
