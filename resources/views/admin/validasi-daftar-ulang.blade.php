@@ -356,7 +356,6 @@
 </div>
 
 <script>
-// URL base dikirim dari PHP sekali saja — tidak ada single quote di dalam {{ }}
 var baseSetujui = "{{ rtrim(url('admin/setujui-daftar-ulang'), '/') }}";
 var baseRevisi  = "{{ rtrim(url('admin/revisi-daftar-ulang'), '/') }}";
 
