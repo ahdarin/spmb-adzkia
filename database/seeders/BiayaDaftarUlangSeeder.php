@@ -61,7 +61,5 @@ class BiayaDaftarUlangSeeder extends Seeder
                 $inserted++;
             }
         }
-
-        $this->command->info("Selesai: {$inserted} baris biaya daftar ulang berhasil di-seed.");
     }
 }
