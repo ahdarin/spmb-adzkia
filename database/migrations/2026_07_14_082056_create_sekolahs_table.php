@@ -6,20 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('sekolahs', function (Blueprint $table) {
             $table->id();
+            $table->string('npsn', 20)->unique()->comment('Nomor Pokok Sekolah Nasional');
+            $table->string('nama_sekolah');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sekolahs');
