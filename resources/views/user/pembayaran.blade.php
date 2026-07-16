@@ -148,7 +148,7 @@
                 <h2 class="text-2xl font-black text-adzkia-dark mb-2">Pembayaran Lunas!</h2>
                 <p class="text-gray-500 font-medium max-w-md mx-auto mb-8">Validasi pembayaran berhasil dilakukan. Akun Anda telah aktif.</p>
                 <a href="{{ route('pendaftaran.biodata') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-adzkia-blue text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                    Lanjut ke Step 4 (Biodata) <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    Lanjut ke Step 3 (Biodata) <i data-feather="arrow-right" class="w-4 h-4"></i>
                 </a>
             </div>
 

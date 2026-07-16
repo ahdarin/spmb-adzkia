@@ -176,10 +176,10 @@ class AdminPendaftarController extends Controller
         $pendaftar->status_pembayaran = 'Terverifikasi';
         $pendaftar->save();
 
-        $pesan = "*Pembayaran Terverifikasi ✅*\n\n" .
-                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                 "Pembayaran biaya pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *BERHASIL DIVERIFIKASI* oleh panitia SPMB Universitas Adzkia.\n\n" .
-                 "Silakan login dan lanjutkan ke tahap *pengisian biodata & unggah berkas*:\n" .
+        $pesan = "Pemberitahuan Verifikasi Pembayaran\n\n" .
+                 "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                 "Pembayaran biaya pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah dinyatakan terverifikasi oleh panitia SPMB Universitas Adzkia.\n\n" .
+                 "Silakan masuk ke portal dan lanjutkan ke tahap pengisian biodata serta pengunggahan berkas persyaratan:\n" .
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
 
@@ -204,12 +204,12 @@ class AdminPendaftarController extends Controller
         }
         $pendaftar->save();
 
-        $pesan = "*Verifikasi Pembayaran Ditolak ⚠️*\n\n" .
-                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                 "Mohon maaf, bukti pembayaran Anda (No. {$pendaftar->no_pendaftaran}) *belum dapat kami verifikasi*.\n\n" .
-                 "Silakan login kembali lalu *unggah ulang* bukti pembayaran yang valid dan jelas:\n" .
+        $pesan = "Pemberitahuan Verifikasi Pembayaran\n\n" .
+                 "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                 "Mohon maaf, bukti pembayaran Anda (No. {$pendaftar->no_pendaftaran}) belum dapat kami verifikasi karena belum memenuhi persyaratan yang ditetapkan.\n\n" .
+                 "Silakan masuk kembali ke portal dan unggah ulang bukti pembayaran yang valid dan terbaca dengan jelas:\n" .
                  "http://spmb.adzkia.ac.id/login\n\n" .
-                 "Bila ada kendala, hubungi panitia SPMB. Terima kasih.";
+                 "Apabila terdapat kendala, silakan menghubungi panitia SPMB. Terima kasih.";
 
         // Panggil fungsi kirimNotifikasiWA internal
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
@@ -239,21 +239,32 @@ public function daftarUlangIndex()
     public function setujuiDaftarUlang($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
-        $pendaftar->status_pendaftaran = 'Selesai';
+
+        // Generate NIM jika belum ada
+        // Format: ADZ-[TAHUN]-[ID 4 digit]
+        // Contoh: ADZ-2026-0001
+        if (empty($pendaftar->nim)) {
+            $tahun  = date('Y');
+            $urutan = str_pad($pendaftar->id, 4, '0', STR_PAD_LEFT);
+            $pendaftar->nim = 'ADZ-' . $tahun . '-' . $urutan;
+        }
+
+        // Update kolom yang benar: status_daftar_ulang (bukan status_pendaftaran)
+        $pendaftar->status_daftar_ulang = 'Selesai';
         $pendaftar->save();
 
-        $pesan = "*Biodata & Berkas Terverifikasi ✅*\n\n" .
-                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                 "Biodata dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *BERHASIL DIVERIFIKASI* oleh tim akademik SPMB Universitas Adzkia.\n\n" .
-                 "Selamat! Anda telah menyelesaikan seluruh proses pendaftaran SPMB. Nantikan pengumuman kelulusan melalui dashboard Anda.\n\n" .
+        $pesan = "Pemberitahuan Resmi SPMB Universitas Adzkia\n\n" .
+                 "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                 "Berdasarkan hasil verifikasi, pembayaran daftar ulang dan kelengkapan berkas Anda (No. {$pendaftar->no_pendaftaran}) telah dinyatakan Valid.\n\n" .
+                 "Selamat, Anda telah resmi menjadi mahasiswa Universitas Adzkia dengan NIM: {$pendaftar->nim}.\n\n" .
+                 "Silakan simpan informasi ini untuk keperluan akademik selanjutnya.\n\n" .
                  "Terima kasih.";
-                 
-        // Panggil fungsi kirimNotifikasiWA internal
+
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
 
-        // Menambahkan response pesan ke frontend
-        return redirect()->back()->with('success', 'Berkas pendaftar telah diverifikasi. ' . $info);
+        return redirect()->back()->with('success',
+            'Pembayaran daftar ulang ' . $pendaftar->nama_lengkap . ' telah diverifikasi. NIM: ' . $pendaftar->nim . '. ' . $info);
     }
 
     public function revisiDaftarUlang(Request $request, $id)
@@ -261,16 +272,16 @@ public function daftarUlangIndex()
         $request->validate(['pesan_revisi' => 'required|string']);
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->update([
-            'status_pendaftaran' => 'Revisi',
-            'pesan_revisi'       => $request->pesan_revisi
+            'status_daftar_ulang' => 'Revisi',
+            'pesan_revisi'        => $request->pesan_revisi,
         ]);
 
-        $pesan = "*Revisi Biodata & Berkas ⚠️*\n\n" .
-                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                 "Setelah kami tinjau, biodata atau berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) *memerlukan revisi* agar sesuai dengan persyaratan SPMB Universitas Adzkia.\n\n" .
-                 "Berikut adalah pesan dari tim akademik:\n" .
-                 "📌 *Pesan Revisi:* {$request->pesan_revisi}\n\n" .
-                 "Silakan login kembali dan perbaiki biodata atau berkas Anda sesuai dengan pesan di atas:\n" .
+        $pesan = "Pemberitahuan Perbaikan Berkas Daftar Ulang\n\n" .
+                 "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                 "Setelah dilakukan peninjauan, berkas daftar ulang Anda (No. {$pendaftar->no_pendaftaran}) memerlukan perbaikan agar sesuai dengan persyaratan SPMB Universitas Adzkia.\n\n" .
+                 "Catatan dari tim verifikasi:\n" .
+                 "{$request->pesan_revisi}\n\n" .
+                 "Silakan masuk kembali ke portal dan lakukan perbaikan sesuai catatan di atas:\n" .
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
                  
@@ -317,19 +328,19 @@ public function daftarUlangIndex()
                 ? $pendaftar->pilihan_jurusan_2
                 : $pendaftar->pilihan_jurusan_1;
 
-            $pesan = "*SELAMAT! Anda Dinyatakan LULUS 🎉*\n\n" .
-                     "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                     "Berdasarkan hasil seleksi SPMB Universitas Adzkia, Anda dinyatakan *LULUS* pada program studi:\n" .
-                     "🎓 *{$prodiLulus}*\n\n" .
-                     "Silakan login untuk melihat pengumuman resmi dan mengunduh *Surat Kelulusan (LoA)*:\n" .
+            $pesan = "Pengumuman Hasil Seleksi SPMB Universitas Adzkia\n\n" .
+                     "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                     "Berdasarkan hasil seleksi SPMB Universitas Adzkia, Anda dinyatakan LULUS pada program studi:\n" .
+                     "{$prodiLulus}\n\n" .
+                     "Silakan masuk ke portal untuk melihat pengumuman resmi dan mengunduh Surat Kelulusan (LoA):\n" .
                      "http://spmb.adzkia.ac.id/login\n\n" .
-                     "Sampai jumpa di kampus. Terima kasih.";
+                     "Kami menantikan kehadiran Anda di kampus. Terima kasih.";
         } else {
-            $pesan = "*Pengumuman Hasil Seleksi SPMB*\n\n" .
-                     "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                     "Terima kasih atas partisipasi Anda dalam SPMB Universitas Adzkia.\n\n" .
-                     "Setelah melalui proses seleksi, dengan berat hati kami sampaikan bahwa Anda *belum berkesempatan* diterima pada periode ini.\n\n" .
-                     "Tetap semangat, Anda dapat mencoba kembali pada gelombang berikutnya. Terima kasih.";
+            $pesan = "Pengumuman Hasil Seleksi SPMB Universitas Adzkia\n\n" .
+                     "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                     "Terima kasih atas partisipasi Anda dalam proses seleksi SPMB Universitas Adzkia.\n\n" .
+                     "Setelah melalui proses seleksi, kami sampaikan bahwa Anda belum dapat kami terima pada periode pendaftaran ini.\n\n" .
+                     "Anda dipersilakan untuk mencoba kembali pada gelombang pendaftaran berikutnya. Terima kasih.";
         }
 
         // Panggil fungsi kirimNotifikasiWA internal
@@ -375,9 +386,9 @@ public function daftarUlangIndex()
             });
         }
 
-        $pendaftarFormulir = $query->latest()->get();
+        $pendaftars = $query->latest()->get();
 
-        return view('admin.validasi-formulir', compact('pendaftarFormulir'));
+        return view('admin.validasi-formulir', compact('pendaftars'));
     }
 
     public function setujuiFormulir($id)
@@ -385,10 +396,10 @@ public function daftarUlangIndex()
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->update(['status_pendaftaran' => 'Selesai']);
 
-        $pesan = "*Formulir Terverifikasi ✅*\n\n" .
-                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                 "Biodata dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah *DIVERIFIKASI* oleh tim akademik.\n\n" .
-                 "Nantikan pengumuman hasil seleksi melalui dashboard Anda:\n" .
+        $pesan = "Pemberitahuan Verifikasi Formulir Pendaftaran\n\n" .
+                 "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                 "Formulir dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah dinyatakan lengkap dan telah diverifikasi oleh tim akademik SPMB Universitas Adzkia.\n\n" .
+                 "Silakan pantau pengumuman hasil seleksi melalui portal berikut:\n" .
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
 
@@ -409,11 +420,12 @@ public function daftarUlangIndex()
             'pesan_revisi'       => $request->pesan_revisi,
         ]);
 
-        $pesan = "*Revisi Formulir Pendaftaran ⚠️*\n\n" .
-                 "Halo *{$pendaftar->nama_lengkap}*,\n\n" .
-                 "Formulir pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) *memerlukan perbaikan*.\n\n" .
-                 "📌 *Pesan Admin:* {$request->pesan_revisi}\n\n" .
-                 "Silakan login dan perbaiki formulir Anda:\n" .
+        $pesan = "Pemberitahuan Perbaikan Formulir Pendaftaran\n\n" .
+                 "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
+                 "Formulir pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) memerlukan perbaikan sebelum dapat diproses lebih lanjut.\n\n" .
+                 "Catatan dari tim verifikasi:\n" .
+                 "{$request->pesan_revisi}\n\n" .
+                 "Silakan masuk ke portal dan lakukan perbaikan sesuai catatan di atas:\n" .
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
 

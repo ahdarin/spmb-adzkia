@@ -13,9 +13,9 @@
             <button class="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-brand-dark rounded-xl font-bold text-[13px] hover:bg-gray-50 transition-all shadow-sm">
                 <i data-feather="filter" class="w-4 h-4"></i> Filter
             </button>
-            <button class="flex items-center gap-2 px-5 py-2.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-opacity-90 transition-all shadow-md">
+            <a href="{{ route('admin.export.csv') }}" class="flex items-center gap-2 px-5 py-2.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-opacity-90 transition-all shadow-md">
                 <i data-feather="download" class="w-4 h-4"></i> Export CSV
-            </button>
+            </a>
         </div>
     </div>
 
@@ -41,60 +41,142 @@
 
     <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left whitespace-nowrap">
-                <thead class="bg-white text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+            <table class="w-full text-left min-w-[750px]">
+                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-gray uppercase tracking-widest border-b border-gray-100">
                     <tr>
-                        <th class="px-8 py-5">No</th>
-                        <th class="px-4 py-5">Nama & Email</th>
-                        <th class="px-4 py-5">No HP</th>
-                        <th class="px-4 py-5">Pilihan 1</th>
-                        <th class="px-4 py-5">Pilihan 2</th> {{-- Kolom Baru --}}
-                        <th class="px-4 py-5">Jalur</th>
-                        <th class="px-4 py-5">Status</th>
-                        <th class="px-8 py-5 text-center">Aksi</th>
+                        <th class="px-5 py-4">No</th>
+                        <th class="px-4 py-4">Nama & Email</th>
+                        <th class="px-4 py-4">No. WA</th>
+                        <th class="px-4 py-4">Prodi Diterima / Pilihan</th>
+                        <th class="px-4 py-4">Jalur</th>
+                        <th class="px-4 py-4">Pembayaran</th>
+                        <th class="px-4 py-4">Pendaftaran</th>
+                        <th class="px-4 py-4">Kelulusan</th>
+                        <th class="px-5 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-[13px]">
-                    @foreach($users as $index => $data)
+                    @forelse($users as $index => $data)
+                    @php
+                        // ── Status Pembayaran ────────────────────────────────
+                        $bayarClass = match($data->status_pembayaran) {
+                            'Terverifikasi'      => 'bg-green-50 text-green-600',
+                            'Menunggu Validasi'  => 'bg-amber-50 text-amber-500',
+                            'Belum Bayar'        => 'bg-gray-100 text-gray-500',
+                            default              => 'bg-gray-50 text-gray-400',
+                        };
+
+                        // ── Status Pendaftaran ───────────────────────────────
+                        $daftarClass = match($data->status_pendaftaran) {
+                            'Selesai'              => 'bg-emerald-50 text-emerald-600',
+                            'menunggu verifikasi'  => 'bg-blue-50 text-blue-500',
+                            'Revisi'               => 'bg-red-50 text-red-500',
+                            'Draft'                => 'bg-gray-100 text-gray-400',
+                            default                => 'bg-gray-50 text-gray-400',
+                        };
+                        $daftarLabel = match($data->status_pendaftaran) {
+                            'menunggu verifikasi'  => 'Menunggu',
+                            default                => $data->status_pendaftaran ?? 'Draft',
+                        };
+
+                        // ── Status Kelulusan ─────────────────────────────────
+                        $lulusClass = match($data->status_kelulusan ?? '') {
+                            'Lulus Pilihan 1', 'Lulus Pilihan 2' => 'bg-emerald-50 text-emerald-600',
+                            'Tidak Lulus'                         => 'bg-red-50 text-red-500',
+                            default                               => 'bg-gray-100 text-gray-400',
+                        };
+                        $lulusLabel = match($data->status_kelulusan ?? '') {
+                            'Lulus Pilihan 1' => 'Lulus P1',
+                            'Lulus Pilihan 2' => 'Lulus P2',
+                            'Tidak Lulus'     => 'Tidak Lulus',
+                            default           => 'Belum',
+                        };
+
+                        // ── Prodi: jika sudah lulus tampilkan prodi diterima ─
+                        $sudahLulus = in_array($data->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']);
+                        $prodiDiterima = $sudahLulus
+                            ? ($data->status_kelulusan === 'Lulus Pilihan 1' ? $data->pilihan_jurusan_1 : $data->pilihan_jurusan_2)
+                            : null;
+
+                        // ── NIM ──────────────────────────────────────────────
+                        $sudahJadiMahasiswa = !empty($data->nim) && strtolower($data->status_daftar_ulang ?? '') === 'selesai';
+                    @endphp
                     <tr class="hover:bg-gray-50/50 transition-colors group">
-                        <td class="px-8 py-5 text-gray-400 font-bold">{{ $index + 1 }}</td>
-                        <td class="px-4 py-5">
-                            <div class="flex flex-col">
-                                <span class="font-bold text-brand-dark text-[14px]">{{ $data->nama_lengkap }}</span>
-                                <span class="text-gray-400 text-[12px] font-medium">{{ $data->email }}</span>
+                        {{-- No --}}
+                        <td class="px-5 py-4 text-gray-400 font-bold text-[12px]">{{ $index + 1 }}</td>
+
+                        {{-- Nama & Email & NIM --}}
+                        <td class="px-4 py-4">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-bold text-brand-dark text-[13px] leading-snug">{{ $data->nama_lengkap }}</span>
+                                <span class="text-gray-400 text-[11px]">{{ $data->email ?? '-' }}</span>
+                                @if($sudahJadiMahasiswa)
+                                <span class="text-[10px] font-black text-emerald-600">NIM: {{ $data->nim }}</span>
+                                @endif
                             </div>
                         </td>
-                        <td class="px-4 py-5 text-gray-500 font-medium">{{ $data->no_whatsapp }}</td>
-                        <td class="px-4 py-5">
-                            <span class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-[12px] font-bold">{{ $data->pilihan_jurusan_1 }}</span>
+
+                        {{-- No WA --}}
+                        <td class="px-4 py-4 text-gray-500 font-medium text-[12px] whitespace-nowrap">{{ $data->no_whatsapp ?? '-' }}</td>
+
+                        {{-- Prodi: diterima jika lulus, pilihan 1&2 jika belum --}}
+                        <td class="px-4 py-4">
+                            @if($sudahLulus && $prodiDiterima)
+                                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[11px] font-bold block leading-snug">
+                                    {{ $prodiDiterima }}
+                                </span>
+                                <span class="text-[10px] text-gray-400 mt-0.5 block">{{ str_replace('Lulus ', '', $data->status_kelulusan) }}</span>
+                            @else
+                                <span class="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg text-[11px] font-bold block leading-snug">{{ $data->pilihan_jurusan_1 ?? '-' }}</span>
+                                @if($data->pilihan_jurusan_2)
+                                <span class="px-2.5 py-1 bg-purple-50 text-purple-600 rounded-lg text-[11px] font-bold block leading-snug mt-1">{{ $data->pilihan_jurusan_2 }}</span>
+                                @endif
+                            @endif
                         </td>
-                        <td class="px-4 py-5">
-                            <span class="px-4 py-1.5 bg-purple-50 text-purple-600 rounded-xl text-[12px] font-bold">{{ $data->pilihan_jurusan_2 }}</span>
-                        </td>
-                        <td class="px-4 py-5 font-medium text-gray-500">{{ $data->jalur_pendaftaran }}</td>
-                        <td class="px-4 py-5">
-                            @php
-                                $status = $data->status_pembayaran;
-                                $statusClasses = [
-                                    'Terverifikasi' => 'bg-green-50 text-green-600',
-                                    'Validasi'      => 'bg-amber-50 text-amber-500',
-                                    'Belum Bayar'   => 'bg-gray-100 text-gray-500'
-                                ];
-                                $currentClass = $statusClasses[$status] ?? 'bg-gray-50 text-gray-400';
-                            @endphp
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 {{ $currentClass }} rounded-full text-[10px] font-black uppercase tracking-wider">
-                                {{ $status }}
+
+                        {{-- Jalur --}}
+                        <td class="px-4 py-4 font-medium text-gray-500 text-[12px] whitespace-nowrap">{{ $data->jalur_pendaftaran ?? '-' }}</td>
+
+                        {{-- Status Pembayaran --}}
+                        <td class="px-4 py-4">
+                            <span class="inline-flex px-2.5 py-1 {{ $bayarClass }} rounded-full text-[10px] font-black uppercase tracking-wide whitespace-nowrap">
+                                {{ $data->status_pembayaran ?? 'Belum Bayar' }}
                             </span>
                         </td>
-                        <td class="px-8 py-5">
-                            <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-brand-blue hover:text-white transition-colors">
-                                    <i data-feather="eye" class="w-4 h-4"></i>
+
+                        {{-- Status Pendaftaran --}}
+                        <td class="px-4 py-4">
+                            <span class="inline-flex px-2.5 py-1 {{ $daftarClass }} rounded-full text-[10px] font-black uppercase tracking-wide whitespace-nowrap">
+                                {{ $daftarLabel }}
+                            </span>
+                        </td>
+
+                        {{-- Status Kelulusan --}}
+                        <td class="px-4 py-4">
+                            <span class="inline-flex px-2.5 py-1 {{ $lulusClass }} rounded-full text-[10px] font-black uppercase tracking-wide whitespace-nowrap">
+                                {{ $lulusLabel }}
+                            </span>
+                        </td>
+
+                        {{-- Aksi --}}
+                        <td class="px-5 py-4 text-center">
+                            <div class="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-brand-blue hover:text-white transition-colors" title="Lihat Detail">
+                                    <i data-feather="eye" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="9" class="px-5 py-16 text-center">
+                            <div class="flex flex-col items-center gap-2 text-gray-400">
+                                <i data-feather="users" class="w-10 h-10"></i>
+                                <p class="font-bold text-sm">Belum ada data pendaftar</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

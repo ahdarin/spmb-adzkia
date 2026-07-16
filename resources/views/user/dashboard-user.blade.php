@@ -60,7 +60,43 @@
         <div class="lg:col-span-8 space-y-5 sm:space-y-8">
             
             {{-- BLOK STATUS UTAMA --}}
-            @if(in_array($pendaftar->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']))
+            @if(!empty($pendaftar->nim) && strtolower($pendaftar->status_daftar_ulang ?? '') === 'selesai')
+                {{-- MAHASISWA RESMI: daftar ulang selesai + NIM sudah ada --}}
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl shadow-emerald-500/20 text-white relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 opacity-10"><i data-feather="award" class="w-40 h-40"></i></div>
+                    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start relative z-10">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
+                            <i data-feather="award" class="w-7 h-7 sm:w-8 sm:h-8"></i>
+                        </div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <span class="inline-block px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-2 border border-white/30">Status Mahasiswa Resmi</span>
+                            <h3 class="text-xl sm:text-2xl font-black mb-1">Selamat Datang, Mahasiswa Baru!</h3>
+                            <p class="text-[12px] sm:text-[13px] font-medium text-emerald-50 mb-4">
+                                Anda telah resmi terdaftar sebagai mahasiswa Universitas Adzkia pada program studi
+                                <strong class="text-white">
+                                    @if($pendaftar->status_kelulusan === 'Lulus Pilihan 1') {{ $pendaftar->pilihan_jurusan_1 }}
+                                    @elseif($pendaftar->status_kelulusan === 'Lulus Pilihan 2') {{ $pendaftar->pilihan_jurusan_2 }}
+                                    @endif
+                                </strong>.
+                            </p>
+                            <div class="inline-flex items-center gap-3 bg-white/15 border border-white/30 rounded-xl px-4 py-3">
+                                <i data-feather="credit-card" class="w-5 h-5 shrink-0 text-emerald-200"></i>
+                                <div class="text-left">
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-emerald-200">Nomor Induk Mahasiswa (NIM)</p>
+                                    <p class="text-lg sm:text-xl font-black tracking-wider">{{ $pendaftar->nim }}</p>
+                                    <p class="text-[10px] text-emerald-200 mt-0.5">
+                                        @if($pendaftar->status_kelulusan === 'Lulus Pilihan 1') {{ $pendaftar->pilihan_jurusan_1 }}
+                                        @elseif($pendaftar->status_kelulusan === 'Lulus Pilihan 2') {{ $pendaftar->pilihan_jurusan_2 }}
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-emerald-100 mt-3">Simpan NIM ini untuk keperluan akademik selanjutnya.</p>
+                        </div>
+                    </div>
+                </div>
+
+            @elseif(in_array($pendaftar->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']))
                 
                 @php
                     $jurusanDiterima = ($pendaftar->status_kelulusan == 'Lulus Pilihan 1') 
@@ -289,20 +325,73 @@
                 <div class="absolute top-0 left-0 w-full h-20 sm:h-24 bg-gradient-to-b from-blue-50 to-white"></div>
                 
                 <div class="text-center pb-4 sm:pb-6 border-b border-gray-50 relative z-10 pt-3 sm:pt-4">
+                    @php
+                        // Foto: cek pas_foto → berkas_dokumen → avatar inisial
+                        $fotoUrl = null;
+                        if (!empty($pendaftar->pas_foto)) {
+                            $fotoUrl = asset($pendaftar->pas_foto);
+                        } elseif (!empty($pendaftar->berkas_dokumen)) {
+                            $berkas = is_array($pendaftar->berkas_dokumen)
+                                ? $pendaftar->berkas_dokumen
+                                : (json_decode($pendaftar->berkas_dokumen, true) ?? []);
+                            foreach ($berkas as $namaDoc => $pathDoc) {
+                                if (!empty($pathDoc) && (stripos($namaDoc, 'foto') !== false || stripos($namaDoc, 'pas') !== false)) {
+                                    $fotoUrl = asset($pathDoc);
+                                    break;
+                                }
+                            }
+                        }
+                        // Inisial untuk avatar fallback
+                        $namaWords = explode(' ', trim($pendaftar->nama_lengkap ?? 'U'));
+                        $inisial = strtoupper(substr($namaWords[0], 0, 1) . (isset($namaWords[1]) ? substr($namaWords[1], 0, 1) : ''));
+
+                        // Jurusan yang diterima (jika sudah lulus)
+                        $sudahLulus = in_array($pendaftar->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']);
+                        $jurusanDiterima = null;
+                        if ($sudahLulus) {
+                            $jurusanDiterima = ($pendaftar->status_kelulusan === 'Lulus Pilihan 1')
+                                ? $pendaftar->pilihan_jurusan_1
+                                : $pendaftar->pilihan_jurusan_2;
+                        }
+                        $sudahJadiMahasiswa = !empty($pendaftar->nim) && strtolower($pendaftar->status_daftar_ulang ?? '') === 'selesai';
+                    @endphp
+
+                    {{-- Avatar / Foto --}}
                     <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white border-4 border-white shadow-md rounded-2xl mx-auto flex items-center justify-center mb-3 sm:mb-4 overflow-hidden">
-                        @if($pendaftar->pas_foto)
-                            <img src="{{ asset($pendaftar->pas_foto) }}" alt="Foto" class="w-full h-full object-cover">
+                        @if($fotoUrl)
+                            <img src="{{ $fotoUrl }}" alt="Foto Profil" class="w-full h-full object-cover"
+                                 onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br from-adzkia-blue to-blue-700 flex items-center justify-center\'><span class=\'text-white font-black text-xl\'>{{ $inisial }}</span></div>'">
                         @else
-                            <i data-feather="user" class="w-7 h-7 sm:w-8 sm:h-8 text-gray-300"></i>
+                            <div class="w-full h-full bg-gradient-to-br from-adzkia-blue to-blue-700 flex items-center justify-center">
+                                <span class="text-white font-black text-xl sm:text-2xl">{{ $inisial }}</span>
+                            </div>
                         @endif
                     </div>
+
                     <h3 class="font-black text-[14px] sm:text-[15px] text-adzkia-dark leading-snug">{{ $pendaftar->nama_lengkap ?? 'Nama Belum Diisi' }}</h3>
                     <p class="text-[10px] sm:text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{{ $pendaftar->no_pendaftaran ?? 'No. Reg Belum Ada' }}</p>
+
+                    {{-- NIM — tampil setelah daftar ulang selesai --}}
+                    @if($sudahJadiMahasiswa)
+                    <div class="mt-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl inline-block">
+                        <p class="text-[12px] font-black text-emerald-800 tracking-wider">{{ $pendaftar->nim }}</p>
+                    </div>
+                    @endif
+
                     <p class="text-[10px] font-bold text-adzkia-blue mt-2 bg-blue-50 px-3 py-1 rounded-full inline-block">{{ $pendaftar->jalur_pendaftaran ?? 'Jalur Reguler' }}</p>
                 </div>
 
                 {{-- Ubah: grid 2 kolom di mobile agar info lebih ringkas --}}
                 <div class="pt-4 sm:pt-6 grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
+                    @if($sudahLulus && $jurusanDiterima)
+                    {{-- Sudah lulus: tampilkan prodi diterima, sembunyikan pilihan 1 & 2 --}}
+                    <div class="col-span-2 sm:col-span-1">
+                        <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Program Studi Diterima</p>
+                        <p class="text-[12px] sm:text-sm font-black text-emerald-700 mt-0.5 leading-snug">{{ $jurusanDiterima }}</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">{{ str_replace('Lulus ', '', $pendaftar->status_kelulusan) }}</p>
+                    </div>
+                    @else
+                    {{-- Belum lulus: tampilkan pilihan jurusan biasa --}}
                     <div>
                         <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Pilihan Jurusan 1</p>
                         <p class="text-[11px] sm:text-xs font-bold text-adzkia-dark mt-0.5 leading-snug">{{ $pendaftar->pilihan_jurusan_1 ?? 'Belum diisi' }}</p>
@@ -311,6 +400,7 @@
                         <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Pilihan Jurusan 2</p>
                         <p class="text-[11px] sm:text-xs font-bold text-adzkia-dark mt-0.5 leading-snug">{{ $pendaftar->pilihan_jurusan_2 ?? 'Belum diisi' }}</p>
                     </div>
+                    @endif
                     <div>
                         <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">No. WhatsApp</p>
                         <p class="text-[11px] sm:text-xs font-bold text-adzkia-dark mt-0.5">{{ $pendaftar->no_whatsapp ?? 'Belum diisi' }}</p>

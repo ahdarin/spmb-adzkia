@@ -14,47 +14,44 @@
 
     <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left whitespace-nowrap">
+            <table class="w-full text-left min-w-[600px]">
                 <thead class="bg-gray-50/50 text-[11px] font-black text-brand-gray uppercase tracking-widest border-b">
                     <tr>
-                        <th class="px-8 py-6">Program Studi</th>
-                        <th class="px-4 py-6">Jenjang</th>
-                        <th class="px-4 py-6">Akreditasi</th>
-                        <th class="px-4 py-6 text-center">Daya Tampung</th>
-                        <th class="px-4 py-6">Biaya (Smt)</th>
-                        <th class="px-8 py-6 text-right">Aksi</th>
+                        <th class="px-5 py-4">Program Studi</th>
+                        <th class="px-3 py-4">Jenjang</th>
+                        <th class="px-3 py-4">Akreditasi</th>
+                        <th class="px-3 py-4 text-center">Kuota</th>
+                        <th class="px-3 py-4">Biaya/Smt</th>
+                        <th class="px-5 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-[13px]">
                     @forelse($data as $item)
                     <tr class="hover:bg-gray-50/50 transition-colors group">
-                        <td class="px-8 py-5">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                    <i data-feather="{{ $item->icon ?? 'book' }}" class="w-5 h-5"></i>
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                    <i data-feather="{{ $item->icon ?? 'book' }}" class="w-4 h-4"></i>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-brand-dark text-[15px]">{{ $item->nama }}</span>
-                                    
-                                </div>
+                                <span class="font-bold text-brand-dark leading-snug">{{ $item->nama }}</span>
                             </div>
                         </td>
-                        <td class="px-4 py-5 font-bold text-gray-500">{{ $item->jenjang }}</td>
-                        <td class="px-4 py-5">
-                            <span class="px-3 py-1 {{ $item->akreditasi == 'Unggul' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600' }} rounded-lg text-[10px] font-black uppercase">
+                        <td class="px-3 py-4 font-bold text-gray-500">{{ $item->jenjang }}</td>
+                        <td class="px-3 py-4">
+                            <span class="px-2.5 py-1 {{ $item->akreditasi == 'Unggul' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600' }} rounded-lg text-[10px] font-black uppercase whitespace-nowrap">
                                 {{ $item->akreditasi }}
                             </span>
                         </td>
-                        <td class="px-4 py-5 text-center font-black text-brand-dark">{{ $item->kuota }}</td>
-                        <td class="px-4 py-5 font-bold text-gray-600">Rp {{ number_format($item->biaya, 0, ',', '.') }}</td>
-                        <td class="px-8 py-5 text-right">
-                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button @click="openEditModal({{ json_encode($item) }})" class="p-2 text-brand-gray hover:text-brand-blue">
+                        <td class="px-3 py-4 text-center font-black text-brand-dark">{{ $item->kuota }}</td>
+                        <td class="px-3 py-4 font-bold text-gray-600 whitespace-nowrap">Rp {{ number_format($item->biaya, 0, ',', '.') }}</td>
+                        <td class="px-5 py-4 text-right">
+                            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button @click="openEditModal({{ json_encode($item) }})" class="p-2 text-brand-gray hover:text-brand-blue rounded-lg hover:bg-blue-50 transition-colors">
                                     <i data-feather="edit-3" class="w-4 h-4"></i>
                                 </button>
                                 <form action="{{ route('admin.prodi.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus prodi ini?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 text-brand-gray hover:text-red-500">
+                                    <button type="submit" class="p-2 text-brand-gray hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
                                         <i data-feather="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 </form>

@@ -109,7 +109,7 @@ Route::middleware([CheckRole::class.':user'])->group(function () {
     Route::get('/pembayaran', [DashboardUserController::class, 'pembayaranIndex'])->name('pembayaran.index');
     Route::post('/pembayaran/proses', [DashboardUserController::class, 'prosesPembayaran'])->name('simpan.pembayaran');
     Route::post('/upload-bukti', [DashboardUserController::class, 'prosesUploadBukti'])->name('user.upload-bukti');
-    Route::get('/validasi-pembayaran', [DashboardUserController::class, 'validasiUser'])->name('pendaftaran.validasi');
+    // Route::get('/validasi-pembayaran', [DashboardUserController::class, 'validasiUser'])->name('pendaftaran.validasi'); sisa lama
 
     // Biodata
     Route::get('/formulir-biodata', [DashboardUserController::class, 'biodataIndex'])->name('pendaftaran.biodata');

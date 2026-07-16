@@ -362,15 +362,15 @@ class DashboardUserController extends Controller
     }
 
     // ==========================================================
-    // 6. VALIDASI USER (halaman status pembayaran user)
+    // 6. VALIDASI USER (halaman status pembayaran user) UNUSED
     // ==========================================================
-    public function validasiUser()
-    {
-        $pendaftar = DataPendaftar::find(session('pendaftar_id'));
-        if (!$pendaftar) return redirect('/login')->with('error', 'Sesi Anda telah habis.');
+    // public function validasiUser()
+    // {
+    //     $pendaftar = DataPendaftar::find(session('pendaftar_id'));
+    //     if (!$pendaftar) return redirect('/login')->with('error', 'Sesi Anda telah habis.');
 
-        return view('user.validasi-pembayaran', compact('pendaftar'));
-    }
+    //     return view('user.validasi-pembayaran', compact('pendaftar'));
+    // }
 
     // ==========================================================
     // 7. KONFIRMASI DATA

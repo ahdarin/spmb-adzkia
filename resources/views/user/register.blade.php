@@ -99,8 +99,8 @@
                         <div class="flex items-center gap-4">
                             <input type="radio" name="jalur_radio" value="Reguler" x-model="selectedJalur" @change="specificJalur = ''" class="w-4 h-4 text-adzkia-blue focus:ring-adzkia-blue">
                             <div>
-                                <h4 class="font-extrabold text-[15px] text-adzkia-dark">Jalur Mandiri Reguler</h4>
-                                <p class="text-[12px] text-gray-500 font-medium mt-0.5">Seleksi menggunakan ujian tertulis berbasis komputer (CBT).</p>
+                                <h4 class="font-extrabold text-[15px] text-adzkia-dark">Jalur Reguler</h4>
+                                {{-- <p class="text-[12px] text-gray-500 font-medium mt-0.5">Seleksi menggunakan ujian tertulis berbasis komputer (CBT).</p> --}}
                             </div>
                         </div>
                     </label>
@@ -109,8 +109,8 @@
                         <div class="flex items-center gap-4">
                             <input type="radio" name="jalur_radio" value="Khusus" x-model="selectedJalur" class="w-4 h-4 text-adzkia-blue focus:ring-adzkia-blue">
                             <div>
-                                <h4 class="font-extrabold text-[15px] text-adzkia-dark">Jalur Kemitraan / Khusus / Prestasi</h4>
-                                <p class="text-[12px] text-gray-500 font-medium mt-0.5">Jalur tanpa ujian tertulis untuk siswa berprestasi atau rekomendasi yayasan.</p>
+                                <h4 class="font-extrabold text-[15px] text-adzkia-dark">Jalur Khusus</h4>
+                                <p class="text-[12px] text-gray-500 font-medium mt-0.5">Jalur beasiswa, kemitraan, RPL dan lainnya.</p>
                             </div>
                         </div>
                     </label>
