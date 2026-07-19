@@ -32,22 +32,7 @@
 </head>
 <body class="bg-adzkia-bg antialiased text-adzkia-dark min-h-screen flex flex-col" x-data="registerApp()">
 
-    <nav class="w-full bg-white py-8 border-b border-gray-100 sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="flex items-center justify-between relative">
-                <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
-                <template x-for="step in steps" :key="step.id">
-                    <div class="relative z-10 flex flex-col items-center gap-2">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[13px] transition-all duration-300"
-                             :class="currentStep === step.id ? 'bg-adzkia-blue text-white shadow-lg shadow-adzkia-blue/30 scale-110' : 'bg-white border-2 border-gray-100 text-gray-400'">
-                            <span x-text="step.id"></span>
-                        </div>
-                        <span class="text-[9px] font-black uppercase tracking-widest hidden md:block" :class="currentStep === step.id ? 'text-adzkia-blue' : 'text-gray-400'" x-text="step.title"></span>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </nav>
+    <x-step-tracker :current-step="1" />
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
         
@@ -60,7 +45,7 @@
             </div>
 
             <div>
-                <span class="block w-max px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black uppercase tracking-widest">STEP 01 / 07</span>
+                <span class="block w-max px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black uppercase tracking-widest">STEP 01 / 05</span>
                 <h1 class="text-5xl md:text-6xl font-black text-adzkia-dark tracking-tight leading-[1.1] mt-6">Mulai Perjalanan <br> <span class="text-adzkia-blue">Akademik Anda.</span></h1>
                 <p class="text-[16px] font-medium text-gray-500 leading-relaxed mt-8 max-w-md">Isi data diri Anda dengan benar untuk membuka gerbang seleksi penerimaan mahasiswa baru Universitas Adzkia.</p>
             </div>
@@ -100,7 +85,7 @@
                             <input type="radio" name="jalur_radio" value="Reguler" x-model="selectedJalur" @change="specificJalur = ''" class="w-4 h-4 text-adzkia-blue focus:ring-adzkia-blue">
                             <div>
                                 <h4 class="font-extrabold text-[15px] text-adzkia-dark">Jalur Reguler</h4>
-                                {{-- <p class="text-[12px] text-gray-500 font-medium mt-0.5">Seleksi menggunakan ujian tertulis berbasis komputer (CBT).</p> --}}
+                                {{-- <p class="text-[12px] text-gray-500 font-medium mt-0.5"></p> --}}
                             </div>
                         </div>
                     </label>
@@ -216,7 +201,7 @@
                             <i data-feather="arrow-left" class="w-4 h-4"></i> Kembali
                         </button>
                         <button type="submit" class="px-8 py-4 bg-adzkia-red text-white rounded-2xl font-black text-[14px] hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all flex items-center gap-3 group active:scale-[0.98]">
-                            Daftar & Bayar <i data-feather="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                            Daftar<i data-feather="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                         </button>
                     </div>
                 </form>

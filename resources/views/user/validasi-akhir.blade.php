@@ -53,25 +53,7 @@
     </nav>
 
     {{-- STEP PROGRESS TRACKER (Konsisten) --}}
-    <div class="w-full bg-white py-6 border-b border-gray-100 z-20">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="flex items-center justify-between relative">
-                <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
-                <template x-for="step in steps" :key="step.id">
-                    <div class="relative z-10 flex flex-col items-center gap-2">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[13px] transition-all duration-300"
-                             :class="currentStep === step.id ? 'bg-adzkia-blue text-white shadow-lg shadow-adzkia-blue/30 scale-110' : (step.id < currentStep ? 'bg-green-500 text-white border-2 border-green-500' : 'bg-white border-2 border-gray-100 text-gray-400')">
-                            <span x-show="step.id < currentStep"><i data-feather="check" class="w-4 h-4"></i></span>
-                            <span x-show="step.id >= currentStep" x-text="step.id"></span>
-                        </div>
-                        <span class="text-[9px] font-black uppercase tracking-widest hidden md:block" 
-                              :class="currentStep === step.id ? 'text-adzkia-blue' : (step.id < currentStep ? 'text-green-500' : 'text-gray-400')" 
-                              x-text="step.title"></span>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
+    <x-step-tracker :current-step="3" />
 
     <main class="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
         
@@ -177,13 +159,6 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('validasiApp', () => ({
-                currentStep: 6,
-                steps: [
-                    { id: 1, title: 'Pendaftaran' }, { id: 2, title: 'Biaya' },
-                    { id: 3, title: 'Validasi' }, { id: 4, title: 'Biodata' },
-                    { id: 5, title: 'Konfirmasi' }, { id: 6, title: 'Cek Admin' },
-                    { id: 7, title: 'Hasil' }
-                ]
             }));
         });
         document.addEventListener('DOMContentLoaded', () => { feather.replace(); });

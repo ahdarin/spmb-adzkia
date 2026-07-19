@@ -17,7 +17,7 @@ class RekomendasiController extends Controller
     {
         // Ambil data prodi untuk ditampilkan di halaman awal
         $prodis = Prodi::all();
-        return view('user.rekomendasi-start', compact('prodis'));
+        return view('user.rekomendasi.start', compact('prodis'));
     }
 
     public function startSubmit(Request $request)
@@ -76,7 +76,7 @@ class RekomendasiController extends Controller
         $pagedQuestions = array_slice($questions, $offset, $perPage);
         $savedAnswers = session()->get('jawaban_kuesioner', []);
 
-        return view('user.kuesioner', compact('pagedQuestions', 'page', 'totalPages', 'savedAnswers'));
+        return view('user.rekomendasi.kuesioner', compact('pagedQuestions', 'page', 'totalPages', 'savedAnswers'));
     }
 
     public function kuesionerSubmit(Request $request)
@@ -108,7 +108,7 @@ class RekomendasiController extends Controller
     // ==========================================
     public function loading()
     {
-        return view('user.rekomendasi-loading');
+        return view('user.rekomendasi.loading');
     }
 
     // ==========================================
@@ -226,6 +226,6 @@ class RekomendasiController extends Controller
 
         $sortedTopProdis = Prodi::all();
 
-        return view('user.hasil-rekomendasi', compact('hasil', 'topTraits', 'sortedTopProdis'));
+        return view('user.rekomendasi.hasil', compact('hasil', 'topTraits', 'sortedTopProdis'));
     }
 }
