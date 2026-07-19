@@ -63,29 +63,7 @@
     {{-- ============================================================ --}}
     {{-- STEP PROGRESS TRACKER                                         --}}
     {{-- ============================================================ --}}
-    <div class="w-full bg-white py-4 sm:py-6 border-b border-gray-100 z-20">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between relative">
-                <div class="absolute top-[18px] sm:top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
-                <template x-for="step in steps" :key="step.id">
-                    <div class="relative z-10 flex flex-col items-center gap-1 sm:gap-2">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-[11px] sm:text-[13px] transition-all duration-300"
-                             :class="currentStep === step.id
-                                ? 'bg-adzkia-blue text-white shadow-lg shadow-adzkia-blue/30 scale-110'
-                                : (step.id < currentStep
-                                    ? 'bg-green-500 text-white border-2 border-green-500'
-                                    : 'bg-white border-2 border-gray-100 text-gray-400')">
-                            <span x-show="step.id < currentStep"><i data-feather="check" class="w-3 h-3 sm:w-4 sm:h-4"></i></span>
-                            <span x-show="step.id >= currentStep" x-text="step.id"></span>
-                        </div>
-                        <span class="text-[9px] font-black uppercase tracking-widest hidden md:block"
-                              :class="currentStep === step.id ? 'text-adzkia-blue' : (step.id < currentStep ? 'text-green-500' : 'text-gray-400')"
-                              x-text="step.title"></span>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
+    <x-step-tracker :current-step="3" />
 
     {{-- ============================================================ --}}
     {{-- MAIN                                                          --}}
@@ -93,9 +71,9 @@
     <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
 
         <div class="mb-6 sm:mb-8">
-            <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest mb-2 sm:mb-3">STEP 04 / 07</span>
+            <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest mb-2 sm:mb-3">STEP 03 / 05</span>
             <h1 class="text-2xl sm:text-3xl font-black text-adzkia-dark tracking-tight">Formulir Biodata Diri</h1>
-            <p class="text-[13px] sm:text-[14px] font-medium text-gray-500 mt-1.5 sm:mt-2">Lengkapi data pribadi, pilihan program studi, jalur pendaftaran, dan unggah dokumen syarat.</p>
+            <p class="text-[13px] sm:text-[14px] font-medium text-gray-500 mt-1.5 sm:mt-2">Lengkapi data pribadi, dan unggah dokumen syarat.</p>
         </div>
 
         {{-- FORM CARD --}}
@@ -338,113 +316,12 @@
                 {{-- ================================================ --}}
                 {{-- BAGIAN 4: PILIHAN PRODI & JALUR                   --}}
                 {{-- ================================================ --}}
-                <section class="bg-[#F8FAFC] p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2rem] border border-gray-100 my-7 sm:my-10">
-                    <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white shadow-sm text-adzkia-blue rounded-xl flex items-center justify-center shrink-0">
-                            <i data-feather="target" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                        </div>
-                        <h2 class="text-base sm:text-lg font-black text-adzkia-dark">Pilihan Program Studi & Jalur</h2>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        {{-- Pilihan Jurusan 1 --}}
-                        <div>
-                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2 px-1">Pilihan Jurusan 1 (Utama)</label>
-                            <div class="relative">
-                                <select name="pilihan_jurusan_1" required
-                                        class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {{ $isLocked ? 'disabled' : 'cursor-pointer' }}>
-                                    <option value="" disabled>Pilih Jurusan Utama</option>
-                                    @foreach($prodis as $prodi)
-                                        <option value="{{ $prodi->nama }}" {{ old('pilihan_jurusan_1', $pendaftar->pilihan_jurusan_1 ?? '') == $prodi->nama ? 'selected' : '' }}>{{ $prodi->nama }}</option>
-                                    @endforeach
-                                </select>
-                                @if(!$isLocked)
-                                    <i data-feather="chevron-down" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                                @endif
-                            </div>
-                        </div>
-
-                        {{-- Pilihan Jurusan 2 --}}
-                        <div>
-                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2 px-1">Pilihan Jurusan 2 (Cadangan)</label>
-                            <div class="relative">
-                                <select name="pilihan_jurusan_2" required
-                                        class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {{ $isLocked ? 'disabled' : 'cursor-pointer' }}>
-                                    <option value="" disabled>Pilih Jurusan Alternatif</option>
-                                    @foreach($prodis as $prodi)
-                                        <option value="{{ $prodi->nama }}" {{ old('pilihan_jurusan_2', $pendaftar->pilihan_jurusan_2 ?? '') == $prodi->nama ? 'selected' : '' }}>{{ $prodi->nama }}</option>
-                                    @endforeach
-                                </select>
-                                @if(!$isLocked)
-                                    <i data-feather="chevron-down" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                                @endif
-                            </div>
-                        </div>
-
-                        {{-- -------- JALUR PENDAFTARAN (BARU) -------- --}}
-                        <div class="md:col-span-2">
-                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2 px-1">Jalur Pendaftaran</label>
-                            <div class="relative">
-                                <select name="jalur_id" x-model="selectedJalurId"
-                                        @change="onJalurChange()"
-                                        required
-                                        class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-white border border-gray-200 rounded-2xl outline-none focus:border-adzkia-blue transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                        {{ $isLocked ? 'disabled' : 'cursor-pointer' }}>
-                                    <option value="">— Pilih Jalur Pendaftaran —</option>
-                                    @foreach($jalurs as $jalur)
-                                        <option value="{{ $jalur->id }}"
-                                                {{ old('jalur_id', $pendaftar->jalur_id ?? '') == $jalur->id ? 'selected' : '' }}>
-                                            {{ $jalur->nama_jalur }}
-                                            {{ $jalur->is_free_registration ? '(Gratis)' : '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @if(!$isLocked)
-                                    <i data-feather="chevron-down" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                                @endif
-                            </div>
-
-                            {{-- Info badge jalur yang dipilih --}}
-                            <div x-show="selectedJalur" x-cloak class="mt-3 space-y-2">
-
-                                {{-- Baris dokumen --}}
-                                <div class="flex items-center gap-2 text-[12px] font-bold text-adzkia-blue bg-adzkia-badge-bg px-4 py-2.5 rounded-xl">
-                                    <i data-feather="info" class="w-4 h-4 shrink-0"></i>
-                                    <span>Jalur ini memerlukan <strong x-text="selectedJalur ? selectedJalur.dokumen_syarat.length : 0"></strong> dokumen syarat. Pastikan semua dokumen Anda siap sebelum mengunggah.</span>
-                                </div>
-
-                                {{-- Badge: Gratis --}}
-                                <div x-show="selectedJalur && selectedJalur.is_free_registration" x-cloak
-                                     class="flex items-center gap-2 text-[12px] font-bold text-green-700 bg-green-50 border border-green-200 px-4 py-2.5 rounded-xl">
-                                    <i data-feather="check-circle" class="w-4 h-4 shrink-0 text-green-500"></i>
-                                    <span>Jalur ini <strong>GRATIS</strong> — setelah biodata tersimpan, Anda langsung diarahkan ke halaman konfirmasi data.</span>
-                                </div>
-
-                                {{-- Badge: Berbayar --}}
-                                <div x-show="selectedJalur && !selectedJalur.is_free_registration" x-cloak
-                                     class="flex items-center gap-2 text-[12px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2.5 rounded-xl">
-                                    <i data-feather="credit-card" class="w-4 h-4 shrink-0 text-amber-500"></i>
-                                    <span>Jalur ini <strong>berbayar</strong> — setelah biodata tersimpan, Anda akan diarahkan ke halaman unggah bukti pembayaran.</span>
-                                </div>
-
-                                {{-- Badge: Ada ujian --}}
-                                <div x-show="selectedJalur && selectedJalur.has_exam" x-cloak
-                                     class="flex items-center gap-2 text-[12px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-4 py-2.5 rounded-xl">
-                                    <i data-feather="edit-3" class="w-4 h-4 shrink-0 text-purple-500"></i>
-                                    <span>Jalur ini mensyaratkan <strong>ujian masuk</strong>. Jadwal ujian akan diinformasikan setelah verifikasi berkas.</span>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                
 
                 {{-- ================================================ --}}
                 {{-- BAGIAN 5: UPLOAD DOKUMEN DINAMIS (Alpine.js)      --}}
                 {{-- ================================================ --}}
-                <section>
+                <section class="bg-[#F8FAFC] p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2rem] border border-gray-100 my-7 sm:my-10">
                     <div class="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center shrink-0">
                             <i data-feather="upload-cloud" class="w-4 h-4 sm:w-5 sm:h-5"></i>
@@ -555,15 +432,6 @@
     <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('formulirApp', () => ({
-            currentStep: 4,
-
-            // --- Step progress ---
-            steps: [
-                { id: 1, title: 'Pendaftaran' }, { id: 2, title: 'Biaya' },
-                { id: 3, title: 'Validasi' },    { id: 4, title: 'Biodata' },
-                { id: 5, title: 'Dokumen' },     { id: 6, title: 'Ujian' },
-                { id: 7, title: 'Hasil' }
-            ],
 
             // --- Provinsi / kota ---
             provinces:    [],

@@ -53,40 +53,13 @@
     </nav>
 
     {{-- STEP PROGRESS TRACKER --}}
-    <div class="w-full bg-white py-6 border-b border-gray-100 z-20" x-data="{ 
-        currentStep: 2, 
-        steps: [
-            { id: 1, title: 'Pendaftaran' }, { id: 2, title: 'Biaya' },
-            { id: 3, title: 'Validasi' }, { id: 4, title: 'Biodata' },
-            { id: 5, title: 'Dokumen' }, { id: 6, title: 'Ujian' }, { id: 7, title: 'Hasil' }
-        ] 
-    }">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="flex items-center justify-between relative">
-                <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
-                <template x-for="step in steps" :key="step.id">
-                    <div class="relative z-10 flex flex-col items-center gap-2">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[13px] transition-all duration-300"
-                             :class="currentStep === step.id ? 'bg-adzkia-blue text-white shadow-lg shadow-adzkia-blue/30 scale-110' : (step.id < currentStep ? 'bg-green-500 text-white border-2 border-green-500' : 'bg-white border-2 border-gray-100 text-gray-400')">
-                            
-                            {{-- Tampilkan icon Check jika step sudah terlewati --}}
-                            <span x-show="step.id < currentStep"><i data-feather="check" class="w-4 h-4"></i></span>
-                            <span x-show="step.id >= currentStep" x-text="step.id"></span>
-                        </div>
-                        <span class="text-[9px] font-black uppercase tracking-widest hidden md:block" 
-                              :class="currentStep === step.id ? 'text-adzkia-blue' : (step.id < currentStep ? 'text-green-500' : 'text-gray-400')" 
-                              x-text="step.title"></span>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </div>
+    <x-step-tracker :current-step="2" />
 
     <main class="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
         
         {{-- JUDUL HALAMAN --}}
         <div class="mb-10 text-center md:text-left">
-            <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black uppercase tracking-widest mb-3">STEP 02 / 07</span>
+            <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black uppercase tracking-widest mb-3">STEP 02 / 05</span>
             <h1 class="text-3xl font-black text-adzkia-dark tracking-tight">Penyelesaian Administrasi</h1>
             <p class="text-[14px] font-medium text-gray-500 mt-2">Selesaikan pembayaran pendaftaran Anda untuk dapat mengakses formulir biodata lengkap.</p>
         </div>
@@ -118,11 +91,10 @@
                 <h2 class="text-2xl font-black text-adzkia-dark mb-2">Pembayaran Terverifikasi Otomatis</h2>
                 <p class="text-gray-500 font-medium max-w-md mx-auto mb-8">Anda mendaftar melalui jalur <strong>{{ $pendaftar->jalur_pendaftaran }}</strong> yang dibebaskan dari biaya pendaftaran awal.</p>
                 <a href="{{ route('pendaftaran.biodata') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-adzkia-blue text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                    Lanjut ke Step 4 (Biodata) <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    Lanjut ke Step 3 (Formulir) <i data-feather="arrow-right" class="w-4 h-4"></i>
                 </a>
             </div>
         
-        {{-- JIKA SUDAH UPLOAD TAPI MASIH MENUNGGU VALIDASI --}}
         {{-- JIKA SUDAH UPLOAD TAPI MASIH MENUNGGU VALIDASI --}}
         @elseif($pendaftar->status_pembayaran === 'Menunggu Validasi')
             <div class="bg-white rounded-3xl p-10 text-center shadow-lg shadow-gray-200/50 border border-gray-100 relative overflow-hidden">
@@ -131,7 +103,7 @@
                     <i data-feather="clock" class="w-10 h-10"></i>
                 </div>
                 <h2 class="text-2xl font-black text-adzkia-dark mb-2">Bukti Pembayaran Sedang Diproses</h2>
-                <p class="text-gray-500 font-medium max-w-md mx-auto mb-8">Terima kasih! Kami telah menerima bukti pembayaran Anda. Tim Keuangan sedang melakukan verifikasi (Step 3) maksimal 1x24 jam.</p>
+                <p class="text-gray-500 font-medium max-w-md mx-auto mb-8">Terima kasih! Kami telah menerima bukti pembayaran Anda. Tim Keuangan sedang melakukan verifikasi maksimal 1x24 jam.</p>
                 
                 {{-- TAMBAHAN TOMBOL KEMBALI KE DASHBOARD --}}
                 <a href="{{ route('dashboard.user') }}" class="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-100 text-adzkia-dark rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-sm">
@@ -148,7 +120,7 @@
                 <h2 class="text-2xl font-black text-adzkia-dark mb-2">Pembayaran Lunas!</h2>
                 <p class="text-gray-500 font-medium max-w-md mx-auto mb-8">Validasi pembayaran berhasil dilakukan. Akun Anda telah aktif.</p>
                 <a href="{{ route('pendaftaran.biodata') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-adzkia-blue text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                    Lanjut ke Step 3 (Biodata) <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    Lanjut ke Step 3 (Formulir) <i data-feather="arrow-right" class="w-4 h-4"></i>
                 </a>
             </div>
 
