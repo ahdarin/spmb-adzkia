@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Gelombang extends Model
 {
-    use HasFactory;
-
     protected $table = 'gelombangs';
 
     protected $fillable = [
@@ -21,25 +18,51 @@ class Gelombang extends Model
     ];
 
     protected $casts = [
-        'tanggal_mulai'    => 'date',
-        'tanggal_selesai'  => 'date',
-        'is_active'        => 'boolean',
+        'is_active'           => 'boolean',
+        'tahun'               => 'integer',
+        'jumlah_jalur_dibuka' => 'integer',
+        'tanggal_mulai'       => 'date',
+        'tanggal_selesai'     => 'date',
     ];
 
-    // ─── Relasi ───────────────────────────────────────────────────────────────
+    // ── Relasi ─────────────────────────────────────────────────────
 
-    public function biayaDaftarUlangs()
+    public function biayaDaftarUlang(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(BiayaDaftarUlang::class);
     }
 
-    // ─── Scope ────────────────────────────────────────────────────────────────
+    public function dataPendaftar(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DataPendaftar::class);
+    }
 
-    /** Gelombang yang sedang aktif dan tanggalnya masih berjalan */
+    // ── Scope ──────────────────────────────────────────────────────
+
     public function scopeAktif($query)
     {
-        return $query->where('is_active', true)
-                     ->where('tanggal_mulai', '<=', now())
-                     ->where('tanggal_selesai', '>=', now());
+        return $query->where('is_active', true);
+    }
+
+    // ── Static Helper ──────────────────────────────────────────────
+
+    public static function getAktif(): ?self
+    {
+        return static::where('is_active', true)
+                     ->where('tahun', date('Y'))
+                     ->first()
+               ?? static::where('is_active', true)->latest()->first();
+    }
+
+    // ── Accessor ───────────────────────────────────────────────────
+
+    public function getDurasiAttribute(): int
+    {
+        return $this->tanggal_mulai->diffInDays($this->tanggal_selesai);
+    }
+
+    public function getSisaHariAttribute(): int
+    {
+        return max(0, (int) now()->diffInDays($this->tanggal_selesai, false));
     }
 }

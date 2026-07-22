@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('no_pendaftaran')->unique();
             $table->foreignId('jalur_id')->nullable()->constrained('jalurs')->onDelete('set null');
-            $table->string('jalur_pendaftaran')->default('Reguler'); // Reguler atau Khusus
+            $table->string('jalur_pendaftaran')->default('Reguler');
             $table->string('nama_lengkap');
             $table->string('nik')->unique();
             $table->string('no_whatsapp');
@@ -30,6 +30,10 @@ return new class extends Migration
             $table->string('scan_ktp')->nullable();
             $table->string('ijazah_skl')->nullable();
             $table->string('sekolah_asal')->nullable();
+            // ── Tambahan: relasi ke tabel sekolahs ──────────────────
+            $table->foreignId('sekolah_id')->nullable()->constrained('sekolahs')->nullOnDelete();
+            $table->string('npsn_sekolah', 20)->nullable();
+            // ────────────────────────────────────────────────────────
             $table->string('tahun_lulus')->nullable();
             $table->decimal('nilai_akhir', 5, 2)->nullable();
             $table->string('gender')->nullable();

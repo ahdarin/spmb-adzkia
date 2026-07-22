@@ -27,14 +27,14 @@
         [x-cloak] { display: none !important; }
         textarea::-webkit-scrollbar { width: 6px; }
         textarea::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .autocomplete-scroll::-webkit-scrollbar { width: 4px; }
+        .autocomplete-scroll::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-gray-50 antialiased text-adzkia-dark min-h-screen flex flex-col"
       x-data="formulirApp()" x-init="init()">
 
-    {{-- ============================================================ --}}
-    {{-- NAVBAR                                                        --}}
-    {{-- ============================================================ --}}
+    {{-- ── NAVBAR ──────────────────────────────────────────────── --}}
     <nav class="bg-white border-b border-gray-200 py-3 sm:py-4 px-4 sm:px-6 md:px-10 flex justify-between items-center sticky top-0 z-30">
         <a href="{{ route('dashboard.user') }}" class="flex items-center gap-2 sm:gap-3 group">
             <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo" class="h-8 sm:h-10 w-auto group-hover:scale-105 transition-transform">
@@ -60,57 +60,50 @@
         </div>
     </nav>
 
-    {{-- ============================================================ --}}
-    {{-- STEP PROGRESS TRACKER                                         --}}
-    {{-- ============================================================ --}}
+    {{-- ── STEP TRACKER ────────────────────────────────────────── --}}
     <x-step-tracker :current-step="3" />
 
-    {{-- ============================================================ --}}
-    {{-- MAIN                                                          --}}
-    {{-- ============================================================ --}}
+    {{-- ── MAIN ────────────────────────────────────────────────── --}}
     <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
 
         <div class="mb-6 sm:mb-8">
             <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest mb-2 sm:mb-3">STEP 03 / 05</span>
             <h1 class="text-2xl sm:text-3xl font-black text-adzkia-dark tracking-tight">Formulir Biodata Diri</h1>
-            <p class="text-[13px] sm:text-[14px] font-medium text-gray-500 mt-1.5 sm:mt-2">Lengkapi data pribadi, dan unggah dokumen syarat.</p>
+            <p class="text-[13px] sm:text-[14px] font-medium text-gray-500 mt-1.5 sm:mt-2">Lengkapi data pribadi dan unggah dokumen syarat.</p>
         </div>
 
-        {{-- FORM CARD --}}
         <div class="bg-white p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-100 mb-8 sm:mb-10">
 
             @php $isLocked = $pendaftar->status_pendaftaran !== 'Draft' && $pendaftar->status_pendaftaran !== 'Revisi'; @endphp
 
             @if($isLocked)
-                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 sm:p-5 rounded-r-2xl mb-6 sm:mb-8 flex items-start gap-3 sm:gap-4">
-                    <i data-feather="lock" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 shrink-0 mt-0.5"></i>
-                    <div>
-                        <h3 class="text-[13px] sm:text-[14px] font-black text-amber-800 uppercase tracking-widest mb-1">Biodata Terkunci</h3>
-                        <p class="text-[12px] sm:text-[13px] font-medium text-amber-700/80 leading-relaxed">
-                            Data biodata Anda sudah dikunci dan masuk dalam tahap verifikasi/kelulusan.
-                        </p>
-                    </div>
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 sm:p-5 rounded-r-2xl mb-6 sm:mb-8 flex items-start gap-3 sm:gap-4">
+                <i data-feather="lock" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 shrink-0 mt-0.5"></i>
+                <div>
+                    <h3 class="text-[13px] sm:text-[14px] font-black text-amber-800 uppercase tracking-widest mb-1">Biodata Terkunci</h3>
+                    <p class="text-[12px] sm:text-[13px] font-medium text-amber-700/80 leading-relaxed">
+                        Data biodata Anda sudah dikunci dan masuk dalam tahap verifikasi/kelulusan.
+                    </p>
                 </div>
+            </div>
             @endif
 
             <form action="{{ route('simpan-biodata') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="pendaftar_id" value="{{ $pendaftar->id ?? '' }}">
 
-                @if ($errors->any())
-                    <div class="bg-red-50 border-l-4 border-adzkia-red p-4 mb-6 sm:mb-8 rounded-r-2xl">
-                        <h3 class="text-xs sm:text-sm font-black text-adzkia-red uppercase tracking-widest mb-2">Oops! Ada yang kurang:</h3>
-                        <ul class="text-[12px] sm:text-[13px] font-bold text-red-600 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                @if($errors->any())
+                <div class="bg-red-50 border-l-4 border-adzkia-red p-4 mb-6 sm:mb-8 rounded-r-2xl">
+                    <h3 class="text-xs sm:text-sm font-black text-adzkia-red uppercase tracking-widest mb-2">Oops! Ada yang kurang:</h3>
+                    <ul class="text-[12px] sm:text-[13px] font-bold text-red-600 list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
-                {{-- ================================================ --}}
-                {{-- BAGIAN 1: DATA DIRI                               --}}
-                {{-- ================================================ --}}
+                {{-- ── BAGIAN 1: DATA DIRI ──────────────────────────── --}}
                 <section>
                     <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center shrink-0">
@@ -146,11 +139,11 @@
                                         {{ $isLocked ? 'disabled' : '' }}>
                                     <option value="" disabled {{ empty($pendaftar->agama) ? 'selected' : '' }}>Pilih Agama</option>
                                     @foreach(['Islam','Kristen Protestan','Katolik','Hindu','Buddha','Konghucu'] as $agama)
-                                        <option value="{{ $agama }}" {{ old('agama', $pendaftar->agama ?? '') == $agama ? 'selected' : '' }}>{{ $agama }}</option>
+                                    <option value="{{ $agama }}" {{ old('agama', $pendaftar->agama ?? '') == $agama ? 'selected' : '' }}>{{ $agama }}</option>
                                     @endforeach
                                 </select>
                                 @if(!$isLocked)
-                                    <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                                 @endif
                             </div>
                         </div>
@@ -176,15 +169,15 @@
                             <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 px-1">Jenis Kelamin</label>
                             <div class="flex gap-4 sm:gap-6 px-1">
                                 @foreach(['Laki-laki', 'Perempuan'] as $gender)
-                                    <label class="flex items-center gap-2 sm:gap-3 cursor-pointer group {{ $isLocked ? 'cursor-not-allowed opacity-50' : '' }}">
-                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center transition-colors relative {{ !$isLocked ? 'group-hover:border-adzkia-blue' : '' }}">
-                                            <input type="radio" name="gender" value="{{ $gender }}" class="peer sr-only"
-                                                   {{ old('gender', $pendaftar->gender ?? '') == $gender ? 'checked' : '' }}
-                                                   {{ $isLocked ? 'disabled' : '' }}>
-                                            <div class="w-2.5 h-2.5 bg-adzkia-blue rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
-                                        </div>
-                                        <span class="text-[13px] sm:text-[14px] font-bold text-adzkia-dark">{{ $gender }}</span>
-                                    </label>
+                                <label class="flex items-center gap-2 sm:gap-3 cursor-pointer group {{ $isLocked ? 'cursor-not-allowed opacity-50' : '' }}">
+                                    <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center transition-colors relative {{ !$isLocked ? 'group-hover:border-adzkia-blue' : '' }}">
+                                        <input type="radio" name="gender" value="{{ $gender }}" class="peer sr-only"
+                                               {{ old('gender', $pendaftar->gender ?? '') == $gender ? 'checked' : '' }}
+                                               {{ $isLocked ? 'disabled' : '' }}>
+                                        <div class="w-2.5 h-2.5 bg-adzkia-blue rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                    </div>
+                                    <span class="text-[13px] sm:text-[14px] font-bold text-adzkia-dark">{{ $gender }}</span>
+                                </label>
                                 @endforeach
                             </div>
                         </div>
@@ -193,9 +186,7 @@
 
                 <hr class="border-gray-100 my-7 sm:my-10">
 
-                {{-- ================================================ --}}
-                {{-- BAGIAN 2: KONTAK & WILAYAH                        --}}
-                {{-- ================================================ --}}
+                {{-- ── BAGIAN 2: KONTAK & WILAYAH ───────────────────── --}}
                 <section>
                     <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center shrink-0">
@@ -233,7 +224,7 @@
                                     </template>
                                 </select>
                                 @if(!$isLocked)
-                                    <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                                 @endif
                             </div>
                         </div>
@@ -250,7 +241,7 @@
                                     </template>
                                 </select>
                                 @if(!$isLocked)
-                                    <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                                 @endif
                             </div>
                         </div>
@@ -266,9 +257,7 @@
 
                 <hr class="border-gray-100 my-7 sm:my-10">
 
-                {{-- ================================================ --}}
-                {{-- BAGIAN 3: ASAL PENDIDIKAN                         --}}
-                {{-- ================================================ --}}
+                {{-- ── BAGIAN 3: ASAL PENDIDIKAN ────────────────────── --}}
                 <section>
                     <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center shrink-0">
@@ -278,12 +267,166 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+
+                        {{-- ── SEKOLAH ASAL — Autocomplete PDDikti ─── --}}
                         <div class="sm:col-span-2">
-                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2 px-1">Asal Sekolah</label>
-                            <input type="text" name="sekolah_asal"
-                                   value="{{ old('sekolah_asal', $pendaftar->sekolah_asal ?? '') }}" placeholder="Contoh: SMAN 1 Padang"
-                                   class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark disabled:opacity-50 disabled:cursor-not-allowed"
-                                   {{ $isLocked ? 'disabled' : '' }}>
+                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2 px-1">
+                                Asal Sekolah <span class="text-red-400">*</span>
+                            </label>
+
+                            @if($isLocked)
+                                {{-- Mode terkunci: tampil sebagai teks --}}
+                                <div class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl font-bold text-[13px] sm:text-[14px] text-adzkia-dark opacity-70">
+                                    {{ $pendaftar->sekolah_asal ?? '—' }}
+                                    @if($pendaftar->npsn_sekolah)
+                                    <span class="ml-2 text-[11px] font-mono text-gray-400">(NPSN: {{ $pendaftar->npsn_sekolah }})</span>
+                                    @endif
+                                </div>
+                                <input type="hidden" name="sekolah_asal"  value="{{ $pendaftar->sekolah_asal ?? '' }}">
+                                <input type="hidden" name="sekolah_id"    value="{{ $pendaftar->sekolah_id ?? '' }}">
+                                <input type="hidden" name="npsn_sekolah"  value="{{ $pendaftar->npsn_sekolah ?? '' }}">
+                            @else
+                                {{-- Mode edit: autocomplete dari DB lokal + fallback API PDDikti --}}
+                                <div x-data="sekolahAC(
+                                        '{{ old('sekolah_asal', $pendaftar->sekolah_asal ?? '') }}',
+                                        '{{ old('sekolah_id',   $pendaftar->sekolah_id ?? '') }}',
+                                        '{{ old('npsn_sekolah', $pendaftar->npsn_sekolah ?? '') }}'
+                                     )"
+                                     class="relative">
+
+                                    <div class="relative">
+                                        <input type="text"
+                                               x-model="query"
+                                               x-on:input.debounce.350ms="cari()"
+                                               x-on:focus="if(query.length >= 2 && !dipilih) buka = true"
+                                               x-on:keydown.arrow-down.prevent="nav(1)"
+                                               x-on:keydown.arrow-up.prevent="nav(-1)"
+                                               x-on:keydown.enter.prevent="pilihAktif()"
+                                               x-on:keydown.escape="tutup()"
+                                               placeholder="Ketik nama atau NPSN sekolah..."
+                                               autocomplete="off"
+                                               required
+                                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border rounded-2xl outline-none transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark pr-12"
+                                               :class="{
+                                                   'bg-gray-50 border-transparent': !dipilih && !query,
+                                                   'bg-white border-adzkia-blue':   !dipilih && query.length > 0,
+                                                   'bg-emerald-50 border-emerald-400': dipilih
+                                               }">
+
+                                        {{-- Icon kanan --}}
+                                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                            <template x-if="loading">
+                                                <div class="w-4 h-4 border-2 border-gray-300 border-t-adzkia-blue rounded-full animate-spin"></div>
+                                            </template>
+                                            <template x-if="!loading && dipilih">
+                                                <div class="flex items-center gap-1">
+                                                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                                    <button type="button" x-on:click="reset()" class="text-gray-300 hover:text-red-400" title="Ganti sekolah">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <template x-if="!loading && !dipilih && query.length > 0">
+                                                <button type="button" x-on:click="reset()">
+                                                    <svg class="w-4 h-4 text-gray-400 hover:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    {{-- Dropdown --}}
+                                    <div x-show="buka && (hasil.length > 0 || (query.length >= 2 && !loading))"
+                                         x-cloak
+                                         x-on:click.away="tutup()"
+                                         x-transition:enter="transition ease-out duration-150"
+                                         x-transition:enter-start="opacity-0 -translate-y-1"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         class="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 max-h-64 overflow-y-auto autocomplete-scroll"
+                                         style="display:none;">
+
+                                        {{-- Dari DB lokal --}}
+                                        <template x-if="lokal.length > 0">
+                                            <div>
+                                                <p class="px-4 pt-3 pb-1 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data Tersimpan</p>
+                                                <template x-for="(item, i) in lokal" :key="'l'+i">
+                                                    <button type="button" x-on:click="pilih(item)"
+                                                            class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-t border-gray-50"
+                                                            :class="idx === i ? 'bg-blue-50' : ''">
+                                                        <div class="w-8 h-8 bg-adzkia-badge-bg rounded-xl flex items-center justify-center shrink-0 text-adzkia-blue">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="font-bold text-[13px] text-adzkia-dark truncate" x-text="item.nama_sekolah"></p>
+                                                            <p class="text-[11px] text-gray-400 font-medium truncate">
+                                                                <span x-text="item.bentuk || ''"></span>
+                                                                <span x-show="item.kota"> · <span x-text="item.kota"></span></span>
+                                                                <span x-show="item.npsn" class="font-mono"> · <span x-text="item.npsn"></span></span>
+                                                            </p>
+                                                        </div>
+                                                        <span x-show="item.status" x-text="item.status"
+                                                              class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                                                              :class="item.status==='Negeri' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+                                                        </span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        {{-- Dari API PDDikti --}}
+                                        <template x-if="api.length > 0">
+                                            <div :class="lokal.length > 0 ? 'border-t border-gray-100' : ''">
+                                                <p class="px-4 pt-3 pb-1 text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+                                                    Dari PDDikti
+                                                </p>
+                                                <template x-for="(item, i) in api" :key="'a'+i">
+                                                    <button type="button" x-on:click="pilih(item)"
+                                                            class="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 border-t border-gray-50"
+                                                            :class="idx === (lokal.length + i) ? 'bg-blue-50' : ''">
+                                                        <div class="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-gray-400">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                                        </div>
+                                                        <div class="min-w-0 flex-1">
+                                                            <p class="font-bold text-[13px] text-adzkia-dark truncate" x-text="item.nama_sekolah"></p>
+                                                            <p class="text-[11px] text-gray-400 font-medium truncate">
+                                                                <span x-text="item.bentuk || ''"></span>
+                                                                <span x-show="item.kota"> · <span x-text="item.kota"></span></span>
+                                                                <span x-show="item.npsn" class="font-mono"> · <span x-text="item.npsn"></span></span>
+                                                            </p>
+                                                        </div>
+                                                        <span class="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-adzkia-blue rounded-full shrink-0">+ Simpan</span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        {{-- Tidak ditemukan --}}
+                                        <template x-if="!loading && hasil.length === 0 && query.length >= 2">
+                                            <div class="px-4 py-5 text-center">
+                                                <p class="text-[13px] text-gray-400 font-medium">Tidak ditemukan di database maupun PDDikti.</p>
+                                                <button type="button" x-on:click="tutup(); dipilih = true"
+                                                        class="mt-2 text-[12px] font-bold text-adzkia-blue hover:underline">
+                                                    Gunakan "<span x-text="query"></span>" sebagai nama sekolah →
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    {{-- Info NPSN terpilih --}}
+                                    <p x-show="dipilih && npsn"
+                                       class="mt-1.5 text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 px-1"
+                                       style="display:none;">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                        NPSN: <span x-text="npsn" class="font-mono"></span>
+                                        <span x-show="baru" class="text-blue-500 ml-1">· Berhasil disimpan ke database</span>
+                                    </p>
+
+                                    {{-- Hidden fields --}}
+                                    <input type="hidden" name="sekolah_asal"  x-model="query">
+                                    <input type="hidden" name="sekolah_id"    x-model="sid">
+                                    <input type="hidden" name="npsn_sekolah"  x-model="npsn">
+                                </div>
+                            @endif
                         </div>
 
                         <div>
@@ -313,14 +456,7 @@
                     </div>
                 </section>
 
-                {{-- ================================================ --}}
-                {{-- BAGIAN 4: PILIHAN PRODI & JALUR                   --}}
-                {{-- ================================================ --}}
-                
-
-                {{-- ================================================ --}}
-                {{-- BAGIAN 5: UPLOAD DOKUMEN DINAMIS (Alpine.js)      --}}
-                {{-- ================================================ --}}
+                {{-- ── BAGIAN 5: UPLOAD DOKUMEN ─────────────────────── --}}
                 <section class="bg-[#F8FAFC] p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2rem] border border-gray-100 my-7 sm:my-10">
                     <div class="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-adzkia-badge-bg text-adzkia-blue rounded-xl flex items-center justify-center shrink-0">
@@ -332,7 +468,6 @@
                         Daftar dokumen berubah otomatis sesuai jalur pendaftaran yang dipilih.
                     </p>
 
-                    {{-- State: Belum pilih jalur --}}
                     <div x-show="!selectedJalur" x-cloak
                          class="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center text-gray-400">
                         <i data-feather="layers" class="w-8 h-8 mb-3 text-gray-300"></i>
@@ -340,10 +475,8 @@
                         <p class="text-[11px] font-medium mt-1">Dokumen yang harus diunggah akan muncul di sini.</p>
                     </div>
 
-                    {{-- State: Sudah pilih jalur → render kartu upload per dokumen --}}
                     <div x-show="selectedJalur" x-cloak
                          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-
                         <template x-for="(dokumen, index) in selectedJalur ? selectedJalur.dokumen_syarat : []" :key="dokumen">
                             <div class="border-2 border-dashed rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center transition-all group overflow-hidden relative"
                                  :class="uploadedFiles[dokumen]
@@ -351,7 +484,6 @@
                                     : '{{ $isLocked ? 'border-gray-200 cursor-not-allowed opacity-60' : 'border-gray-200 hover:border-adzkia-blue hover:bg-blue-50 cursor-pointer' }}'"
                                  @click="if(!uploadedFiles[dokumen] && !{{ $isLocked ? 'true' : 'false' }}) triggerUpload(dokumen)">
 
-                                {{-- Hidden file input --}}
                                 <input type="file"
                                        :name="'doc_' + slugify(dokumen)"
                                        :id="'input_' + slugify(dokumen)"
@@ -360,65 +492,53 @@
                                        accept=".jpg,.jpeg,.png,.pdf"
                                        {{ $isLocked ? 'disabled' : '' }}>
 
-                                {{-- Sebelum upload --}}
                                 <div x-show="!uploadedFiles[dokumen]" class="flex flex-col items-center">
                                     <i data-feather="file-plus" class="w-6 h-6 text-gray-400 mb-2 sm:mb-3 {{ !$isLocked ? 'group-hover:text-adzkia-blue transition-colors' : '' }}"></i>
                                     <h4 class="text-[12px] sm:text-[13px] font-extrabold text-adzkia-dark mb-1" x-text="dokumen"></h4>
                                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 sm:mb-3">PDF/JPG/PNG · Max 2MB</p>
                                     @if(!$isLocked)
-                                        <span class="text-[12px] font-black text-adzkia-blue underline underline-offset-2">Pilih File</span>
+                                    <span class="text-[12px] font-black text-adzkia-blue underline underline-offset-2">Pilih File</span>
                                     @endif
                                 </div>
 
-                                {{-- Sesudah upload --}}
                                 <div x-show="uploadedFiles[dokumen]" class="flex flex-col items-center w-full min-w-0" x-cloak>
                                     <div class="w-9 h-9 sm:w-10 sm:h-10 bg-adzkia-blue text-white rounded-full flex items-center justify-center mb-2 shrink-0">
                                         <i data-feather="check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                                     </div>
                                     <h4 class="text-[11px] font-extrabold text-adzkia-dark w-full px-2 text-center truncate" x-text="uploadedFiles[dokumen]"></h4>
                                     <div class="flex gap-2 mt-2 sm:mt-3">
-                                        {{-- Tombol "Lihat" hanya tampil jika file sudah ada di DB --}}
                                         <template x-if="berkasDb[dokumen]">
                                             <a :href="'/' + berkasDb[dokumen]" target="_blank"
                                                class="text-[11px] font-bold text-adzkia-blue bg-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors"
                                                @click.stop>Lihat File</a>
                                         </template>
                                         @if(!$isLocked)
-                                            <button type="button"
-                                                    @click.stop="triggerUpload(dokumen)"
-                                                    class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">Ganti</button>
+                                        <button type="button" @click.stop="triggerUpload(dokumen)"
+                                                class="text-[11px] font-bold text-gray-600 bg-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors">Ganti</button>
                                         @endif
                                     </div>
                                 </div>
-
                             </div>
                         </template>
                     </div>
                 </section>
 
-                {{-- ================================================ --}}
-                {{-- TOMBOL SUBMIT                                      --}}
-                {{-- ================================================ --}}
+                {{-- ── TOMBOL SUBMIT ────────────────────────────────── --}}
                 <div class="pt-7 sm:pt-10 border-t border-gray-100 flex flex-col items-center gap-3 sm:gap-6 mt-7 sm:mt-10">
                     @if(!$isLocked)
-                        {{-- Label tombol berubah dinamis sesuai jenis jalur --}}
-                        <button type="submit"
-                                class="w-full py-3.5 sm:py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex justify-center items-center gap-2 active:scale-[0.98]">
-                            <span x-show="!selectedJalur">Simpan Biodata & Lanjutkan</span>
-                            <span x-show="selectedJalur && selectedJalur.is_free_registration" x-cloak>
-                                Simpan &amp; Lanjut ke Konfirmasi
-                            </span>
-                            <span x-show="selectedJalur && !selectedJalur.is_free_registration" x-cloak>
-                                Simpan &amp; Lanjut ke Pembayaran
-                            </span>
-                            <i data-feather="arrow-right" class="w-4 h-4"></i>
-                        </button>
+                    <button type="submit"
+                            class="w-full py-3.5 sm:py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex justify-center items-center gap-2 active:scale-[0.98]">
+                        <span x-show="!selectedJalur">Simpan Biodata & Lanjutkan</span>
+                        <span x-show="selectedJalur && selectedJalur.is_free_registration" x-cloak>Simpan &amp; Lanjut ke Konfirmasi</span>
+                        <span x-show="selectedJalur && !selectedJalur.is_free_registration" x-cloak>Simpan &amp; Lanjut ke Pembayaran</span>
+                        <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </button>
                     @else
-                        <a href="{{ route('konfirmasi-data', $pendaftar->id) }}"
-                           class="w-full py-3.5 sm:py-4 bg-gray-100 text-adzkia-dark rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-gray-200 transition-all flex justify-center items-center gap-2">
-                            Kembali ke Halaman Konfirmasi
-                            <i data-feather="arrow-right" class="w-4 h-4"></i>
-                        </a>
+                    <a href="{{ route('konfirmasi-data', $pendaftar->id) }}"
+                       class="w-full py-3.5 sm:py-4 bg-gray-100 text-adzkia-dark rounded-2xl font-black text-[14px] sm:text-[15px] hover:bg-gray-200 transition-all flex justify-center items-center gap-2">
+                        Kembali ke Halaman Konfirmasi
+                        <i data-feather="arrow-right" class="w-4 h-4"></i>
+                    </a>
                     @endif
                 </div>
 
@@ -426,46 +546,28 @@
         </div>
     </main>
 
-    {{-- ============================================================ --}}
-    {{-- ALPINE.JS DATA & LOGIC                                        --}}
-    {{-- ============================================================ --}}
+    {{-- ── SCRIPTS ──────────────────────────────────────────────── --}}
     <script>
+    // ── Formulir utama (provinsi, jalur, upload) ─────────────────
     document.addEventListener('alpine:init', () => {
         Alpine.data('formulirApp', () => ({
-
-            // --- Provinsi / kota ---
             provinces:    [],
             cities:       [],
             selectedProv: '',
             selectedCity: '',
-
-            // --- JALUR PENDAFTARAN ---
-            // jalursData dikirim dari controller (sudah di-map dengan key 'nama')
-            // key: id, nama, is_free_registration, has_exam, dokumen_syarat
             jalursData:      {!! $jalursJson !!},
             selectedJalurId: '{{ old('jalur_id', $pendaftar->jalur_id ?? '') }}',
             selectedJalur:   null,
-
-            // uploadedFiles: { "KTP": "ktp_file.jpg", "Rapor": "rapor.pdf", ... }
             uploadedFiles: {},
-
-            // berkasDb: berkas yang sudah tersimpan di database (untuk tombol "Lihat File")
             berkasDb: {!! json_encode(
                 is_array(json_decode($pendaftar->berkas_dokumen ?? '{}', true))
                     ? json_decode($pendaftar->berkas_dokumen ?? '{}', true)
                     : []
             ) !!},
 
-            // --------------------------------------------------------
-            // INIT
-            // --------------------------------------------------------
             async init() {
-                // Set jalur aktif berdasarkan nilai yang sudah tersimpan
-                if (this.selectedJalurId) {
-                    this.onJalurChange();
-                }
+                if (this.selectedJalurId) this.onJalurChange();
 
-                // Provinsi
                 const dbProv = '{{ old('provinsi', $pendaftar->provinsi ?? '') }}';
                 const dbCity = '{{ old('kota_kabupaten', $pendaftar->kota_kabupaten ?? '') }}';
 
@@ -474,7 +576,6 @@
                     if (res.ok) {
                         const json = await res.json();
                         this.provinces = json.data || [];
-
                         this.$nextTick(async () => {
                             if (dbProv) {
                                 this.selectedProv = dbProv;
@@ -483,73 +584,43 @@
                             }
                         });
                     }
-                } catch (e) { console.error('Gagal load provinsi:', e); }
+                } catch(e) {}
             },
 
-            // --------------------------------------------------------
-            // JALUR CHANGE — update selectedJalur & siapkan uploadedFiles
-            // --------------------------------------------------------
             onJalurChange() {
                 const id = parseInt(this.selectedJalurId);
                 this.selectedJalur = this.jalursData.find(j => j.id === id) || null;
-
                 if (!this.selectedJalur) return;
-
-                // Inisialisasi uploadedFiles: isi dari DB jika ada, kosong jika belum
-                // berkasDb key = nama dokumen (misal: "KTP", "Rapor Semester 3-5")
                 this.uploadedFiles = {};
                 this.selectedJalur.dokumen_syarat.forEach(dok => {
-                    this.uploadedFiles[dok] = this.berkasDb[dok]
-                        ? 'Sudah Diunggah'
-                        : null;
+                    this.uploadedFiles[dok] = this.berkasDb[dok] ? 'Sudah Diunggah' : null;
                 });
-
-                // Rerender ikon feather setelah DOM update
                 this.$nextTick(() => { feather.replace(); });
             },
 
-            // --------------------------------------------------------
-            // TRIGGER KLIK PADA INPUT FILE TERSEMBUNYI
-            // --------------------------------------------------------
             triggerUpload(dokumen) {
-                const inputId = 'input_' + this.slugify(dokumen);
-                document.getElementById(inputId)?.click();
+                document.getElementById('input_' + this.slugify(dokumen))?.click();
             },
 
-            // --------------------------------------------------------
-            // HANDLER UPLOAD DINAMIS
-            // --------------------------------------------------------
             handleDynamicUpload(event, dokumen) {
                 const file = event.target.files[0];
                 if (!file) return;
-
                 if (file.size > 2 * 1024 * 1024) {
                     alert('Ukuran file "' + dokumen + '" maksimal 2MB!');
                     event.target.value = '';
                     return;
                 }
-
-                const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+                const allowed = ['image/jpeg','image/png','image/jpg','application/pdf'];
                 if (!allowed.includes(file.type)) {
                     alert('Format file "' + dokumen + '" harus JPG, PNG, atau PDF!');
                     event.target.value = '';
                     return;
                 }
-
                 this.uploadedFiles[dokumen] = file.name;
             },
 
-            // --------------------------------------------------------
-            // HELPER: slugify nama dokumen → cocok dengan field name di controller
-            // "Rapor Semester 3-5" → "rapor_semester_3_5"
-            // --------------------------------------------------------
-            slugify(str) {
-                return str.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-            },
+            slugify(str) { return str.toLowerCase().replace(/[^a-z0-9]+/g, '_'); },
 
-            // --------------------------------------------------------
-            // PROVINSI & KOTA
-            // --------------------------------------------------------
             async loadCities(provinceId) {
                 if (!provinceId) { this.cities = []; return; }
                 try {
@@ -558,10 +629,84 @@
                         const json = await res.json();
                         this.cities = json.data || [];
                     }
-                } catch (e) { this.cities = []; }
+                } catch(e) { this.cities = []; }
             },
         }));
     });
+
+    // ── Autocomplete sekolah ─────────────────────────────────────
+    function sekolahAC(q0, id0, npsn0) {
+        return {
+            query:   q0   || '',
+            sid:     id0  || '',
+            npsn:    npsn0|| '',
+            hasil:   [],
+            loading: false,
+            buka:    false,
+            dipilih: !!(q0),
+            idx:     -1,
+            baru:    false,
+
+            get lokal() { return this.hasil.filter(h => h.source === 'local'); },
+            get api()   { return this.hasil.filter(h => h.source === 'api');   },
+
+            async cari() {
+                if (this.query.length < 2) { this.hasil = []; this.buka = false; return; }
+                this.loading = true;
+                this.dipilih = false;
+                this.sid = ''; this.npsn = '';
+                try {
+                    const r = await fetch(`/api/sekolah/search?q=${encodeURIComponent(this.query)}`);
+                    this.hasil = await r.json();
+                    this.buka  = true;
+                    this.idx   = -1;
+                } catch(e) { this.hasil = []; }
+                finally { this.loading = false; }
+            },
+
+            async pilih(item) {
+                this.query   = item.nama_sekolah;
+                this.npsn    = item.npsn || '';
+                this.buka    = false;
+                this.dipilih = true;
+                this.baru    = false;
+
+                if (item.source === 'local' && item.id) {
+                    this.sid = item.id;
+                } else {
+                    this.sid = '';
+                    try {
+                        const r = await fetch('/api/sekolah/simpan', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            },
+                            body: JSON.stringify(item),
+                        });
+                        const j = await r.json();
+                        this.sid  = j.id   || '';
+                        this.npsn = j.npsn || item.npsn;
+                        this.baru = true;
+                        setTimeout(() => this.baru = false, 4000);
+                    } catch(e) {}
+                }
+            },
+
+            pilihAktif() {
+                if (this.idx >= 0 && this.idx < this.hasil.length) this.pilih(this.hasil[this.idx]);
+            },
+
+            nav(d) { this.idx = Math.max(-1, Math.min(this.hasil.length - 1, this.idx + d)); },
+
+            tutup() { setTimeout(() => this.buka = false, 200); },
+
+            reset() {
+                this.query = ''; this.hasil = []; this.dipilih = false;
+                this.sid = ''; this.npsn = ''; this.buka = false;
+            },
+        };
+    }
 
     document.addEventListener('DOMContentLoaded', () => { feather.replace(); });
     </script>
