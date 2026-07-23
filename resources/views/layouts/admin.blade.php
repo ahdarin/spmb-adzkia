@@ -28,7 +28,6 @@
         }
     </script>
 
-    {{-- CSS tanpa @media/@keyframes — semua dipindah ke JS/Tailwind --}}
     <style>
         [x-cloak] { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar       { width: 4px; }
@@ -47,17 +46,16 @@
         .sidebar-collapsed .logo-wrapper           { justify-content: center; width: 100%; }
         .nav-icon, .nav-icon svg, .nav-icon i      { width: 20px !important; height: 20px !important; flex-shrink: 0; }
         .logo-wrapper img                          { flex-shrink: 0; }
-        .nav-tooltip                               { display: none; }
-        .sidebar-collapsed .nav-tooltip            { display: block !important; }
-        aside                                      { transition: width 0.25s ease; overflow: hidden; }
+        aside                                      { transition: width 0.25s ease; }
         .main-content                              { transition: margin-left 0.25s ease; min-width: 0; }
         main                                       { min-width: 0; max-width: 100%; overflow-x: auto; }
+
+        /* ── Tooltip sidebar collapsed ── */
+        .nav-tooltip { display: none; }
     </style>
 
-    {{-- @media di tag <link> terpisah agar Blade tidak parse isinya --}}
     <link rel="stylesheet" href="data:text/css,">
     <script>
-        // Inject CSS dengan @media dan @keyframes via JavaScript — 100% aman dari Blade parser
         (function() {
             var css = [
                 '@media (max-width: 1023px) { .main-content { margin-left: 0 !important; } }',
@@ -96,10 +94,12 @@
            mobileSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
            collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'
        ]"
-       class="bg-white border-r border-gray-100 flex flex-col fixed h-screen z-40">
+       class="bg-white border-r border-gray-100 flex flex-col fixed h-screen z-40"
+       :style="collapsed ? 'overflow: visible' : 'overflow: hidden'">
 
     {{-- Logo + tombol collapse --}}
-    <div class="sidebar-header h-16 flex items-center justify-between px-4 shrink-0 border-b border-gray-50">
+    <div class="sidebar-header h-16 flex items-center justify-between px-4 shrink-0 border-b border-gray-50"
+         style="background: white; position: relative; z-index: 41;">
         <div class="logo-wrapper flex items-center gap-3 overflow-hidden min-w-0">
             <img src="{{ asset('images/logo-adzkia.png') }}"
                  alt="Logo" class="h-8 w-8 object-contain shrink-0 rounded-lg">
@@ -119,20 +119,22 @@
         </button>
     </div>
 
-    {{-- Nav --}}
-    <nav class="flex-1 px-2 py-3 overflow-y-auto custom-scrollbar space-y-0.5">
+    {{-- Nav — overflow visible saat collapsed agar tooltip tidak terpotong --}}
+    <nav class="flex-1 px-2 py-3 custom-scrollbar space-y-0.5"
+         :style="collapsed ? 'overflow: visible' : 'overflow-y: auto'"
+         style="position: relative;">
 
         <p class="nav-category px-3 pt-1 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Umum</p>
 
         <a href="/admin"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
-               {{ request()->is('admin') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
+               {{ request()->is('admin') && !request()->is('admin/*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="grid" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Dashboard</span>
             @if($totalPending > 0)
             <span class="nav-badge ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full">{{ $totalPending }}</span>
             @endif
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Dashboard</span>
+            <span class="nav-tooltip">Dashboard</span>
         </a>
 
         <a href="/admin/pendaftar"
@@ -140,7 +142,7 @@
                {{ request()->is('admin/pendaftar*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="users" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Data Pendaftar</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Data Pendaftar</span>
+            <span class="nav-tooltip">Data Pendaftar</span>
         </a>
 
         <a href="/admin/activity-log"
@@ -148,8 +150,9 @@
                {{ request()->is('admin/activity-log') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="activity" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Log Aktivitas</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Log Aktivitas</span>
+            <span class="nav-tooltip">Log Aktivitas</span>
         </a>
+
         @if($isSuperAdmin || in_array($divisi, ['Keuangan', 'Verifikator Berkas']))
         <p class="nav-category px-3 pt-3.5 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Verifikasi</p>
 
@@ -163,7 +166,7 @@
             </span>
             <span class="nav-label text-[13px] whitespace-nowrap">Validasi Pembayaran</span>
             @if($pendingPembayaran > 0)<span class="nav-badge ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full">{{ $pendingPembayaran }}</span>@endif
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Validasi Pembayaran</span>
+            <span class="nav-tooltip">Validasi Pembayaran</span>
         </a>
         @endif
 
@@ -177,7 +180,7 @@
             </span>
             <span class="nav-label text-[13px] whitespace-nowrap">Validasi Formulir</span>
             @if($pendingFormulir > 0)<span class="nav-badge ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full">{{ $pendingFormulir }}</span>@endif
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Validasi Formulir</span>
+            <span class="nav-tooltip">Validasi Formulir</span>
         </a>
 
         <a href="/admin/validasi-daftar-ulang"
@@ -189,7 +192,7 @@
             </span>
             <span class="nav-label text-[13px] whitespace-nowrap">Berkas Daftar Ulang</span>
             @if($pendingBerkas > 0)<span class="nav-badge ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full">{{ $pendingBerkas }}</span>@endif
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Berkas Daftar Ulang</span>
+            <span class="nav-tooltip">Berkas Daftar Ulang</span>
         </a>
         @endif
 
@@ -198,7 +201,7 @@
                {{ request()->is('admin/pengumuman*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="award" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Pengumuman</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Pengumuman</span>
+            <span class="nav-tooltip">Pengumuman</span>
         </a>
         @endif
 
@@ -209,48 +212,46 @@
                {{ request()->is('admin/berita*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="rss" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Berita</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Berita</span>
+            <span class="nav-tooltip">Berita</span>
         </a>
         <a href="/admin/faq"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
                {{ request()->is('admin/faq*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="help-circle" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">FAQ</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">FAQ</span>
+            <span class="nav-tooltip">FAQ</span>
         </a>
         @endif
 
         @if($isSuperAdmin)
-        <p class="nav-category px-3 pt-3.5 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Akademik</p>
+        <p class="nav-category px-3 pt-3.5 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Master Data</p>
         <a href="/admin/prodi"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
                {{ request()->is('admin/prodi*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="book-open" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Program Studi</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Program Studi</span>
+            <span class="nav-tooltip">Program Studi</span>
         </a>
-
-        <p class="nav-category px-3 pt-3.5 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Master Data</p>
         <a href="{{ route('admin.master.biaya-daftar-ulang.index') }}"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
                {{ request()->is('admin/master/biaya-daftar-ulang*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="dollar-sign" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Biaya Daftar Ulang</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Biaya Daftar Ulang</span>
+            <span class="nav-tooltip">Biaya Daftar Ulang</span>
         </a>
         <a href="{{ route('admin.master.jalur.index') }}"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
                {{ request()->is('admin/master/jalur*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="git-commit" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Jalur Pendaftaran</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Jalur Pendaftaran</span>
+            <span class="nav-tooltip">Jalur Pendaftaran</span>
         </a>
         <a href="{{ route('admin.master.sekolah.index') }}"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
                {{ request()->is('admin/master/sekolah*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="map" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Sekolah</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Sekolah</span>
+            <span class="nav-tooltip">Sekolah</span>
         </a>
 
         <p class="nav-category px-3 pt-3.5 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Sistem</p>
@@ -259,20 +260,20 @@
                {{ request()->is('admin/tugas*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="shield" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Manajemen Divisi</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Manajemen Divisi</span>
+            <span class="nav-tooltip">Manajemen Divisi</span>
         </a>
         <a href="/admin/settings"
            class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
                {{ request()->is('admin/settings*') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
             <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="settings" class="w-5 h-5"></i></span>
             <span class="nav-label text-[13px] whitespace-nowrap">Pengaturan</span>
-            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Pengaturan</span>
+            <span class="nav-tooltip">Pengaturan</span>
         </a>
         @endif
 
     </nav>
 
-    <div class="p-3 shrink-0 border-t border-gray-100">
+    <div class="p-3 shrink-0 border-t border-gray-100" style="background: white; position: relative; z-index: 41;">
         <div class="flex items-center gap-2.5 px-3 py-2.5 bg-brand-bg rounded-xl">
             <div class="w-2 h-2 bg-emerald-500 rounded-full shrink-0 animate-pulse"></div>
             <div class="sidebar-footer-text min-w-0">
@@ -287,6 +288,14 @@
     </div>
 
 </aside>
+
+{{-- ── Tooltip dirender via JS agar bebas dari overflow container ── --}}
+<div id="sidebar-tooltip-popup"
+     style="display:none; position:fixed; z-index:9999; background:#0F172A; color:#fff;
+            font-size:11px; font-weight:700; padding:6px 14px; border-radius:8px;
+            white-space:nowrap; box-shadow:0 4px 16px rgba(0,0,0,0.3);
+            pointer-events:none; transform:translateY(-50%);">
+</div>
 
 {{-- ══ KONTEN UTAMA ══════════════════════════════════════════════ --}}
 <div class="main-content flex-1 flex flex-col min-h-screen w-full min-w-0 ml-0"
@@ -348,6 +357,43 @@ function adminLayout() {
         saveCollapsed(val) { localStorage.setItem('sidebar_collapsed', val); },
     };
 }
+
+// ── Tooltip via JS — bebas dari overflow container ──────────────
+(function () {
+    const popup = document.getElementById('sidebar-tooltip-popup');
+    let hideTimer = null;
+
+    function isCollapsed() {
+        return document.querySelector('aside.sidebar-collapsed') !== null;
+    }
+
+    document.addEventListener('mouseover', function (e) {
+        if (!isCollapsed()) return;
+
+        const item = e.target.closest('.nav-item');
+        if (!item) return;
+
+        const tooltipEl = item.querySelector('.nav-tooltip');
+        if (!tooltipEl) return;
+
+        const text = tooltipEl.textContent.trim();
+        if (!text) return;
+
+        clearTimeout(hideTimer);
+
+        const rect = item.getBoundingClientRect();
+        popup.textContent = text;
+        popup.style.display = 'block';
+        popup.style.top  = (rect.top + rect.height / 2) + 'px';
+        popup.style.left = (rect.right + 10) + 'px';
+    });
+
+    document.addEventListener('mouseout', function (e) {
+        const item = e.target.closest('.nav-item');
+        if (!item) return;
+        hideTimer = setTimeout(() => { popup.style.display = 'none'; }, 80);
+    });
+})();
 </script>
 
 @stack('scripts')

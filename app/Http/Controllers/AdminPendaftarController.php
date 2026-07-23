@@ -4,140 +4,114 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\DataPendaftar;
+use App\Support\ActivityLogger;
 use Carbon\Carbon;
 
 class AdminPendaftarController extends Controller
 {
     // ==========================================
-    // 1. DASHBOARD & STATISTIK ADMIN
+    // DASHBOARD & STATISTIK ADMIN
     // ==========================================
     public function dashboard(Request $request)
     {
-        // 1. Ambil filter dari request URL (Default: 'Bulan Ini')
         $filter = $request->query('filter', 'Bulan Ini');
         
-        $query = \App\Models\DataPendaftar::query();
-        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        $query = DataPendaftar::query();
+        $now   = Carbon::now('Asia/Jakarta');
 
-        // 2. Terapkan logika Filter Waktu pada Database
-        if ($filter == 'Hari Ini') {
-            $query->whereDate('created_at', $now->today());
-        } elseif ($filter == 'Minggu Ini') {
-            $query->whereBetween('created_at', [$now->startOfWeek(), $now->endOfWeek()]);
-        } elseif ($filter == 'Bulan Ini') {
-            $query->whereMonth('created_at', $now->month)
-                  ->whereYear('created_at', $now->year);
+        switch ($filter) {
+            case 'Hari Ini':
+                $query->whereDate('created_at', $now->toDateString());
+                break;
+            case 'Minggu Ini':
+                $query->whereBetween('created_at', [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()]);
+                break;
+            case 'Tahun Ini':
+                $query->whereYear('created_at', $now->year);
+                break;
+            default: // Bulan Ini
+                $query->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year);
+                break;
         }
 
-        // Ambil data yang sudah difilter
-        $pendaftarFiltered = $query->get();
+        $totalPendaftar   = (clone $query)->count();
+        $menungguValidasi = (clone $query)->where('status_pembayaran', 'Menunggu Validasi')->count();
+        $sudahVerifikasi  = (clone $query)->where('status_pembayaran', 'Terverifikasi')->count();
+        $belumBayar       = (clone $query)->where('status_pembayaran', 'Belum Bayar')->count();
+        $totalLulus       = (clone $query)->whereIn('status_kelulusan', ['Lulus Pilihan 1', 'Lulus Pilihan 2'])->count();
 
-        // 3. Hitung Kartu Statistik (Berdasarkan Filter)
-        $stats = [];
-        $stats['totalPendaftar'] = $pendaftarFiltered->count();
-        
-        // Gabungan antara yang belum bayar & yang belum divalidasi berkasnya
-        $stats['menungguValidasi'] = $pendaftarFiltered->whereIn('status_pembayaran', ['Menunggu Validasi'])->count() 
-                                   + $pendaftarFiltered->whereIn('status_pendaftaran', ['menunggu verifikasi'])->count();
-        
-        // Hitung yang status kelulusannya mengandung kata 'Lulus'
-        $stats['lulusSeleksi'] = $pendaftarFiltered->filter(function($item) {
-            return str_contains($item->status_kelulusan, 'Lulus');
-        })->count();
+        // Data grafik per bulan (semua tahun berjalan)
+        $labelsBulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+        $dataBulan   = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $dataBulan[] = DataPendaftar::whereYear('created_at', $now->year)
+                ->whereMonth('created_at', $i)->count();
+        }
 
-        // Hitung Pendapatan (Hanya ambil yang pembayarannya "Terverifikasi")
-        $totalPendapatan = $pendaftarFiltered->where('status_pembayaran', 'Terverifikasi')->sum('nominal_biaya');
-        // Dibagi 1 Juta karena di View desain Anda formatnya "Rp ... Jt"
-        $stats['pendapatan'] = $totalPendapatan / 1000000; 
+        $jurusanData = DataPendaftar::selectRaw('pilihan_jurusan_1, count(*) as total')
+            ->groupBy('pilihan_jurusan_1')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get()
+            ->pluck('total', 'pilihan_jurusan_1');
 
-        // ==========================================
-        // 4. Data untuk Grafik (Chart.js)
-        // Grafik selalu mengambil data Tahun Ini agar grafiknya terlihat penuh
-        // ==========================================
-        $semuaPendaftarTahunIni = \App\Models\DataPendaftar::whereYear('created_at', $now->year)->get();
-        // Catatan: $now sudah dalam timezone WIB (Asia/Jakarta)
+        $stats = [
+            'totalPendaftar'   => $totalPendaftar,
+            'menungguValidasi' => $menungguValidasi,
+            'lulusSeleksi'     => $totalLulus,
+            'pendapatan'       => round(DataPendaftar::where('status_pembayaran', 'Terverifikasi')->sum('nominal_biaya') / 1_000_000, 1),
+        ];
 
-        $jurusanData = $semuaPendaftarTahunIni->groupBy('pilihan_jurusan_1')
-            ->map(function ($row) { return $row->count(); })
-            ->filter(function ($value, $key) { return !empty($key); });
+        $pendaftarTerbaru = DataPendaftar::latest()->take(10)->get();
 
-        $labelsBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
-        $dataBulan = array_fill(0, 12, 0);
-        
-        $semuaPendaftarTahunIni->groupBy(function($date) {
-            return \Carbon\Carbon::parse($date->created_at)->format('n'); // Ambil index bulan
-        })->each(function ($item, $key) use (&$dataBulan) {
-            $dataBulan[$key - 1] = $item->count();
-        });
-
-        // Lempar semua data ke View
-        return view('admin.dashboard', compact('stats', 'filter', 'jurusanData', 'labelsBulan', 'dataBulan'));
+        return view('admin.dashboard', compact(
+            'totalPendaftar', 'menungguValidasi', 'sudahVerifikasi', 'belumBayar',
+            'totalLulus', 'stats', 'labelsBulan', 'dataBulan', 'jurusanData',
+            'pendaftarTerbaru', 'filter'
+        ));
     }
 
     // ==========================================
-    // 2. EXPORT DATA EXCEL (CSV)
+    // DAFTAR PENDAFTAR (admin.pendaftar)
     // ==========================================
-    public function exportCsv()
+    public function index(Request $request)
     {
-        $pendaftar = \App\Models\DataPendaftar::orderBy('created_at', 'desc')->get();
-        $filename = "Data_Pendaftar_Adzkia_" . date('Y-m-d') . ".csv";
-        
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$filename",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
+        $query = DataPendaftar::latest();
 
-        $columns = array('ID', 'No Pendaftaran', 'Nama Lengkap', 'NIK', 'Jenis Kelamin', 'Pilihan 1', 'Pilihan 2', 'Jalur', 'Status Pembayaran', 'Status Kelulusan', 'Tanggal Daftar');
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('nama_lengkap', 'like', "%{$s}%")
+                  ->orWhere('no_pendaftaran', 'like', "%{$s}%")
+                  ->orWhere('email', 'like', "%{$s}%");
+            });
+        }
 
-        $callback = function() use($pendaftar, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns); // Tulis Header kolom
+        if ($request->filled('jalur')) {
+            $query->where('jalur_pendaftaran', $request->jalur);
+        }
 
-            foreach ($pendaftar as $row) {
-                fputcsv($file, array(
-                    $row->id,
-                    $row->no_pendaftaran,
-                    $row->nama_lengkap,
-                    $row->nik,
-                    $row->gender,
-                    $row->pilihan_jurusan_1,
-                    $row->pilihan_jurusan_2,
-                    $row->jalur_pendaftaran,
-                    $row->status_pembayaran,
-                    $row->status_kelulusan ?? 'Belum Ditetapkan',
-                    Carbon::parse($row->created_at)->format('d-M-Y')
-                ));
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function index()
-    {
-        $users = DataPendaftar::latest()->get(); 
+        // Variabel yang dibutuhkan view pendaftar.blade.php (nama harus sama persis)
         $totalPendaftar   = DataPendaftar::count();
         $menungguValidasi = DataPendaftar::where('status_pembayaran', 'Menunggu Validasi')->count();
-        $lulusSeleksi     = DataPendaftar::where('status_pembayaran', 'Terverifikasi')->count();
+        $lulusSeleksi     = DataPendaftar::whereIn('status_kelulusan', ['Lulus Pilihan 1', 'Lulus Pilihan 2'])->count();
         $pembayaranBelum  = DataPendaftar::where('status_pembayaran', 'Belum Bayar')->count();
 
-        return view('admin.pendaftar', compact('users', 'totalPendaftar', 'menungguValidasi', 'lulusSeleksi', 'pembayaranBelum'));
+        // View menggunakan $users sebagai nama variabel daftar pendaftar
+        $users = $query->get();
+
+        return view('admin.pendaftar', compact(
+            'users', 'totalPendaftar', 'menungguValidasi', 'lulusSeleksi', 'pembayaranBelum'
+        ));
     }
-    
+
     // ==========================================
-    // VALIDASI PEMBAYARAN (KEUANGAN)
+    // VALIDASI PEMBAYARAN
+    // Nama method HARUS validasiPembayaranIndex (sesuai route web.php)
     // ==========================================
     public function validasiPembayaranIndex(Request $request)
     {
         $query = DataPendaftar::query();
-
-        if ($request->filled('jalur') && $request->jalur != 'Semua Jalur') {
-            $query->where('jalur_pendaftaran', $request->jalur);
-        }
 
         if ($request->filled('status')) {
             $query->where('status_pembayaran', $request->status);
@@ -147,9 +121,9 @@ class AdminPendaftarController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
+                  ->orWhere('no_pendaftaran', 'like', "%{$search}%");
             });
         }
 
@@ -157,24 +131,35 @@ class AdminPendaftarController extends Controller
 
         foreach ($pendaftarPending as $data) {
             $tanggalDaftar = $data->created_at ?? now();
-            if ($tanggalDaftar->between('2026-01-01', '2026-03-31')) $gelombang = 'Gelombang 1';
-            elseif ($tanggalDaftar->between('2026-04-01', '2026-06-30')) $gelombang = 'Gelombang 2';
-            else $gelombang = 'Gelombang 3';
+            if ($tanggalDaftar->between('2026-01-01', '2026-03-31'))      $gelombang = 'Gelombang 1';
+            elseif ($tanggalDaftar->between('2026-04-01', '2026-06-30'))  $gelombang = 'Gelombang 2';
+            else                                                           $gelombang = 'Gelombang 3';
 
             $data->jalur_lengkap = $data->jalur_pendaftaran . ' ' . $gelombang;
-            $data->bank_pilihan = $data->metode_pembayaran ?? 'Belum Dipilih'; 
+            $data->bank_pilihan  = $data->metode_pembayaran ?? 'Belum Dipilih';
             $data->nominal_biaya = $data->nominal_biaya ?? 250000;
         }
 
         return view('admin.validasi-pembayaran', compact('pendaftarPending'));
     }
 
-    // Fungsi untuk menyetujui (Sudah ada di controller Anda, pastikan sesuai)
+    // Alias agar tidak error jika ada route yang masih pakai nama lama
+    public function validasiIndex(Request $request)
+    {
+        return $this->validasiPembayaranIndex($request);
+    }
+
     public function setujuiPembayaran($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->status_pembayaran = 'Terverifikasi';
         $pendaftar->save();
+
+        ActivityLogger::catat(
+            'setujui_pembayaran',
+            "Pembayaran pendaftaran {$pendaftar->nama_lengkap} ({$pendaftar->no_pendaftaran}) diverifikasi.",
+            ['modul' => 'Pembayaran', 'subjek' => $pendaftar]
+        );
 
         $pesan = "Pemberitahuan Verifikasi Pembayaran\n\n" .
                  "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
@@ -183,7 +168,6 @@ class AdminPendaftarController extends Controller
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Terima kasih.";
 
-        // Panggil fungsi kirimNotifikasiWA internal
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WhatsApp telah dikirim.' : '(Notifikasi WA gagal terkirim, cek koneksi Fonnte).';
 
@@ -191,11 +175,9 @@ class AdminPendaftarController extends Controller
             'Pembayaran atas nama ' . $pendaftar->nama_lengkap . ' berhasil diverifikasi. ' . $info);
     }
 
-    // Fungsi BARU untuk menolak
     public function tolakPembayaran($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
-        // Kembalikan ke awal agar bisa unggah ulang
         $pendaftar->status_pembayaran = 'Belum Bayar';
 
         if ($pendaftar->bukti_bayar) {
@@ -204,6 +186,12 @@ class AdminPendaftarController extends Controller
         }
         $pendaftar->save();
 
+        ActivityLogger::catat(
+            'tolak_pembayaran',
+            "Bukti pembayaran {$pendaftar->nama_lengkap} ({$pendaftar->no_pendaftaran}) ditolak, diminta unggah ulang.",
+            ['modul' => 'Pembayaran', 'subjek' => $pendaftar]
+        );
+
         $pesan = "Pemberitahuan Verifikasi Pembayaran\n\n" .
                  "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
                  "Mohon maaf, bukti pembayaran Anda (No. {$pendaftar->no_pendaftaran}) belum dapat kami verifikasi karena belum memenuhi persyaratan yang ditetapkan.\n\n" .
@@ -211,7 +199,6 @@ class AdminPendaftarController extends Controller
                  "http://spmb.adzkia.ac.id/login\n\n" .
                  "Apabila terdapat kendala, silakan menghubungi panitia SPMB. Terima kasih.";
 
-        // Panggil fungsi kirimNotifikasiWA internal
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
 
@@ -220,38 +207,38 @@ class AdminPendaftarController extends Controller
     }
 
     // ==========================================
-    // VALIDASI BIODATA (AKADEMIK / VERIFIKATOR)
+    // VALIDASI DAFTAR ULANG
     // ==========================================
-public function daftarUlangIndex()
-{
-    $pendaftarDaftarUlang = DataPendaftar::whereIn('status_daftar_ulang', [
-                                'Menunggu Validasi',
-                                'Revisi',
-                                'Selesai',
-                            ])
-                            ->whereNotNull('bukti_daftar_ulang')
-                            ->latest()
-                            ->get();
+    public function daftarUlangIndex()
+    {
+        $pendaftarDaftarUlang = DataPendaftar::whereIn('status_daftar_ulang', [
+                                    'Menunggu Validasi', 'Revisi', 'Selesai',
+                                ])
+                                ->whereNotNull('bukti_daftar_ulang')
+                                ->latest()
+                                ->get();
 
-    return view('admin.validasi-daftar-ulang', compact('pendaftarDaftarUlang'));
-}
+        return view('admin.validasi-daftar-ulang', compact('pendaftarDaftarUlang'));
+    }
 
     public function setujuiDaftarUlang($id)
     {
         $pendaftar = DataPendaftar::findOrFail($id);
 
-        // Generate NIM jika belum ada
-        // Format: ADZ-[TAHUN]-[ID 4 digit]
-        // Contoh: ADZ-2026-0001
         if (empty($pendaftar->nim)) {
             $tahun  = date('Y');
             $urutan = str_pad($pendaftar->id, 4, '0', STR_PAD_LEFT);
             $pendaftar->nim = 'ADZ-' . $tahun . '-' . $urutan;
         }
 
-        // Update kolom yang benar: status_daftar_ulang (bukan status_pendaftaran)
         $pendaftar->status_daftar_ulang = 'Selesai';
         $pendaftar->save();
+
+        ActivityLogger::catat(
+            'setujui_daftar_ulang',
+            "Daftar ulang {$pendaftar->nama_lengkap} diverifikasi. NIM: {$pendaftar->nim}.",
+            ['modul' => 'Daftar Ulang', 'subjek' => $pendaftar]
+        );
 
         $pesan = "Pemberitahuan Resmi SPMB Universitas Adzkia\n\n" .
                  "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
@@ -276,16 +263,18 @@ public function daftarUlangIndex()
             'pesan_revisi'        => $request->pesan_revisi,
         ]);
 
+        ActivityLogger::catat(
+            'revisi_daftar_ulang',
+            "Berkas daftar ulang {$pendaftar->nama_lengkap} diminta revisi: \"{$request->pesan_revisi}\".",
+            ['modul' => 'Daftar Ulang', 'subjek' => $pendaftar]
+        );
+
         $pesan = "Pemberitahuan Perbaikan Berkas Daftar Ulang\n\n" .
                  "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
-                 "Setelah dilakukan peninjauan, berkas daftar ulang Anda (No. {$pendaftar->no_pendaftaran}) memerlukan perbaikan agar sesuai dengan persyaratan SPMB Universitas Adzkia.\n\n" .
-                 "Catatan dari tim verifikasi:\n" .
-                 "{$request->pesan_revisi}\n\n" .
-                 "Silakan masuk kembali ke portal dan lakukan perbaikan sesuai catatan di atas:\n" .
-                 "http://spmb.adzkia.ac.id/login\n\n" .
-                 "Terima kasih.";
-                 
-        // Panggil fungsi kirimNotifikasiWA internal
+                 "Setelah dilakukan peninjauan, berkas daftar ulang Anda (No. {$pendaftar->no_pendaftaran}) memerlukan perbaikan.\n\n" .
+                 "Catatan dari tim verifikasi:\n{$request->pesan_revisi}\n\n" .
+                 "Silakan masuk kembali ke portal:\nhttp://spmb.adzkia.ac.id/login\n\nTerima kasih.";
+
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
 
@@ -293,21 +282,19 @@ public function daftarUlangIndex()
     }
 
     // ==========================================
-    // MODUL PENGUMUMAN KELULUSAN
+    // PENGUMUMAN KELULUSAN
     // ==========================================
     public function pengumumanIndex(Request $request)
     {
         $query = DataPendaftar::whereIn('status_pendaftaran', ['Selesai', 'Terverifikasi', 'menunggu verifikasi']);
-        
+
         if ($request->has('search')) {
             $query->where('nama_lengkap', 'like', '%' . $request->search . '%')
                   ->orWhere('no_pendaftaran', 'like', '%' . $request->search . '%');
         }
 
         $pendaftar = $query->orderBy('created_at', 'desc')->paginate(15);
-        
-        // PASTIKAN BARIS INI MEMANGGIL 'admin.pengumuman' 
-        // BUKAN 'admin.pengumuman-kelulusan'
+
         return view('admin.pengumuman', compact('pendaftar'));
     }
 
@@ -321,6 +308,12 @@ public function daftarUlangIndex()
         $pendaftar->status_kelulusan = $request->status_kelulusan;
         $pendaftar->save();
 
+        ActivityLogger::catat(
+            'tetapkan_kelulusan',
+            "Status kelulusan {$pendaftar->nama_lengkap} ({$pendaftar->no_pendaftaran}) ditetapkan: {$request->status_kelulusan}.",
+            ['modul' => 'Pengumuman', 'subjek' => $pendaftar]
+        );
+
         $lulus = in_array($request->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']);
 
         if ($lulus) {
@@ -330,11 +323,9 @@ public function daftarUlangIndex()
 
             $pesan = "Pengumuman Hasil Seleksi SPMB Universitas Adzkia\n\n" .
                      "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
-                     "Berdasarkan hasil seleksi SPMB Universitas Adzkia, Anda dinyatakan LULUS pada program studi:\n" .
-                     "{$prodiLulus}\n\n" .
+                     "Berdasarkan hasil seleksi SPMB Universitas Adzkia, Anda dinyatakan LULUS pada program studi:\n{$prodiLulus}\n\n" .
                      "Silakan masuk ke portal untuk melihat pengumuman resmi dan mengunduh Surat Kelulusan (LoA):\n" .
-                     "http://spmb.adzkia.ac.id/login\n\n" .
-                     "Kami menantikan kehadiran Anda di kampus. Terima kasih.";
+                     "http://spmb.adzkia.ac.id/login\n\nKami menantikan kehadiran Anda di kampus. Terima kasih.";
         } else {
             $pesan = "Pengumuman Hasil Seleksi SPMB Universitas Adzkia\n\n" .
                      "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
@@ -343,7 +334,6 @@ public function daftarUlangIndex()
                      "Anda dipersilakan untuk mencoba kembali pada gelombang pendaftaran berikutnya. Terima kasih.";
         }
 
-        // Panggil fungsi kirimNotifikasiWA internal
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim ke peserta.' : '(Notifikasi WA gagal terkirim).';
 
@@ -353,17 +343,22 @@ public function daftarUlangIndex()
 
     public function updateKelulusan(Request $request, $id)
     {
-        // Validasi disesuaikan dengan 3 opsi baru
         $request->validate([
             'status_kelulusan' => 'required|in:Lulus Pilihan 1,Lulus Pilihan 2,Tidak Lulus'
         ]);
-        
+
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->status_kelulusan = $request->status_kelulusan;
         $pendaftar->save();
-        
+
+        ActivityLogger::catat(
+            'update_kelulusan',
+            "Status kelulusan {$pendaftar->nama_lengkap} diperbarui menjadi: {$request->status_kelulusan}.",
+            ['modul' => 'Pengumuman', 'subjek' => $pendaftar]
+        );
+
         return redirect()->back()->with('success', 'Status kelulusan berhasil diperbarui!');
-    }   
+    }
 
     // ==========================================
     // VALIDASI FORMULIR (VERIFIKATOR BERKAS)
@@ -396,12 +391,16 @@ public function daftarUlangIndex()
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->update(['status_pendaftaran' => 'Selesai']);
 
+        ActivityLogger::catat(
+            'setujui_formulir',
+            "Formulir & berkas pendaftaran {$pendaftar->nama_lengkap} ({$pendaftar->no_pendaftaran}) diverifikasi.",
+            ['modul' => 'Validasi Formulir', 'subjek' => $pendaftar]
+        );
+
         $pesan = "Pemberitahuan Verifikasi Formulir Pendaftaran\n\n" .
                  "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
                  "Formulir dan berkas pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) telah dinyatakan lengkap dan telah diverifikasi oleh tim akademik SPMB Universitas Adzkia.\n\n" .
-                 "Silakan pantau pengumuman hasil seleksi melalui portal berikut:\n" .
-                 "http://spmb.adzkia.ac.id/login\n\n" .
-                 "Terima kasih.";
+                 "Silakan pantau pengumuman hasil seleksi melalui portal berikut:\nhttp://spmb.adzkia.ac.id/login\n\nTerima kasih.";
 
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
@@ -420,14 +419,17 @@ public function daftarUlangIndex()
             'pesan_revisi'       => $request->pesan_revisi,
         ]);
 
+        ActivityLogger::catat(
+            'revisi_formulir',
+            "Formulir {$pendaftar->nama_lengkap} diminta revisi: \"{$request->pesan_revisi}\".",
+            ['modul' => 'Validasi Formulir', 'subjek' => $pendaftar]
+        );
+
         $pesan = "Pemberitahuan Perbaikan Formulir Pendaftaran\n\n" .
                  "Kepada Yth. {$pendaftar->nama_lengkap},\n\n" .
                  "Formulir pendaftaran Anda (No. {$pendaftar->no_pendaftaran}) memerlukan perbaikan sebelum dapat diproses lebih lanjut.\n\n" .
-                 "Catatan dari tim verifikasi:\n" .
-                 "{$request->pesan_revisi}\n\n" .
-                 "Silakan masuk ke portal dan lakukan perbaikan sesuai catatan di atas:\n" .
-                 "http://spmb.adzkia.ac.id/login\n\n" .
-                 "Terima kasih.";
+                 "Catatan dari tim verifikasi:\n{$request->pesan_revisi}\n\n" .
+                 "Silakan masuk ke portal dan lakukan perbaikan sesuai catatan di atas:\nhttp://spmb.adzkia.ac.id/login\n\nTerima kasih.";
 
         $terkirim = $this->kirimNotifikasiWA($pendaftar->no_whatsapp, $pesan);
         $info = $terkirim ? 'Notifikasi WA terkirim.' : '(Notifikasi WA gagal terkirim).';
@@ -437,7 +439,7 @@ public function daftarUlangIndex()
     }
 
     // ==========================================
-    // FUNGSI HELPER WA (Fonnte API Private)
+    // FUNGSI HELPER WA (Fonnte API)
     // ==========================================
     private function kirimNotifikasiWA($nomor, $pesan)
     {
@@ -445,15 +447,10 @@ public function daftarUlangIndex()
         $url   = 'https://api.fonnte.com/send';
 
         try {
-            // Tembak API Fonnte dengan timeout 5 detik dan matikan verify SSL
             $response = \Illuminate\Support\Facades\Http::withoutVerifying()
-                ->timeout(5) 
-                ->withHeaders([
-                    'Authorization' => $token,
-                ])->post($url, [
-                    'target'  => $nomor,
-                    'message' => $pesan,
-                ]);
+                ->timeout(5)
+                ->withHeaders(['Authorization' => $token])
+                ->post($url, ['target' => $nomor, 'message' => $pesan]);
 
             if ($response->failed()) {
                 \Illuminate\Support\Facades\Log::warning('Fonnte gagal mengirim WA Admin', [
@@ -462,11 +459,8 @@ public function daftarUlangIndex()
                 ]);
                 return false;
             }
-            
             return true;
-
         } catch (\Throwable $e) {
-            // Jika Fonnte Mati / Timeout, error ditangkap diam-diam di sini!
             \Illuminate\Support\Facades\Log::error('Fonnte Error di Admin: ' . $e->getMessage());
             return false;
         }

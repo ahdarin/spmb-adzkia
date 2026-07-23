@@ -3,72 +3,86 @@
 namespace App\Http\Controllers;
 
 use App\Models\Prodi;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 
 class AdminProgramStudiController extends Controller
 {
-    /**
-     * Menampilkan daftar program studi
-     */
     public function index()
     {
-        // Ambil semua data prodi dari database
-        $data = Prodi::all();
-        
-        // Kirim data ke view resources/views/admin/prodi.blade.php
+        $data = Prodi::orderBy('nama')->get();
         return view('admin.prodi', compact('data'));
     }
 
-    /**
-     * Menyimpan prodi baru ke database
-     */
     public function store(Request $request)
     {
-        // Validasi input
-        $validated = $request->validate([
+        $request->validate([
             'nama'       => 'required|string|max:255',
-            'jenjang'    => 'required',
-            'akreditasi' => 'required',
-            'kuota'      => 'required|integer',
-            'biaya'      => 'required|numeric',
-            'deskripsi'  => 'nullable|string',
+            'jenjang'    => 'required|string',
+            'akreditasi' => 'required|string|max:100',
+            'kuota'      => 'required|integer|min:0',
+            'icon'       => 'nullable|string|max:50',
         ]);
 
-        Prodi::create($validated);
+        $prodi = Prodi::create([
+            'nama'       => $request->nama,
+            'jenjang'    => $request->jenjang,
+            'akreditasi' => $request->akreditasi,
+            'kuota'      => $request->kuota,
+            'icon'       => $request->icon ?? 'book-open',
+            'biaya'      => 0, // field masih ada di DB, isi 0 agar tidak error
+        ]);
 
-        return redirect()->back()->with('success', 'Program Studi berhasil ditambahkan!');
+        ActivityLogger::catat(
+            'tambah_prodi',
+            "Program studi \"{$prodi->nama}\" ({$prodi->jenjang}) ditambahkan.",
+            ['modul' => 'Master Prodi', 'subjek' => $prodi]
+        );
+
+        return back()->with('success', "Program studi \"{$prodi->nama}\" berhasil ditambahkan!");
     }
 
-    /**
-     * Mengupdate data prodi yang sudah ada
-     */
     public function update(Request $request, $id)
     {
         $prodi = Prodi::findOrFail($id);
 
-        // Validasi input
-        $validated = $request->validate([
+        $request->validate([
             'nama'       => 'required|string|max:255',
-            'jenjang'    => 'required',
-            'akreditasi' => 'required',
-            'kuota'      => 'required|integer',
-            'biaya'      => 'required|numeric',
+            'jenjang'    => 'required|string',
+            'akreditasi' => 'required|string|max:100',
+            'kuota'      => 'required|integer|min:0',
+            'icon'       => 'nullable|string|max:50',
         ]);
 
-        // Update data
-        $prodi->update($validated);
+        $prodi->nama       = $request->nama;
+        $prodi->jenjang    = $request->jenjang;
+        $prodi->akreditasi = $request->akreditasi;
+        $prodi->kuota      = $request->kuota;
+        $prodi->icon       = $request->icon ?? $prodi->icon;
+        $prodi->save();
 
-        return redirect()->back()->with('success', 'Program Studi berhasil diperbarui!');
+        ActivityLogger::catat(
+            'edit_prodi',
+            "Program studi \"{$prodi->nama}\" ({$prodi->jenjang}) diperbarui.",
+            ['modul' => 'Master Prodi', 'subjek' => $prodi]
+        );
+
+        return redirect('/admin/prodi')->with('success', "Program studi \"{$prodi->nama}\" berhasil diperbarui!");
     }
 
-    /**
-     * Menghapus data prodi
-     */
     public function destroy($id)
     {
         $prodi = Prodi::findOrFail($id);
+        $nama  = $prodi->nama;
+
+        ActivityLogger::catat(
+            'hapus_prodi',
+            "Program studi \"{$nama}\" (ID #{$prodi->id}) dihapus.",
+            ['modul' => 'Master Prodi']
+        );
+
         $prodi->delete();
 
-        return redirect()->back()->with('success', 'Program Studi berhasil dihapus!');
+        return redirect('/admin/prodi')->with('success', "Program studi \"{$nama}\" berhasil dihapus!");
     }
 }

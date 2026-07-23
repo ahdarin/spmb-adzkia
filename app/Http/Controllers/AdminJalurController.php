@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jalur;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 
 class AdminJalurController extends Controller
@@ -49,7 +50,14 @@ class AdminJalurController extends Controller
         $data = $request->except('dokumen_syarat');
         $data['dokumen_syarat'] = $request->input('dokumen_syarat', []);
 
-        Jalur::create($data);
+        $jalur = Jalur::create($data);
+
+        // ── Log Aktivitas ────────────────────────────────────────────
+        ActivityLogger::catat(
+            'tambah_jalur',
+            "Jalur pendaftaran \"{$jalur->nama_jalur}\" (kode: {$jalur->kode_nim}, tipe: {$jalur->tipe_jalur}) ditambahkan.",
+            ['modul' => 'Master Jalur', 'subjek' => $jalur]
+        );
 
         return back()->with('success', 'Jalur "' . $request->nama_jalur . '" berhasil ditambahkan!');
     }
@@ -76,6 +84,13 @@ class AdminJalurController extends Controller
 
         $jalur->update($data);
 
+        // ── Log Aktivitas ────────────────────────────────────────────
+        ActivityLogger::catat(
+            'edit_jalur',
+            "Jalur pendaftaran \"{$jalur->nama_jalur}\" (ID #{$jalur->id}) diperbarui.",
+            ['modul' => 'Master Jalur', 'subjek' => $jalur]
+        );
+
         return back()->with('success', 'Jalur "' . $request->nama_jalur . '" berhasil diperbarui!');
     }
 
@@ -83,13 +98,20 @@ class AdminJalurController extends Controller
     {
         $jalur = Jalur::findOrFail($id);
 
-        // Cek apakah jalur masih dipakai di data pendaftar atau biaya
         $terpakai = $jalur->dataPendaftar()->exists() || $jalur->biayaDaftarUlang()->exists();
         if ($terpakai) {
             return back()->with('error', 'Jalur "' . $jalur->nama_jalur . '" tidak bisa dihapus karena masih digunakan oleh data pendaftar atau biaya.');
         }
 
         $nama = $jalur->nama_jalur;
+
+        // ── Log Aktivitas (sebelum hapus) ────────────────────────────
+        ActivityLogger::catat(
+            'hapus_jalur',
+            "Jalur pendaftaran \"{$nama}\" (ID #{$jalur->id}) dihapus.",
+            ['modul' => 'Master Jalur', 'subjek_type' => \App\Models\Jalur::class, 'subjek_id' => $jalur->id]
+        );
+
         $jalur->delete();
 
         return back()->with('success', 'Jalur "' . $nama . '" berhasil dihapus!');

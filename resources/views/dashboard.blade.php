@@ -6,6 +6,31 @@
 @php
     $globalSetting  = \App\Models\Setting::firstOrCreate(['id' => 1]);
     $gelombangAktif = \App\Models\Gelombang::where('is_active', true)->latest()->first();
+    $semuaGelombang = \App\Models\Gelombang::orderBy('tanggal_mulai')->get();
+    $jalurs         = \App\Models\Jalur::where('is_active', true)->orderBy('nama_jalur')->get();
+
+    // Jalur "Reguler" diidentifikasi lewat kode_nim = REG (konvensi yang sudah
+    // dipakai di Master Data > Jalur Pendaftaran). Sisanya masuk kelompok
+    // "Khusus" (beasiswa, RPL, dsb) yang ditampilkan di dropdown pencarian.
+    $jalurReguler = $jalurs->firstWhere('kode_nim', 'REG') ?? $jalurs->firstWhere('is_free_registration', false);
+    $jalursKhusus = $jalurs->reject(fn ($j) => $jalurReguler && $j->id === $jalurReguler->id)->values();
+
+    $khususPathsJs = $jalursKhusus->map(function ($j) {
+        $dokumenSyarat = is_array($j->dokumen_syarat) ? $j->dokumen_syarat : (json_decode($j->dokumen_syarat, true) ?? []);
+        $ket = $j->has_exam ? 'Melalui proses ujian seleksi.' : 'Tanpa ujian seleksi, penilaian berdasarkan berkas.';
+        if (count($dokumenSyarat)) {
+            $ket .= ' Membutuhkan ' . count($dokumenSyarat) . ' dokumen persyaratan.';
+        }
+        if (!$j->is_free_registration) {
+            $ket .= ' Dikenakan biaya pendaftaran.';
+        }
+        return [
+            'id'   => $j->id,
+            'name' => $j->nama_jalur,
+            'desc' => $ket,
+        ];
+    })->values();
+
     $videoId        = $globalSetting->video_profil ?? null;
     $thumbnail      = $videoId
                       ? "https://i.ytimg.com/vi/{$videoId}/maxresdefault.jpg"
@@ -278,24 +303,147 @@
 
 
 {{-- ============================================================
-     SECTION 7: JALUR PENDAFTARAN (6 Keunggulan)
+     SECTION 7: PILIH JALUR PENDAFTARAN (Reguler & Khusus)
+     Data diambil dari $jalurReguler & $khususPathsJs (lihat @php di atas),
+     bukan lagi hardcoded — mengikuti Master Data > Jalur Pendaftaran.
      ============================================================ --}}
-<section id="jalur-pendaftaran" class="px-4 sm:px-6 lg:px-16 py-10 sm:py-16 lg:py-24 bg-white">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 lg:gap-x-12 gap-y-8 sm:gap-y-10 lg:gap-y-16 max-w-6xl mx-auto">
-        @foreach([
-            ['num'=>1,'title'=>'Tahun Akademik','desc'=>'Penerapan kurikulum berbasis industri dan berstandar internasional untuk mencetak lulusan siap kerja.'],
-            ['num'=>2,'title'=>'Dosen Profesional','desc'=>'Didampingi oleh tenaga pendidik berpengalaman dari kalangan praktisi dan akademisi unggul.'],
-            ['num'=>3,'title'=>'Fasilitas Modern','desc'=>'Infrastruktur dan laboratorium mutakhir yang mendukung riset serta inovasi mahasiswa.'],
-            ['num'=>4,'title'=>'Lulusan Berkualitas','desc'=>'Jaringan alumni yang kuat dan tersebar di berbagai instansi pemerintahan dan perusahaan swasta.'],
-            ['num'=>5,'title'=>'Program Beasiswa','desc'=>'Berbagai macam jalur beasiswa yang tersedia untuk mendukung mahasiswa berprestasi.'],
-            ['num'=>6,'title'=>'Lingkungan Kampus Asri','desc'=>'Suasana kampus yang hijau, bersih, dan aman memberikan kenyamanan optimal saat belajar.'],
-        ] as $item)
-        <div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-adzkia-badge-bg text-adzkia-blue rounded-full flex items-center justify-center font-extrabold text-base sm:text-lg mb-4 sm:mb-5">{{ $item['num'] }}</div>
-            <h3 class="text-base sm:text-lg font-extrabold text-adzkia-blue mb-2">{{ $item['title'] }}</h3>
-            <p class="text-gray-500 text-[13px] sm:text-[14px] font-medium leading-relaxed">{{ $item['desc'] }}</p>
+<section class="px-4 sm:px-6 lg:px-16 py-10 sm:py-14 lg:py-20 bg-adzkia-bg relative z-30">
+    <div x-data='{
+            mode: "reguler",
+            dropdownOpen: false,
+            selectedPath: null,
+            selectedPathDesc: "",
+            selectedPathId: null,
+            searchQuery: "",
+            khususPaths: @json($khususPathsJs, JSON_HEX_APOS),
+            get filteredPaths() {
+                if (this.searchQuery === "") return this.khususPaths;
+                const query = this.searchQuery.toLowerCase();
+                return this.khususPaths.filter(p => p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+            }
+        }'
+        class="bg-adzkia-blue rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-7 lg:p-10 shadow-2xl relative">
+
+        <h2 class="text-lg sm:text-xl lg:text-2xl font-extrabold mb-4 sm:mb-6 text-white tracking-tight">Pilih Jalur Pendaftaranmu</h2>
+
+        {{-- Tab Toggle --}}
+        <div class="flex p-1 bg-white/10 backdrop-blur rounded-lg sm:rounded-xl w-fit mb-5 sm:mb-8 relative z-20">
+            <button @click="mode = 'reguler'; dropdownOpen = false" :class="mode === 'reguler' ? 'bg-white text-adzkia-blue shadow-lg' : 'text-white hover:bg-white/10'" class="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-md sm:rounded-lg transition-all">
+                REGULER
+            </button>
+            <button @click="mode = 'khusus'" :class="mode === 'khusus' ? 'bg-white text-adzkia-blue shadow-lg' : 'text-white hover:bg-white/10'" class="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-md sm:rounded-lg transition-all">
+                KHUSUS
+            </button>
         </div>
-        @endforeach
+
+        <div class="relative md:min-h-[260px]">
+
+            {{-- Panel REGULER --}}
+            <div x-show="mode === 'reguler'"
+                 x-transition:enter="transition ease-out duration-300 delay-100"
+                 x-transition:enter-start="opacity-0 translate-y-4"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-4"
+                 class="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center text-white md:absolute w-full md:top-0 md:left-0">
+
+                <div class="space-y-4 sm:space-y-6">
+                    <h3 class="text-base sm:text-lg font-extrabold">{{ $jalurReguler->nama_jalur ?? 'Jalur Mandiri Reguler' }}</h3>
+                    <p class="text-blue-100 leading-relaxed font-medium text-[13px] sm:text-sm">
+                        @if($jalurReguler)
+                            {{ $jalurReguler->has_exam ? 'Terbuka untuk lulusan SMA/SMK sederajat melalui seleksi berbasis komputer.' : 'Terbuka untuk lulusan SMA/SMK sederajat tanpa ujian seleksi, cukup lengkapi berkas.' }}
+                            Pendaftaran sepenuhnya dilakukan secara daring.
+                            {{ $jalurReguler->is_free_registration ? 'Pendaftaran jalur ini tidak dipungut biaya.' : '' }}
+                        @else
+                            Belum ada jalur reguler yang aktif saat ini. Silakan hubungi admisi untuk informasi lebih lanjut.
+                        @endif
+                    </p>
+                    <a href="/register" class="inline-block px-6 sm:px-8 py-2.5 sm:py-3 bg-adzkia-red text-white font-extrabold rounded-xl hover:bg-red-700 hover:scale-105 active:scale-95 transition-all shadow-xl text-xs sm:text-sm">Daftar Sekarang</a>
+                </div>
+
+                <div class="bg-white/10 p-4 sm:p-5 rounded-xl border border-white/20">
+                    <p class="text-xs font-bold uppercase tracking-widest text-blue-200 mb-3 sm:mb-4">Gelombang Pendaftaran</p>
+                    <div class="space-y-3 font-medium text-sm sm:text-base">
+                        @forelse($semuaGelombang as $i => $gel)
+                        <div class="flex justify-between items-center {{ !$loop->last ? 'border-b border-white/10 pb-3' : '' }}">
+                            <span class="flex items-center gap-2">
+                                {{ $gel->nama_gelombang }}
+                                @if($gel->is_active)
+                                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                                @endif
+                            </span>
+                            <span class="font-bold text-white bg-white/20 px-3 py-1 rounded-md text-xs">
+                                {{ \Carbon\Carbon::parse($gel->tanggal_mulai)->translatedFormat('d M') }} - {{ \Carbon\Carbon::parse($gel->tanggal_selesai)->translatedFormat('d M Y') }}
+                            </span>
+                        </div>
+                        @empty
+                        <p class="text-blue-200 text-[13px] italic">Belum ada jadwal gelombang yang diatur.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            {{-- Panel KHUSUS --}}
+            <div x-show="mode === 'khusus'"
+                 x-transition:enter="transition ease-out duration-300 delay-100"
+                 x-transition:enter-start="opacity-0 translate-y-4"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-4"
+                 class="md:absolute w-full md:top-0 md:left-0" style="display: none;">
+
+                <div class="grid md:grid-cols-2 gap-5 sm:gap-8 md:gap-12 items-start">
+                    <div class="space-y-4 relative z-50">
+                        <label class="block text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-200">Cari & Pilih Program Khusus</label>
+                        <div class="relative">
+                            <button @click="dropdownOpen = !dropdownOpen" @click.outside="dropdownOpen = false" class="w-full bg-white text-adzkia-blue py-2.5 sm:py-3 px-4 sm:px-5 rounded-lg sm:rounded-xl flex justify-between items-center text-left shadow-xl text-sm">
+                                <span class="font-bold text-sm sm:text-base" x-text="selectedPath ? selectedPath : 'Pilih jalur pendaftaran...'"></span>
+                                <i data-feather="chevron-down" class="transition-transform shrink-0 ml-2" :class="dropdownOpen ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            <div x-show="dropdownOpen"
+                                 x-transition.opacity.duration.200ms
+                                 style="display: none;"
+                                 class="absolute top-full left-0 right-0 mt-3 bg-white text-adzkia-blue rounded-xl sm:rounded-2xl shadow-2xl border border-gray-100 max-h-[260px] overflow-y-auto z-[60] custom-scrollbar">
+
+                                <div class="p-3 sm:p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+                                    <div class="relative">
+                                        <i data-feather="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                                        <input x-model="searchQuery" type="text" placeholder="Cari jalur..." class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-adzkia-badge-bg text-sm outline-none font-medium">
+                                    </div>
+                                </div>
+
+                                <div class="pb-2">
+                                    <template x-for="path in filteredPaths" :key="path.id">
+                                        <button @click="selectedPath = path.name; selectedPathDesc = path.desc; selectedPathId = path.id; dropdownOpen = false" class="w-full text-left px-5 py-3 hover:bg-adzkia-badge-bg transition-colors flex flex-col group/btn">
+                                            <span class="font-bold text-[14px] text-adzkia-blue group-hover/btn:text-adzkia-red transition-colors" x-text="path.name"></span>
+                                            <span class="text-[12px] text-gray-500 line-clamp-1 mt-0.5 font-medium" x-text="path.desc"></span>
+                                        </button>
+                                    </template>
+                                    <div x-show="filteredPaths.length === 0" class="p-6 text-center text-sm text-gray-400 font-medium">
+                                        Jalur tidak ditemukan.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 sm:space-y-6 relative z-10">
+                        <div class="bg-white/10 p-4 sm:p-5 rounded-xl min-h-[80px] sm:min-h-[100px] border border-white/20 flex flex-col justify-center transition-all duration-300">
+                            <p class="text-white leading-relaxed font-medium text-[12px] sm:text-sm" :class="!selectedPath ? 'italic text-center text-blue-200' : 'text-left'" x-text="selectedPathDesc ? selectedPathDesc : 'Silakan pilih jalur di atas untuk melihat detail persyaratan.'"></p>
+                        </div>
+                        <a :href="selectedPathId ? '/register?jalur=' + selectedPathId : '#'"
+                           @click="if (!selectedPathId) $event.preventDefault()"
+                           class="block text-center w-full py-2.5 sm:py-3 bg-adzkia-red text-white font-extrabold rounded-xl shadow-xl hover:bg-red-700 hover:scale-105 active:scale-95 transition-all text-xs sm:text-sm"
+                           :class="!selectedPathId ? 'opacity-50 pointer-events-none' : ''">
+                            Daftar Program Khusus
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
