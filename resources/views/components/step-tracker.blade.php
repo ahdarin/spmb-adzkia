@@ -1,15 +1,3 @@
-{{--
-    ✅ FIX M5: Tambah `sticky` dan `top-[var(--navbar-h)]` pada wrapper.
-    
-    Sebelumnya: class="w-full bg-white py-4 sm:py-6 border-b border-gray-100 z-20"
-    z-20 ada tapi TIDAK ADA positioning → sticky tidak aktif.
-    
-    Sesudah:
-    - `sticky top-[64px]` → menempel tepat di bawah navbar (navbar height = 64px)
-      Gunakan CSS variable --navbar-h jika tinggi navbar dinamis.
-    - `z-20` tetap ada agar tidak tertutup konten halaman.
-    - `shadow-sm` ditambah agar ada visual separator saat sticky aktif.
---}}
 @props(['currentStep' => 1])
 
 @php
@@ -22,11 +10,9 @@
     ];
 @endphp
 
-<div class="w-full bg-white py-4 sm:py-6 border-b border-gray-100 sticky top-[64px] z-20 shadow-sm">
+<div class="w-full bg-white py-4 sm:py-6 border-b border-gray-100 z-20">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         <div class="flex items-center justify-between relative">
-
-            {{-- Garis penghubung antar step --}}
             <div class="absolute top-[18px] sm:top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
 
             @foreach($steps as $id => $title)
@@ -51,7 +37,6 @@
                     </span>
                 </div>
             @endforeach
-
         </div>
     </div>
 </div>
