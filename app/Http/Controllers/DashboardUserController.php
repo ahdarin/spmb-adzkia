@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DataPendaftar;
 use App\Models\Prodi;
 use App\Models\Jalur;
+use App\Models\Sekolah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -88,12 +89,26 @@ class DashboardUserController extends Controller
             'kota_kabupaten'    => 'required|string',
             'alamat_rumah'      => 'required|string',
             'sekolah_asal'      => 'required|string|max:255',
+            'npsn_sekolah'      => 'nullable|digits_between:8,10',
             'jurusan_sma'       => 'nullable|string|max:100',
             'tahun_lulus'       => 'nullable|digits:4',
             'nilai_akhir'       => 'required|numeric|min:0|max:100',
             'pilihan_jurusan_1' => 'required|string',
             'pilihan_jurusan_2' => 'required|string|different:pilihan_jurusan_1',
+        ], [
+            'npsn_sekolah.digits_between' => 'NPSN harus 8-10 digit angka.',
         ]);
+
+        // ── Resolusi data master Sekolah dari NPSN (sebelum transaksi upload
+        //    file dimulai, supaya kalau NPSN bentrok kita gagal cepat tanpa
+        //    sempat memindahkan file apa pun). ─────────────────────────────
+        $resolved = $this->resolveSekolah($request);
+        if ($resolved['error']) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['npsn_sekolah' => $resolved['error']]);
+        }
+        $sekolahId = $resolved['sekolah_id'];
 
         $jalur = Jalur::findOrFail($request->jalur_id);
 
@@ -149,6 +164,8 @@ class DashboardUserController extends Controller
                 'kota_kabupaten'    => $request->kota_kabupaten,
                 'alamat_rumah'      => $request->alamat_rumah,
                 'sekolah_asal'      => $request->sekolah_asal,
+                'sekolah_id'        => $sekolahId,
+                'npsn_sekolah'      => $request->npsn_sekolah,
                 'jurusan_sma'       => $request->jurusan_sma,
                 'tahun_lulus'       => $request->tahun_lulus,
                 'nilai_akhir'       => $request->nilai_akhir,
@@ -179,6 +196,71 @@ class DashboardUserController extends Controller
                 ->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi.')
                 ->withInput();
         }
+    }
+
+    // ==========================================================
+    // HELPER: Resolusi data master Sekolah dari input NPSN + nama sekolah
+    // ==========================================================
+    /**
+     * Mencari atau membuat data master Sekolah berdasarkan NPSN yang diisi
+     * mahasiswa di form pendaftaran.
+     *
+     * - NPSN kosong          -> tidak masalah, sekolah_id null (admin lengkapi manual).
+     * - NPSN baru            -> otomatis dibuat sebagai data master baru.
+     * - NPSN sudah ada & nama cocok (mirip)   -> dipakai (link ke record itu).
+     * - NPSN sudah ada TAPI nama beda jauh    -> ditolak (indikasi typo NPSN,
+     *   supaya tidak ada 2 sekolah berbeda numpang di 1 NPSN yang sama).
+     *
+     * @return array{sekolah_id: int|null, error: string|null}
+     */
+    private function resolveSekolah(Request $request, string $namaField = 'sekolah_asal', string $npsnField = 'npsn_sekolah'): array
+    {
+        if (!$request->filled($npsnField)) {
+            return ['sekolah_id' => null, 'error' => null];
+        }
+
+        $npsn      = trim($request->input($npsnField));
+        $namaInput = trim($request->input($namaField, ''));
+
+        $existing = Sekolah::where('npsn', $npsn)->first();
+
+        if ($existing) {
+            // Bandingkan nama secara longgar (case-insensitive, toleran typo kecil)
+            similar_text(
+                $this->normalisasiNamaSekolah($existing->nama_sekolah),
+                $this->normalisasiNamaSekolah($namaInput),
+                $persen
+            );
+
+            if ($persen < 45) {
+                return [
+                    'sekolah_id' => null,
+                    'error' => "NPSN {$npsn} sudah terdaftar atas nama \"{$existing->nama_sekolah}\" di database, "
+                             . "tapi nama sekolah yang Anda isi (\"{$namaInput}\") terlihat berbeda. "
+                             . "Mohon periksa kembali NPSN sekolah Anda — kemungkinan salah ketik.",
+                ];
+            }
+
+            return ['sekolah_id' => $existing->id, 'error' => null];
+        }
+
+        $baru = Sekolah::create([
+            'npsn'         => $npsn,
+            'nama_sekolah' => $namaInput,
+            'kota'         => $request->input('kota_kabupaten'),
+            'provinsi'     => $request->input('provinsi'),
+        ]);
+
+        return ['sekolah_id' => $baru->id, 'error' => null];
+    }
+
+    /** Normalisasi nama sekolah supaya perbandingan "mirip" lebih adil. */
+    private function normalisasiNamaSekolah(string $nama): string
+    {
+        $nama = strtolower($nama);
+        $nama = str_replace(['negeri', 'swasta', '.', ','], '', $nama);
+        $nama = preg_replace('/\s+/', ' ', $nama);
+        return trim($nama);
     }
 
     // ==========================================================
@@ -257,8 +339,6 @@ class DashboardUserController extends Controller
         $jalurs = Jalur::where('is_active', true)->orderBy('nama_jalur')->get();
 
         // ── Auto-resolve jalur_id dari string jalur_pendaftaran ──────────────
-        // Saat registrasi awal, user memilih jalur via string (misal "Reguler").
-        // Jika jalur_id belum tersimpan di DB, coba cocokkan dari nama_jalur.
         if (empty($pendaftar->jalur_id) && !empty($pendaftar->jalur_pendaftaran)) {
             $namaJalurBersih = trim(explode(' - ', $pendaftar->jalur_pendaftaran)[0]);
 
@@ -268,12 +348,10 @@ class DashboardUserController extends Controller
             });
 
             if ($jalurMatch) {
-                // Simpan ke DB hanya jika kolom jalur_id sudah ada
                 if (Schema::hasColumn('data_pendaftars', 'jalur_id')) {
                     $pendaftar->jalur_id = $jalurMatch->id;
                     $pendaftar->saveQuietly();
                 } else {
-                    // Kolom belum ada — inject ke object saja agar view bisa baca
                     $pendaftar->setAttribute('jalur_id', $jalurMatch->id);
                 }
             }
@@ -312,10 +390,22 @@ class DashboardUserController extends Controller
             'agama'           => 'required|string|max:50',
             'no_whatsapp'     => 'required|string|max:20',
             'sekolah_asal'    => 'required|string|max:255',
+            'npsn_sekolah'    => 'nullable|digits_between:8,10',
             'jurusan_sma'     => 'nullable|string|max:255',
             'tahun_lulus'     => 'required|digits:4|integer',
             'alamat_rumah'    => 'required|string',
+        ], [
+            'npsn_sekolah.digits_between' => 'NPSN harus 8-10 digit angka.',
         ]);
+
+        $resolved = $this->resolveSekolah($request);
+        if ($resolved['error']) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['npsn_sekolah' => $resolved['error']]);
+        }
+
+        $validated['sekolah_id'] = $resolved['sekolah_id'];
 
         $pendaftar->update($validated);
 
@@ -350,27 +440,28 @@ class DashboardUserController extends Controller
             'agama'           => 'required|string|max:50',
             'no_whatsapp'     => 'required|string|max:20',
             'sekolah_asal'    => 'required|string|max:255',
+            'npsn_sekolah'    => 'nullable|digits_between:8,10',
             'jurusan_sma'     => 'nullable|string|max:255',
             'tahun_lulus'     => 'required|digits:4|integer',
             'alamat_rumah'    => 'required|string',
+        ], [
+            'npsn_sekolah.digits_between' => 'NPSN harus 8-10 digit angka.',
         ]);
+
+        $resolved = $this->resolveSekolah($request);
+        if ($resolved['error']) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['npsn_sekolah' => $resolved['error']]);
+        }
+
+        $validated['sekolah_id'] = $resolved['sekolah_id'];
 
         $pendaftar->update($validated);
 
         return redirect()->route('konfirmasi-data', $pendaftar->id)
             ->with('success', 'Biodata berhasil diperbarui!');
     }
-
-    // ==========================================================
-    // 6. VALIDASI USER (halaman status pembayaran user) UNUSED
-    // ==========================================================
-    // public function validasiUser()
-    // {
-    //     $pendaftar = DataPendaftar::find(session('pendaftar_id'));
-    //     if (!$pendaftar) return redirect('/login')->with('error', 'Sesi Anda telah habis.');
-
-    //     return view('user.validasi-pembayaran', compact('pendaftar'));
-    // }
 
     // ==========================================================
     // 7. KONFIRMASI DATA

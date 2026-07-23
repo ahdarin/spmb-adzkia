@@ -25,6 +25,21 @@
             }
         }
     </script>
+    <style>
+        /* Mobile: wrapper kolom "dibuka" (contents) supaya anaknya ikut urutan flex-col utama */
+        .col-wrapper { display: contents; }
+
+        @media (min-width: 1024px) {
+            /* Desktop: wrapper jadi kolom flex sungguhan, susunan asli 2 kolom kembali */
+            .col-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 2rem; /* samain dengan gap-8 */
+            }
+            .col-kiri { width: 66.6667%; } /* setara col-span-8 dari 12 */
+            .col-kanan { width: 33.3333%; } /* setara col-span-4 dari 12 */
+        }
+    </style>
 </head>
 <body class="bg-adzkia-bg antialiased text-adzkia-dark min-h-screen flex flex-col">
 
@@ -52,14 +67,13 @@
     </nav>
 
     {{-- MAIN CONTENT --}}
-    {{-- Ubah: grid 12-col diganti gap lebih kecil di mobile, padding berkurang --}}
-    <main class="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 lg:py-12 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-        
-        {{-- KOLOM KIRI (konten utama) --}}
-        {{-- Ubah: di mobile full width, di lg jadi 8 kolom --}}
-        <div class="lg:col-span-8 space-y-5 sm:space-y-8">
-            
-            {{-- BLOK STATUS UTAMA --}}
+    <main class="flex flex-col lg:flex-row flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 lg:py-12 gap-6 lg:gap-8 items-start">
+
+    {{-- WRAPPER KOLOM KIRI: status + berita&faq --}}
+    <div class="col-wrapper col-kiri">
+
+        {{-- 1. BLOK STATUS UTAMA --}}
+        <div class="order-1 w-full space-y-5 sm:space-y-8">
             @if(!empty($pendaftar->nim) && strtolower($pendaftar->status_daftar_ulang ?? '') === 'selesai')
                 {{-- MAHASISWA RESMI: daftar ulang selesai + NIM sudah ada --}}
                 <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl shadow-emerald-500/20 text-white relative overflow-hidden">
@@ -97,17 +111,15 @@
                 </div>
 
             @elseif(in_array($pendaftar->status_kelulusan, ['Lulus Pilihan 1', 'Lulus Pilihan 2']))
-                
+
                 @php
-                    $jurusanDiterima = ($pendaftar->status_kelulusan == 'Lulus Pilihan 1') 
-                                        ? $pendaftar->pilihan_jurusan_1 
+                    $jurusanDiterima = ($pendaftar->status_kelulusan == 'Lulus Pilihan 1')
+                                        ? $pendaftar->pilihan_jurusan_1
                                         : $pendaftar->pilihan_jurusan_2;
                 @endphp
 
-                {{-- Ubah: flex-col di mobile, flex-row di md --}}
                 <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-6 shadow-xl shadow-green-500/20 text-white text-center relative overflow-hidden">
                     <div class="absolute -right-10 -top-10 opacity-10"><i data-feather="award" class="w-36 sm:w-48 h-36 sm:h-48"></i></div>
-                    {{-- Ubah: ikon dan teks rata tengah di mobile --}}
                     <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start sm:text-left relative z-10">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white text-green-600 flex items-center justify-center shrink-0 shadow-lg">
                             <i data-feather="check-circle" class="w-7 h-7 sm:w-8 sm:h-8"></i>
@@ -118,7 +130,6 @@
                             <p class="text-[12px] sm:text-[13px] font-medium text-green-50 leading-relaxed mb-4 sm:mb-5">
                                 Selamat datang di kampus Universitas Adzkia! Berdasarkan hasil seleksi, Anda dinyatakan lulus dan diterima di program studi <strong class="text-white bg-green-700/50 px-2 py-0.5 rounded">{{ $jurusanDiterima }}</strong> ({{ str_replace('Lulus ', '', $pendaftar->status_kelulusan) }}).
                             </p>
-                            {{-- Tombol aksi --}}
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <a href="{{ route('cetak.loa') }}" target="_blank"
                                    class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white text-green-600 hover:bg-gray-50 font-black text-[13px] rounded-xl transition-all shadow-md w-full sm:w-auto active:scale-[0.98]">
@@ -255,75 +266,75 @@
                     </div>
                 </div>
             @endif
+        </div>
 
-            {{-- SECTION BERITA DAN FAQ --}}
-            {{-- Ubah: 2 kolom di md, 1 kolom di mobile --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-8">
-                
-                {{-- BERITA TERKINI --}}
-                <div class="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border border-gray-100 shadow-sm flex flex-col">
-                    <div class="flex items-center justify-between mb-4 sm:mb-5">
-                        <h3 class="text-sm sm:text-md font-black text-adzkia-dark">Berita Terkini</h3>
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col gap-3 sm:gap-4">
-                        @if(isset($berita) && count($berita) > 0)
-                            @foreach($berita as $b)
-                            <a href="#" class="flex gap-3 sm:gap-4 group">
-                                {{-- Ubah: gambar sedikit lebih kecil di mobile --}}
-                                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                                    <img src="{{ $b->thumbnail ? asset('uploads/berita/' . $b->thumbnail) : asset('images/default-news.jpg') }}" alt="{{ $b->judul }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                                </div>
-                                <div class="flex flex-col justify-center min-w-0">
-                                    <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">{{ \Carbon\Carbon::parse($b->created_at)->format('d M Y') }}</p>
-                                    <h4 class="text-[12px] sm:text-[13px] font-black text-adzkia-dark group-hover:text-adzkia-blue transition-colors line-clamp-2 leading-snug">{{ $b->judul }}</h4>
-                                </div>
-                            </a>
-                            @endforeach
-                        @else
-                            <div class="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6 border-2 border-dashed border-gray-100 rounded-2xl">
-                                <i data-feather="inbox" class="w-6 h-6 text-gray-300 mb-2"></i>
-                                <p class="text-[11px] font-bold text-gray-400">Belum ada informasi terbaru saat ini.</p>
-                            </div>
-                        @endif
-                    </div>
+        {{-- 3. BERITA & FAQ --}}
+        <div class="order-3 w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+
+            {{-- BERITA TERKINI --}}
+            <div class="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border border-gray-100 shadow-sm flex flex-col">
+                <div class="flex items-center justify-between mb-4 sm:mb-5">
+                    <h3 class="text-sm sm:text-md font-black text-adzkia-dark">Berita Terkini</h3>
                 </div>
 
-                {{-- FAQ --}}
-                <div class="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border border-gray-100 shadow-sm" x-data="{ active: null }">
-                    <h3 class="text-sm sm:text-md font-black text-adzkia-dark mb-4 sm:mb-5">FAQ Bantuan</h3>
-                    
-                    <div class="space-y-2 sm:space-y-3">
-                        @forelse($faqs as $faq)
-                        <div class="border border-gray-100 rounded-xl overflow-hidden">
-                            <button @click="active = active === {{ $faq->id }} ? null : {{ $faq->id }}" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors">
-                                <span class="text-[11px] sm:text-[12px] font-black text-adzkia-dark text-left pr-2">{{ $faq->pertanyaan }}</span>
-                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 transition-transform shrink-0" :class="active === {{ $faq->id }} ? 'rotate-180' : ''"></i>
-                            </button>
-                            <div x-show="active === {{ $faq->id }}" x-collapse x-cloak>
-                                <div class="p-3 sm:p-4 text-[11px] sm:text-[12px] font-medium text-gray-500 leading-relaxed bg-white border-t border-gray-100">
-                                    {{ $faq->jawaban }}
-                                </div>
+                <div class="flex-1 flex flex-col gap-3 sm:gap-4">
+                    @if(isset($berita) && count($berita) > 0)
+                        @foreach($berita as $b)
+                        <a href="#" class="flex gap-3 sm:gap-4 group">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-xl overflow-hidden shrink-0 border border-gray-100">
+                                <img src="{{ $b->thumbnail ? asset('uploads/berita/' . $b->thumbnail) : asset('images/default-news.jpg') }}" alt="{{ $b->judul }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            </div>
+                            <div class="flex flex-col justify-center min-w-0">
+                                <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-widest">{{ \Carbon\Carbon::parse($b->created_at)->format('d M Y') }}</p>
+                                <h4 class="text-[12px] sm:text-[13px] font-black text-adzkia-dark group-hover:text-adzkia-blue transition-colors line-clamp-2 leading-snug">{{ $b->judul }}</h4>
+                            </div>
+                        </a>
+                        @endforeach
+                    @else
+                        <div class="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-6 border-2 border-dashed border-gray-100 rounded-2xl">
+                            <i data-feather="inbox" class="w-6 h-6 text-gray-300 mb-2"></i>
+                            <p class="text-[11px] font-bold text-gray-400">Belum ada informasi terbaru saat ini.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- FAQ --}}
+            <div class="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border border-gray-100 shadow-sm" x-data="{ active: null }">
+                <h3 class="text-sm sm:text-md font-black text-adzkia-dark mb-4 sm:mb-5">FAQ Bantuan</h3>
+
+                <div class="space-y-2 sm:space-y-3">
+                    @forelse($faqs as $faq)
+                    <div class="border border-gray-100 rounded-xl overflow-hidden">
+                        <button @click="active = active === {{ $faq->id }} ? null : {{ $faq->id }}" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <span class="text-[11px] sm:text-[12px] font-black text-adzkia-dark text-left pr-2">{{ $faq->pertanyaan }}</span>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 transition-transform shrink-0" :class="active === {{ $faq->id }} ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="active === {{ $faq->id }}" x-collapse x-cloak>
+                            <div class="p-3 sm:p-4 text-[11px] sm:text-[12px] font-medium text-gray-500 leading-relaxed bg-white border-t border-gray-100">
+                                {{ $faq->jawaban }}
                             </div>
                         </div>
-                        @empty
-                        <div class="text-center py-4 sm:py-6 border-2 border-dashed border-gray-100 rounded-xl">
-                            <p class="text-[11px] font-bold text-gray-400">Belum ada pertanyaan umum yang ditambahkan.</p>
-                        </div>
-                        @endforelse
                     </div>
+                    @empty
+                    <div class="text-center py-4 sm:py-6 border-2 border-dashed border-gray-100 rounded-xl">
+                        <p class="text-[11px] font-bold text-gray-400">Belum ada pertanyaan umum yang ditambahkan.</p>
+                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>
 
-        {{-- KOLOM KANAN (sidebar profil) --}}
-        {{-- Ubah: di mobile muncul di bawah (order-first utk profil), di lg jadi kolom kanan --}}
-        <div class="lg:col-span-4 space-y-4 sm:space-y-6">
+    </div> {{-- /col-kiri --}}
 
-            {{-- KOTAK PROFIL USER --}}
+    {{-- WRAPPER KOLOM KANAN: profil + bantuan --}}
+    <div class="col-wrapper col-kanan">
+
+        {{-- 2. PROFIL --}}
+        <div class="order-2 w-full">
             <div class="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 border border-gray-100 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-20 sm:h-24 bg-gradient-to-b from-blue-50 to-white"></div>
-                
+
                 <div class="text-center pb-4 sm:pb-6 border-b border-gray-50 relative z-10 pt-3 sm:pt-4">
                     @php
                         // Foto: cek pas_foto → berkas_dokumen → avatar inisial
@@ -381,17 +392,14 @@
                     <p class="text-[10px] font-bold text-adzkia-blue mt-2 bg-blue-50 px-3 py-1 rounded-full inline-block">{{ $pendaftar->jalur_pendaftaran ?? 'Jalur Reguler' }}</p>
                 </div>
 
-                {{-- Ubah: grid 2 kolom di mobile agar info lebih ringkas --}}
                 <div class="pt-4 sm:pt-6 grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
                     @if($sudahLulus && $jurusanDiterima)
-                    {{-- Sudah lulus: tampilkan prodi diterima, sembunyikan pilihan 1 & 2 --}}
                     <div class="col-span-2 sm:col-span-1">
                         <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Program Studi Diterima</p>
                         <p class="text-[12px] sm:text-sm font-black text-emerald-700 mt-0.5 leading-snug">{{ $jurusanDiterima }}</p>
                         <p class="text-[9px] text-gray-400 mt-0.5">{{ str_replace('Lulus ', '', $pendaftar->status_kelulusan) }}</p>
                     </div>
                     @else
-                    {{-- Belum lulus: tampilkan pilihan jurusan biasa --}}
                     <div>
                         <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Pilihan Jurusan 1</p>
                         <p class="text-[11px] sm:text-xs font-bold text-adzkia-dark mt-0.5 leading-snug">{{ $pendaftar->pilihan_jurusan_1 ?? 'Belum diisi' }}</p>
@@ -411,8 +419,10 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- KARTU BANTUAN --}}
+        {{-- 4. BANTUAN --}}
+        <div class="order-4 w-full">
             <div class="bg-gradient-to-br from-adzkia-blue to-blue-800 text-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 shadow-md relative overflow-hidden group hover:shadow-lg transition-all">
                 <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform"><i data-feather="phone-call" class="w-20 sm:w-24 h-20 sm:h-24 text-white"></i></div>
                 <i data-feather="help-circle" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-200 mb-2 sm:mb-3 relative z-10"></i>
@@ -421,6 +431,8 @@
                 <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $globalSetting->telepon ?? '6281234567890') }}" class="block w-full text-center py-2.5 sm:py-3 bg-white text-adzkia-blue font-black text-[12px] rounded-xl mt-4 sm:mt-5 hover:bg-blue-50 transition-all shadow-sm relative z-10">Hubungi via WhatsApp</a>
             </div>
         </div>
+
+    </div> {{-- /col-kanan --}}
 
     </main>
 

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\DataPendaftar;
+use App\Support\ActivityLogger;
 
 class AuthController extends Controller
 {
@@ -28,6 +29,10 @@ class AuthController extends Controller
                 $request->session()->regenerate();
                 $user = Auth::user();
 
+                ActivityLogger::catat('login', "{$user->name} login sebagai " . ($user->role ?? $user->divisi ?? 'admin'), [
+                    'modul' => 'Autentikasi',
+                ]);
+
                 if ($user->role === 'super_admin') {
                     return redirect()->intended('/admin');
                 } else {
@@ -37,6 +42,13 @@ class AuthController extends Controller
                     return redirect()->intended('/admin');
                 }
             }
+
+            // Percobaan login admin gagal — tetap dicatat untuk keamanan,
+            // TANPA password, hanya email yang dicoba.
+            ActivityLogger::catat('login_gagal', "Percobaan login gagal untuk email {$loginInput}", [
+                'modul'      => 'Autentikasi',
+                'actor_type' => 'system',
+            ]);
         }
 
         // ========================================================
@@ -61,12 +73,14 @@ class AuthController extends Controller
                 'nama_pendaftar' => $pendaftar->nama_lengkap
             ]);
 
+            ActivityLogger::catat('login', "{$pendaftar->nama_lengkap} ({$pendaftar->no_pendaftaran}) login", [
+                'modul'  => 'Autentikasi',
+                'subjek' => $pendaftar,
+            ]);
+
             return redirect()->intended('/dashboard-user');
         }
 
-        // ========================================================
-        // JIKA KEDUANYA GAGAL
-        // ========================================================
         return back()->with('error', 'Login gagal. ID/Email atau password salah.');
     }
 
@@ -74,6 +88,9 @@ public function logout(Request $request)
     {
         // SKENARIO 1: Jika yang klik logout adalah ADMIN
         if (Auth::check()) {
+            $user = Auth::user();
+            ActivityLogger::catat('logout', "{$user->name} logout", ['modul' => 'Autentikasi']);
+
             Auth::logout(); // Matikan akses admin
             
             $request->session()->invalidate();
@@ -84,6 +101,10 @@ public function logout(Request $request)
         }
 
         // SKENARIO 2: Jika yang klik logout adalah PENDAFTAR
+        if (session('pendaftar_id')) {
+            ActivityLogger::catat('logout', session('nama_pendaftar') . ' logout', ['modul' => 'Autentikasi']);
+        }
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

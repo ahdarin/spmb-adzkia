@@ -17,6 +17,7 @@ use App\Http\Controllers\RekomendasiController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\SekolahController;
 use App\Http\Controllers\AdminSekolahController;
+use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Middleware\CheckRole;
 
 // ══════════════════════════════════════════════════════════════════
@@ -216,6 +217,7 @@ Route::middleware([CheckRole::class . ':admin,super_admin'])
         Route::put('/settings/gelombang/{id}',    [AdminSettingController::class, 'updateGelombang']) ->name('settings.gelombang.update');
         Route::delete('/settings/gelombang/{id}', [AdminSettingController::class, 'destroyGelombang'])->name('settings.gelombang.destroy');
 
+        Route::get('/activity-log', [AdminActivityLogController::class, 'index'])->name('activity-log');
         // ── Master Data ─────────────────────────────────────────────
         Route::prefix('master')->name('master.')->group(function () {
 
@@ -240,6 +242,6 @@ Route::middleware([CheckRole::class . ':admin,super_admin'])
 
         });
 
-    }); // /super_admin
+    });
 
-}); // /admin   
+});

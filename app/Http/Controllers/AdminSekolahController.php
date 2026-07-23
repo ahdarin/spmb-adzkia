@@ -23,8 +23,18 @@ class AdminSekolahController extends Controller
     }
 
     /**
-     * Ambil data sekolah dari API PDDikti / Kemdikbud berdasarkan NPSN
-     * Endpoint publik: https://api-sekolah-indonesia.vercel.app/sekolah/{npsn}
+     * Ambil data sekolah dari API publik "api-sekolah-indonesia" berdasarkan NPSN.
+     * Endpoint: https://api-sekolah-indonesia.vercel.app/sekolah/{npsn}
+     *
+     * PENTING: response API ini TIDAK dibungkus key "dataSekolah", dan field
+     * nama sekolah adalah "sekolah" (bukan "nama"/"nama_sekolah").
+     * Contoh field asli: propinsi, kabupaten_kota, npsn, sekolah, bentuk,
+     * status, alamat_jalan.
+     *
+     * API bisa mengembalikan:
+     *  - object tunggal              -> { "npsn": "...", "sekolah": "...", ... }
+     *  - array berisi satu object    -> [ { "npsn": "...", ... } ]
+     *  - array kosong / null         -> tidak ditemukan
      */
     public function cariNpsn(Request $request)
     {
@@ -41,7 +51,7 @@ class AdminSekolahController extends Controller
             ]);
         }
 
-        // Hit API publik Kemdikbud
+        // Hit API publik
         try {
             $url      = "https://api-sekolah-indonesia.vercel.app/sekolah/{$npsn}";
             $response = @file_get_contents($url, false, stream_context_create([
@@ -55,24 +65,32 @@ class AdminSekolahController extends Controller
 
             $data = json_decode($response, true);
 
-            // Format respons API sekolah-indonesia
-            if (isset($data['dataSekolah'])) {
+            // Normalisasi: API kadang mengembalikan array (list), ambil elemen pertama
+            $s = null;
+            if (is_array($data) && isset($data[0]) && is_array($data[0])) {
+                $s = $data[0];
+            } elseif (is_array($data) && isset($data['npsn'])) {
+                $s = $data;
+            } elseif (isset($data['dataSekolah'])) { // jaga-jaga jika versi API lama
                 $s = $data['dataSekolah'];
+            }
+
+            if ($s) {
                 return response()->json([
                     'status' => 'found',
                     'data'   => [
-                        'npsn'         => $s['npsn']         ?? $npsn,
-                        'nama_sekolah' => $s['nama']         ?? $s['nama_sekolah'] ?? '-',
-                        'alamat'       => $s['alamat_jalan'] ?? $s['alamat'] ?? '',
-                        'kota'         => $s['kota']         ?? $s['kabupaten_kota'] ?? '',
-                        'provinsi'     => $s['propinsi']     ?? $s['provinsi'] ?? '',
-                        'bentuk'       => $s['bentuk']       ?? '',
-                        'status'       => $s['status']       ?? '',
+                        'npsn'         => $s['npsn']           ?? $npsn,
+                        'nama_sekolah' => $s['sekolah']         ?? $s['nama'] ?? $s['nama_sekolah'] ?? '-',
+                        'alamat'       => trim($s['alamat_jalan'] ?? $s['alamat'] ?? ''),
+                        'kota'         => trim($s['kabupaten_kota'] ?? $s['kota'] ?? ''),
+                        'provinsi'     => trim($s['propinsi'] ?? ''),
+                        'bentuk'       => $s['bentuk'] ?? '',
+                        'status'       => $s['status'] === 'N' ? 'Negeri' : ($s['status'] === 'S' ? 'Swasta' : ($s['status'] ?? '')),
                     ],
                 ]);
             }
 
-            return response()->json(['status' => 'not_found', 'message' => 'NPSN tidak ditemukan di database PDDikti.'], 404);
+            return response()->json(['status' => 'not_found', 'message' => 'NPSN tidak ditemukan di database sekolah.'], 404);
 
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);

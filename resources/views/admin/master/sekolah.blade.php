@@ -474,7 +474,7 @@ function sekolahPage() {
             this.pesan_npsn   = '';
 
             try {
-                const res  = await fetch(`/admin/master/sekolah/cari-npsn?npsn=${npsn}`, {
+                const res  = await fetch(`{{ route('admin.master.sekolah.cari') }}?npsn=${npsn}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

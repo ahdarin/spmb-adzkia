@@ -143,6 +143,13 @@
             <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Data Pendaftar</span>
         </a>
 
+        <a href="/admin/activity-log"
+           class="nav-item group relative flex items-center gap-3 px-3 py-2.5 font-bold rounded-xl transition-all
+               {{ request()->is('admin/activity-log') ? 'bg-brand-blue-light text-brand-blue' : 'text-brand-gray hover:bg-gray-50 hover:text-brand-dark' }}">
+            <span class="nav-icon flex items-center justify-center shrink-0"><i data-feather="activity" class="w-5 h-5"></i></span>
+            <span class="nav-label text-[13px] whitespace-nowrap">Log Aktivitas</span>
+            <span class="nav-tooltip absolute left-full ml-3 px-2.5 py-1.5 bg-brand-dark text-white text-[11px] font-bold rounded-lg whitespace-nowrap shadow-lg pointer-events-none z-50">Log Aktivitas</span>
+        </a>
         @if($isSuperAdmin || in_array($divisi, ['Keuangan', 'Verifikator Berkas']))
         <p class="nav-category px-3 pt-3.5 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Verifikasi</p>
 
