@@ -6,6 +6,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Portal') - SPMB Adzkia</title>
 
+    {{-- ✅ FIX M1: Baca state sidebar dari localStorage SEBELUM Alpine mount
+         Mencegah flash/kedip konten overlap sidebar saat halaman pertama load --}}
+    <script>
+        (function () {
+            var c = localStorage.getItem('sidebar_collapsed') === 'true';
+            document.documentElement.setAttribute('data-sidebar', c ? 'collapsed' : 'expanded');
+        })();
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -30,35 +39,73 @@
 
     <style>
         [x-cloak] { display: none !important; }
+
         .custom-scrollbar::-webkit-scrollbar       { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
-        html, body                                 { max-width: 100%; overflow-x: hidden; }
-        aside.sidebar-expanded                     { width: 272px; min-width: 272px; }
-        aside.sidebar-collapsed                    { width: 72px; min-width: 72px; }
+
+        /* ✅ FIX C1: HAPUS overflow-x: hidden dari html/body
+           Dulu: html, body { max-width: 100%; overflow-x: hidden; }
+           overflow-x: hidden pada html/body memindahkan scroll root dari
+           viewport ke body → position: sticky TIDAK BEKERJA.
+           Sekarang overflow-x hanya ada di .main-content (aman). */
+        html, body { max-width: 100%; }
+
+        /* ✅ FIX M1: CSS pre-Alpine untuk sidebar margin — cegah flash saat load */
+        [data-sidebar="collapsed"] .main-content { margin-left: 72px; }
+        [data-sidebar="expanded"]  .main-content { margin-left: 272px; }
+        @media (max-width: 1023px) {
+            [data-sidebar="collapsed"] .main-content,
+            [data-sidebar="expanded"]  .main-content { margin-left: 0 !important; }
+        }
+
+        aside.sidebar-expanded  { width: 272px; min-width: 272px; }
+        aside.sidebar-collapsed { width: 72px;  min-width: 72px; }
+
         .sidebar-collapsed .nav-label,
         .sidebar-collapsed .nav-category,
         .sidebar-collapsed .nav-badge,
         .sidebar-collapsed .sidebar-footer-text,
-        .sidebar-collapsed .logo-text              { display: none !important; }
-        .sidebar-collapsed .nav-item               { justify-content: center; gap: 0; padding-left: 0; padding-right: 0; }
-        .sidebar-collapsed .nav-icon               { margin: 0; }
-        .sidebar-collapsed .sidebar-header         { justify-content: center; padding-left: 0; padding-right: 0; }
-        .sidebar-collapsed .logo-wrapper           { justify-content: center; width: 100%; }
-        .nav-icon, .nav-icon svg, .nav-icon i      { width: 20px !important; height: 20px !important; flex-shrink: 0; }
-        .logo-wrapper img                          { flex-shrink: 0; }
-        aside                                      { transition: width 0.25s ease; }
-        .main-content                              { transition: margin-left 0.25s ease; min-width: 0; }
-        main                                       { min-width: 0; max-width: 100%; overflow-x: auto; }
+        .sidebar-collapsed .logo-text     { display: none !important; }
+        .sidebar-collapsed .nav-item      { justify-content: center; gap: 0; padding-left: 0; padding-right: 0; }
+        .sidebar-collapsed .nav-icon      { margin: 0; }
+        .sidebar-collapsed .sidebar-header { justify-content: center; padding-left: 0; padding-right: 0; }
+        .sidebar-collapsed .logo-wrapper  { justify-content: center; width: 100%; }
 
-        /* ── Tooltip sidebar collapsed ── */
+        .nav-icon, .nav-icon svg, .nav-icon i { width: 20px !important; height: 20px !important; flex-shrink: 0; }
+        .logo-wrapper img { flex-shrink: 0; }
+        aside { transition: width 0.25s ease; }
+
+        /* ✅ FIX C1 + C3:
+           C1 → overflow-x: hidden DIPINDAH ke sini (aman, bukan di html/body)
+           C3 → HAPUS min-h-screen dari sini
+                Dulu: min-h-screen di body (flex) + min-h-screen di .main-content
+                = dua elemen bersaing untuk 100vh → layout "terpotong" / split.
+                flex-1 sudah cukup untuk mengisi sisa ruang body. */
+        .main-content { transition: margin-left 0.25s ease; min-width: 0; overflow-x: hidden; }
+
+        /* ✅ FIX C2: HAPUS overflow-x: auto dari <main>
+           Dulu: main { min-width:0; max-width:100%; overflow-x: auto; }
+           overflow-x: auto menjadikan <main> scroll container baru →
+           elemen sticky di dalamnya menempel ke <main>, bukan viewport.
+           Sekarang: scroll horizontal ditangani per-halaman via .table-scroll */
+        main { min-width: 0; }
+
+        /* Helper untuk tabel / konten lebar — pakai di masing-masing halaman:
+           <div class="table-scroll"><table ...></table></div> */
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ✅ FIX M3: Tambah position: relative pada nav agar tidak
+           konflik overflow antara aside (hidden) dan nav (auto).
+           Nav selalu overflow-y-auto; override ke visible hanya saat
+           collapsed supaya tooltip tidak terpotong. */
+        nav.sidebar-nav { position: relative; }
+
         .nav-tooltip { display: none; }
     </style>
 
-    <link rel="stylesheet" href="data:text/css,">
     <script>
-        (function() {
+        (function () {
             var css = [
-                '@media (max-width: 1023px) { .main-content { margin-left: 0 !important; } }',
                 '@keyframes spin-pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }'
             ].join('\n');
             var style = document.createElement('style');
@@ -68,6 +115,7 @@
     </script>
 </head>
 
+{{-- body: flex + min-h-screen sudah CUKUP. Tidak perlu min-h-screen lagi di child. --}}
 <body class="bg-brand-bg antialiased text-brand-dark flex min-h-screen"
       x-data="adminLayout()">
 
@@ -89,13 +137,13 @@
      x-on:click="mobileSidebar = false"
      class="fixed inset-0 bg-black/40 z-30 lg:hidden"></div>
 
-{{-- ══ SIDEBAR ══════════════════════════════════════════════════ --}}
+{{-- ══ SIDEBAR ══════════════════════════════════════════════════════════ --}}
+{{-- FIX M4: aside pakai overflow-hidden permanen; tooltip bebas via JS popup --}}
 <aside :class="[
            mobileSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
            collapsed ? 'sidebar-collapsed' : 'sidebar-expanded'
        ]"
-       class="bg-white border-r border-gray-100 flex flex-col fixed h-screen z-40"
-       :style="collapsed ? 'overflow: visible' : 'overflow: hidden'">
+       class="bg-white border-r border-gray-100 flex flex-col fixed h-screen z-40 overflow-hidden">
 
     {{-- Logo + tombol collapse --}}
     <div class="sidebar-header h-16 flex items-center justify-between px-4 shrink-0 border-b border-gray-50"
@@ -119,10 +167,10 @@
         </button>
     </div>
 
-    {{-- Nav — overflow visible saat collapsed agar tooltip tidak terpotong --}}
-    <nav class="flex-1 px-2 py-3 custom-scrollbar space-y-0.5"
-         :style="collapsed ? 'overflow: visible' : 'overflow-y: auto'"
-         style="position: relative;">
+    {{-- ✅ FIX M3: Nav selalu overflow-y-auto; hanya override ke visible saat
+         collapsed agar tooltip JS popup tidak terpotong oleh aside --}}
+    <nav class="sidebar-nav flex-1 px-2 py-3 custom-scrollbar space-y-0.5 overflow-y-auto"
+         :style="collapsed ? 'overflow: visible' : ''">
 
         <p class="nav-category px-3 pt-1 pb-1.5 text-[9px] font-black uppercase tracking-widest text-gray-400">Umum</p>
 
@@ -289,7 +337,7 @@
 
 </aside>
 
-{{-- ── Tooltip dirender via JS agar bebas dari overflow container ── --}}
+{{-- Tooltip popup via JS — bebas dari overflow container sidebar --}}
 <div id="sidebar-tooltip-popup"
      style="display:none; position:fixed; z-index:9999; background:#0F172A; color:#fff;
             font-size:11px; font-weight:700; padding:6px 14px; border-radius:8px;
@@ -297,11 +345,16 @@
             pointer-events:none; transform:translateY(-50%);">
 </div>
 
-{{-- ══ KONTEN UTAMA ══════════════════════════════════════════════ --}}
-<div class="main-content flex-1 flex flex-col min-h-screen w-full min-w-0 ml-0"
+{{-- ══ KONTEN UTAMA ══════════════════════════════════════════════════════ --}}
+{{-- ✅ FIX C3: HAPUS min-h-screen dari sini → gunakan flex-1 saja.
+     min-h-screen di body + min-h-screen di sini = konflik height → layout split.
+     flex-1 sudah cukup mengisi sisa tinggi body yang min-h-screen. --}}
+<div class="main-content flex-1 flex flex-col w-full ml-0"
      :class="collapsed ? 'lg:ml-[72px]' : 'lg:ml-[272px]'">
 
-    <header class="h-16 px-4 lg:px-8 flex items-center justify-between sticky top-0 bg-brand-bg/90 backdrop-blur-md z-20 border-b border-gray-100 gap-4">
+    {{-- ✅ TOPBAR: sticky top-0 BEKERJA sekarang karena C1 sudah fix scroll root.
+         shrink-0 → header tidak ikut terkompresi flex saat konten panjang. --}}
+    <header class="h-16 px-4 lg:px-8 flex items-center justify-between sticky top-0 bg-brand-bg/95 backdrop-blur-md z-20 border-b border-gray-100 gap-4 shrink-0">
 
         <button x-on:click="mobileSidebar = true"
             class="lg:hidden flex items-center justify-center p-2 rounded-xl bg-white border border-gray-100 shadow-sm text-brand-gray hover:text-brand-blue transition-colors shrink-0">
@@ -343,7 +396,9 @@
         </div>
     </header>
 
-    <main class="flex-1 px-4 lg:px-8 py-8">
+    {{-- ✅ FIX C2 + minor: bg-brand-bg eksplisit agar halaman pendek tidak
+         tampilkan artefak transparansi dari backdrop-blur header --}}
+    <main class="flex-1 px-4 lg:px-8 py-8 bg-brand-bg">
         @yield('admin-content')
     </main>
 
@@ -354,11 +409,17 @@ function adminLayout() {
     return {
         mobileSidebar: false,
         collapsed: localStorage.getItem('sidebar_collapsed') === 'true',
-        saveCollapsed(val) { localStorage.setItem('sidebar_collapsed', val); },
+
+        // ✅ FIX M1: saveCollapsed juga update data-sidebar attribute
+        // agar CSS pre-Alpine selalu sinkron dengan state Alpine
+        saveCollapsed(val) {
+            localStorage.setItem('sidebar_collapsed', val);
+            document.documentElement.setAttribute('data-sidebar', val ? 'collapsed' : 'expanded');
+        },
     };
 }
 
-// ── Tooltip via JS — bebas dari overflow container ──────────────
+// ── Tooltip via JS — bebas dari overflow container sidebar ──────────
 (function () {
     const popup = document.getElementById('sidebar-tooltip-popup');
     let hideTimer = null;
@@ -369,18 +430,13 @@ function adminLayout() {
 
     document.addEventListener('mouseover', function (e) {
         if (!isCollapsed()) return;
-
         const item = e.target.closest('.nav-item');
         if (!item) return;
-
         const tooltipEl = item.querySelector('.nav-tooltip');
         if (!tooltipEl) return;
-
         const text = tooltipEl.textContent.trim();
         if (!text) return;
-
         clearTimeout(hideTimer);
-
         const rect = item.getBoundingClientRect();
         popup.textContent = text;
         popup.style.display = 'block';
@@ -396,11 +452,14 @@ function adminLayout() {
 })();
 </script>
 
+{{-- ✅ FIX M2: @stack('scripts') SEBELUM feather.replace()
+     Dulu: feather.replace() jalan duluan → Chart.js belum load → race condition
+     Sekarang: semua script halaman (@push) load dulu, baru feather.replace() --}}
 @stack('scripts')
 
 <script>
     if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
-    document.addEventListener('alpine:initialized', function() {
+    document.addEventListener('alpine:initialized', function () {
         if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 1.75 });
     });
 </script>

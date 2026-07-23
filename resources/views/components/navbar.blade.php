@@ -1,5 +1,14 @@
-<nav x-data="navbarData()" @scroll.window="onScroll()" class="flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-5 bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100 transition-all duration-300">
-    
+{{--
+    ✅ FIX m4: Tambah `relative` pada <nav>
+    Sebelumnya <nav> tidak punya position: relative, sehingga mobile dropdown
+    yang pakai `absolute top-full left-0` bisa anchoring ke elemen lain
+    di atasnya tergantung DOM context. Dengan `relative`, dropdown selalu
+    anchoring tepat di bawah navbar ini.
+--}}
+<nav x-data="navbarData()"
+     @scroll.window="onScroll()"
+     class="relative flex items-center justify-between px-4 sm:px-6 md:px-16 py-3 md:py-5 bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100 transition-all duration-300">
+
     {{-- LOGO --}}
     <a href="/" class="flex items-center gap-2 sm:gap-3 group z-50 flex-shrink-0">
         <img src="{{ asset('images/logo-adzkia.png') }}" alt="Logo Universitas Adzkia" class="h-9 sm:h-11 w-auto transition-transform group-hover:scale-105 duration-300">
@@ -42,8 +51,13 @@
         </button>
     </div>
 
-    {{-- MOBILE MENU DROPDOWN --}}
-    <div x-show="mobileMenuOpen" 
+    {{--
+        MOBILE MENU DROPDOWN
+        ✅ FIX m4: Karena <nav> sudah `relative`, `absolute top-full left-0`
+        sekarang selalu anchoring tepat di bawah navbar — tidak terpengaruh
+        context elemen lain di DOM.
+    --}}
+    <div x-show="mobileMenuOpen"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-y-4"
          x-transition:enter-end="opacity-100 translate-y-0"
@@ -53,7 +67,7 @@
          class="absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-xl px-5 py-4 flex flex-col gap-3 lg:hidden"
          style="display: none;"
          @click.outside="mobileMenuOpen = false">
-        
+
         <div class="flex flex-col gap-0.5 font-bold text-[14px] text-adzkia-muted">
             <a href="/" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 text-adzkia-blue">Beranda</a>
             <a href="/#prodi" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">Program Studi</a>
@@ -63,7 +77,7 @@
             <a href="/#faq" @click="mobileMenuOpen = false" class="py-3 border-b border-gray-100 hover:text-adzkia-blue transition-colors">FAQ</a>
             <a href="/#kontak" @click="mobileMenuOpen = false" class="py-3 hover:text-adzkia-blue transition-colors">Kontak</a>
         </div>
-        
+
         {{-- TOMBOL AUTH MOBILE --}}
         <div class="flex flex-col gap-2.5 pt-1">
             @if(session('is_pendaftar'))
@@ -113,14 +127,14 @@
                 if (window.location.pathname !== '/') return;
 
                 const scrollPosition = window.scrollY + 150;
-                const sections = ['kontak', 'faq', 'berita', 'jalur-pendaftaran', 'fasilitas', 'prodi']; 
+                const sections = ['kontak', 'faq', 'berita', 'jalur-pendaftaran', 'fasilitas', 'prodi'];
                 let currentSection = 'beranda';
 
                 for (let section of sections) {
                     const el = document.getElementById(section);
                     if (el && scrollPosition >= el.offsetTop) {
                         currentSection = section;
-                        break; 
+                        break;
                     }
                 }
                 this.activeTab = currentSection;
