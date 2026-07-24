@@ -32,6 +32,30 @@
 <body class="bg-gray-50 antialiased text-adzkia-dark min-h-screen flex flex-col"
       x-data="{ waliExpanded: {{ !empty($dataOrtu['wali']['nama'] ?? '') ? 'true' : 'false' }} }">
 
+    @php
+        // ── Opsi dropdown dipakai bersama untuk Ayah / Ibu / Wali ──────────
+        // PENTING: kalau daftar ini diubah, samakan juga validasi 'in:...'
+        // di DaftarUlangController::simpanDataOrtu()
+        $opsiPekerjaan = [
+            'Tidak Bekerja', 'PNS/PPPK', 'TNI/POLRI', 'Pegawai Swasta',
+            'Wiraswasta', 'Petani/Pekebun', 'Nelayan', 'Buruh',
+            'Guru/Dosen', 'Tenaga Kesehatan', 'Pensiunan',
+            'Sudah Meninggal', 'Lainnya',
+        ];
+
+        $opsiPenghasilan = [
+            'Tidak Berpenghasilan',
+            'Kurang dari Rp500.000',
+            'Rp500.000 – Rp999.999',
+            'Rp1.000.000 – Rp1.999.999',
+            'Rp2.000.000 – Rp4.999.999',
+            'Rp5.000.000 – Rp9.999.999',
+            'Rp10.000.000 – Rp14.999.999',
+            'Rp15.000.000 – Rp19.999.999',
+            'Rp20.000.000 atau lebih',
+        ];
+    @endphp
+
     {{-- ============================================================ --}}
     {{-- NAVBAR                                                        --}}
     {{-- ============================================================ --}}
@@ -127,13 +151,19 @@
                                class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
                     </div>
 
-                    {{-- Pekerjaan & No HP --}}
+                    {{-- Pekerjaan (dropdown) --}}
                     <div>
                         <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Pekerjaan</label>
-                        <input type="text" name="ayah_pekerjaan"
-                               value="{{ old('ayah_pekerjaan', $dataOrtu['ayah']['pekerjaan'] ?? '') }}"
-                               placeholder="Contoh: PNS, Wirausaha"
-                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
+                        <div class="relative">
+                            <select name="ayah_pekerjaan" required
+                                    class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                <option value="" disabled {{ empty($dataOrtu['ayah']['pekerjaan'] ?? '') ? 'selected' : '' }}>Pilih Pekerjaan</option>
+                                @foreach($opsiPekerjaan as $opsi)
+                                    <option value="{{ $opsi }}" {{ old('ayah_pekerjaan', $dataOrtu['ayah']['pekerjaan'] ?? '') == $opsi ? 'selected' : '' }}>{{ $opsi }}</option>
+                                @endforeach
+                            </select>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
                     </div>
 
                     <div>
@@ -144,14 +174,19 @@
                                class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
                     </div>
 
-                    {{-- Penghasilan & Pendidikan --}}
+                    {{-- Penghasilan (dropdown) --}}
                     <div>
-                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Penghasilan / Bulan (Rp)</label>
-                        <input type="number" name="ayah_penghasilan"
-                               value="{{ old('ayah_penghasilan', $dataOrtu['ayah']['penghasilan'] ?? '') }}"
-                               placeholder="3000000"
-                               min="0"
-                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
+                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Penghasilan / Bulan</label>
+                        <div class="relative">
+                            <select name="ayah_penghasilan" required
+                                    class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                <option value="" disabled {{ empty($dataOrtu['ayah']['penghasilan'] ?? '') ? 'selected' : '' }}>Pilih Rentang Penghasilan</option>
+                                @foreach($opsiPenghasilan as $opsi)
+                                    <option value="{{ $opsi }}" {{ old('ayah_penghasilan', $dataOrtu['ayah']['penghasilan'] ?? '') == $opsi ? 'selected' : '' }}>{{ $opsi }}</option>
+                                @endforeach
+                            </select>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
                     </div>
 
                     <div>
@@ -170,9 +205,9 @@
 
                     {{-- Alamat --}}
                     <div class="sm:col-span-2">
-                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Alamat (jika berbeda)</label>
+                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Alamat</label>
                         <textarea name="ayah_alamat" rows="2"
-                                  placeholder="Kosongkan jika sama dengan alamat calon mahasiswa"
+                                  placeholder="Alamat lengkap Ayah"
                                   class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark resize-none">{{ old('ayah_alamat', $dataOrtu['ayah']['alamat'] ?? '') }}</textarea>
                     </div>
 
@@ -206,12 +241,19 @@
                                class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
                     </div>
 
+                    {{-- Pekerjaan (dropdown) --}}
                     <div>
                         <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Pekerjaan</label>
-                        <input type="text" name="ibu_pekerjaan"
-                               value="{{ old('ibu_pekerjaan', $dataOrtu['ibu']['pekerjaan'] ?? '') }}"
-                               placeholder="Contoh: Ibu Rumah Tangga, Guru"
-                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
+                        <div class="relative">
+                            <select name="ibu_pekerjaan" required
+                                    class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                <option value="" disabled {{ empty($dataOrtu['ibu']['pekerjaan'] ?? '') ? 'selected' : '' }}>Pilih Pekerjaan</option>
+                                @foreach($opsiPekerjaan as $opsi)
+                                    <option value="{{ $opsi }}" {{ old('ibu_pekerjaan', $dataOrtu['ibu']['pekerjaan'] ?? '') == $opsi ? 'selected' : '' }}>{{ $opsi }}</option>
+                                @endforeach
+                            </select>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
                     </div>
 
                     <div>
@@ -222,13 +264,19 @@
                                class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
                     </div>
 
+                    {{-- Penghasilan (dropdown) --}}
                     <div>
-                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Penghasilan / Bulan (Rp)</label>
-                        <input type="number" name="ibu_penghasilan"
-                               value="{{ old('ibu_penghasilan', $dataOrtu['ibu']['penghasilan'] ?? '') }}"
-                               placeholder="0 jika tidak bekerja"
-                               min="0"
-                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
+                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Penghasilan / Bulan</label>
+                        <div class="relative">
+                            <select name="ibu_penghasilan" required
+                                    class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                <option value="" disabled {{ empty($dataOrtu['ibu']['penghasilan'] ?? '') ? 'selected' : '' }}>Pilih Rentang Penghasilan</option>
+                                @foreach($opsiPenghasilan as $opsi)
+                                    <option value="{{ $opsi }}" {{ old('ibu_penghasilan', $dataOrtu['ibu']['penghasilan'] ?? '') == $opsi ? 'selected' : '' }}>{{ $opsi }}</option>
+                                @endforeach
+                            </select>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
                     </div>
 
                     <div>
@@ -246,9 +294,9 @@
                     </div>
 
                     <div class="sm:col-span-2">
-                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Alamat (jika berbeda)</label>
+                        <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Alamat</label>
                         <textarea name="ibu_alamat" rows="2"
-                                  placeholder="Kosongkan jika sama dengan alamat calon mahasiswa"
+                                  placeholder="Alamat lengkap Ibu"
                                   class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark resize-none">{{ old('ibu_alamat', $dataOrtu['ibu']['alamat'] ?? '') }}</textarea>
                     </div>
 
@@ -314,12 +362,19 @@
                                    class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
                         </div>
 
+                        {{-- Pekerjaan Wali (dropdown) --}}
                         <div>
                             <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Pekerjaan</label>
-                            <input type="text" name="wali_pekerjaan"
-                                   value="{{ old('wali_pekerjaan', $dataOrtu['wali']['pekerjaan'] ?? '') }}"
-                                   placeholder="Pekerjaan wali"
-                                   class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
+                            <div class="relative">
+                                <select name="wali_pekerjaan"
+                                        class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" {{ empty($dataOrtu['wali']['pekerjaan'] ?? '') ? 'selected' : '' }}>Pilih Pekerjaan</option>
+                                    @foreach($opsiPekerjaan as $opsi)
+                                        <option value="{{ $opsi }}" {{ old('wali_pekerjaan', $dataOrtu['wali']['pekerjaan'] ?? '') == $opsi ? 'selected' : '' }}>{{ $opsi }}</option>
+                                    @endforeach
+                                </select>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
                         </div>
 
                         <div>
@@ -330,13 +385,19 @@
                                    class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
                         </div>
 
+                        {{-- Penghasilan Wali (dropdown) --}}
                         <div>
-                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Penghasilan / Bulan (Rp)</label>
-                            <input type="number" name="wali_penghasilan"
-                                   value="{{ old('wali_penghasilan', $dataOrtu['wali']['penghasilan'] ?? '') }}"
-                                   placeholder="0"
-                                   min="0"
-                                   class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark">
+                            <label class="block text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Penghasilan / Bulan</label>
+                            <div class="relative">
+                                <select name="wali_penghasilan"
+                                        class="w-full px-4 sm:px-5 py-3.5 sm:py-4 bg-gray-50 border border-transparent rounded-2xl outline-none focus:border-adzkia-blue focus:bg-white transition-all font-bold text-[13px] sm:text-[14px] text-adzkia-dark appearance-none cursor-pointer">
+                                    <option value="" {{ empty($dataOrtu['wali']['penghasilan'] ?? '') ? 'selected' : '' }}>Pilih Rentang Penghasilan</option>
+                                    @foreach($opsiPenghasilan as $opsi)
+                                        <option value="{{ $opsi }}" {{ old('wali_penghasilan', $dataOrtu['wali']['penghasilan'] ?? '') == $opsi ? 'selected' : '' }}>{{ $opsi }}</option>
+                                    @endforeach
+                                </select>
+                                <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
                         </div>
 
                         <div>

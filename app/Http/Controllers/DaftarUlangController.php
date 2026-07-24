@@ -6,6 +6,7 @@ use App\Models\DataPendaftar;
 use App\Models\BiayaDaftarUlang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class DaftarUlangController extends Controller
 {
@@ -56,39 +57,58 @@ class DaftarUlangController extends Controller
             return $guard;
         }
 
-        // -----------------------------------------------------
-        // VALIDASI
-        // Ayah & Ibu wajib. Wali bersifat opsional (nullable),
-        // tapi jika salah satu field wali diisi, nama_wali wajib.
-        // -----------------------------------------------------
-        $request->validate([
-            // Ayah
-            'ayah_nama'               => 'required|string|max:255',
-            'ayah_pekerjaan'          => 'required|string|max:255',
-            'ayah_no_hp'              => 'required|string|max:20',
-            'ayah_penghasilan'        => 'required|numeric|min:0',
-            'ayah_pendidikan_terakhir'=> 'required|string|max:100',
-            'ayah_alamat'             => 'required|string',
+    // Daftar opsi HARUS sama persis dengan yang ada di data-ortu.blade.php
+    $opsiPekerjaan = [
+        'Tidak Bekerja', 'PNS/PPPK', 'TNI/POLRI', 'Pegawai Swasta',
+        'Wiraswasta', 'Petani/Pekebun', 'Nelayan', 'Buruh',
+        'Guru/Dosen', 'Tenaga Kesehatan', 'Pensiunan',
+        'Sudah Meninggal', 'Lainnya',
+    ];
 
-            // Ibu
-            'ibu_nama'                => 'required|string|max:255',
-            'ibu_pekerjaan'           => 'required|string|max:255',
-            'ibu_no_hp'               => 'required|string|max:20',
-            'ibu_penghasilan'         => 'required|numeric|min:0',
-            'ibu_pendidikan_terakhir' => 'required|string|max:100',
-            'ibu_alamat'              => 'required|string',
+    $opsiPenghasilan = [
+        'Tidak Berpenghasilan',
+        'Kurang dari Rp500.000',
+        'Rp500.000 – Rp999.999',
+        'Rp1.000.000 – Rp1.999.999',
+        'Rp2.000.000 – Rp4.999.999',
+        'Rp5.000.000 – Rp9.999.999',
+        'Rp10.000.000 – Rp14.999.999',
+        'Rp15.000.000 – Rp19.999.999',
+        'Rp20.000.000 atau lebih',
+    ];
 
-            // Wali (opsional)
-            'wali_nama'               => 'nullable|string|max:255',
-            'wali_pekerjaan'          => 'nullable|string|max:255',
-            'wali_no_hp'              => 'nullable|string|max:20',
-            'wali_penghasilan'        => 'nullable|numeric|min:0',
-            'wali_pendidikan_terakhir'=> 'nullable|string|max:100',
-            'wali_alamat'             => 'nullable|string',
-            'wali_hubungan'           => 'required_with:wali_nama|nullable|string|max:100',
-        ], [
-            'wali_hubungan.required_with' => 'Hubungan wali dengan siswa wajib diisi jika data wali diisi.',
-        ]);
+    $request->validate([
+        // Ayah
+        'ayah_nama'               => 'required|string|max:255',
+        'ayah_pekerjaan'          => ['required', Rule::in($opsiPekerjaan)],
+        'ayah_no_hp'              => 'required|string|max:20',
+        'ayah_penghasilan'        => ['required', Rule::in($opsiPenghasilan)],
+        'ayah_pendidikan_terakhir'=> 'required|string|max:100',
+        'ayah_alamat'             => 'required|string',
+
+        // Ibu
+        'ibu_nama'                => 'required|string|max:255',
+        'ibu_pekerjaan'           => ['required', Rule::in($opsiPekerjaan)],
+        'ibu_no_hp'               => 'required|string|max:20',
+        'ibu_penghasilan'         => ['required', Rule::in($opsiPenghasilan)],
+        'ibu_pendidikan_terakhir' => 'required|string|max:100',
+        'ibu_alamat'              => 'required|string',
+
+        // Wali (opsional)
+        'wali_nama'               => 'nullable|string|max:255',
+        'wali_pekerjaan'          => ['nullable', Rule::in($opsiPekerjaan)],
+        'wali_no_hp'              => 'nullable|string|max:20',
+        'wali_penghasilan'        => ['nullable', Rule::in($opsiPenghasilan)],
+        'wali_pendidikan_terakhir'=> 'nullable|string|max:100',
+        'wali_alamat'             => 'nullable|string',
+        'wali_hubungan'           => 'required_with:wali_nama|nullable|string|max:100',
+    ], [
+        'wali_hubungan.required_with' => 'Hubungan wali dengan siswa wajib diisi jika data wali diisi.',
+        'ayah_pekerjaan.in'           => 'Pekerjaan ayah tidak valid, silakan pilih dari daftar.',
+        'ibu_pekerjaan.in'            => 'Pekerjaan ibu tidak valid, silakan pilih dari daftar.',
+        'ayah_penghasilan.in'         => 'Rentang penghasilan ayah tidak valid, silakan pilih dari daftar.',
+        'ibu_penghasilan.in'          => 'Rentang penghasilan ibu tidak valid, silakan pilih dari daftar.',
+    ]);
 
         $dataOrtu = [
             'ayah' => [
