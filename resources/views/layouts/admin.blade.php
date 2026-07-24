@@ -128,6 +128,54 @@
     $pendingFormulir   = \App\Models\DataPendaftar::where('status_pendaftaran', 'menunggu verifikasi')->count();
     $pendingBerkas     = \App\Models\DataPendaftar::whereIn('status_daftar_ulang', ['Menunggu Validasi'])->whereNotNull('bukti_daftar_ulang')->count();
     $totalPending      = $pendingPembayaran + $pendingFormulir + $pendingBerkas;
+
+    // ── Daftar notifikasi individual untuk popover lonceng ──────────────
+    // Hanya menampilkan kategori yang relevan dengan hak akses divisi admin
+    // yang sedang login (sama seperti pembatasan menu sidebar di atas), jadi
+    // admin Keuangan tidak lihat notifikasi formulir/berkas, dst.
+    $notifikasi = collect();
+
+    if ($isSuperAdmin || $divisi === 'Keuangan') {
+        foreach (\App\Models\DataPendaftar::where('status_pembayaran', 'Menunggu Validasi')->latest('updated_at')->limit(8)->get() as $p) {
+            $notifikasi->push([
+                'judul' => 'Bukti Pembayaran Baru',
+                'nama'  => $p->nama_lengkap,
+                'no'    => $p->no_pendaftaran,
+                'waktu' => $p->updated_at,
+                'url'   => url('/admin/validasi-pembayaran'),
+                'icon'  => 'credit-card',
+                'warna' => 'blue',
+            ]);
+        }
+    }
+
+    if ($isSuperAdmin || $divisi === 'Verifikator Berkas') {
+        foreach (\App\Models\DataPendaftar::where('status_pendaftaran', 'menunggu verifikasi')->latest('updated_at')->limit(8)->get() as $p) {
+            $notifikasi->push([
+                'judul' => 'Formulir Perlu Diverifikasi',
+                'nama'  => $p->nama_lengkap,
+                'no'    => $p->no_pendaftaran,
+                'waktu' => $p->updated_at,
+                'url'   => url('/admin/validasi-formulir'),
+                'icon'  => 'file-text',
+                'warna' => 'amber',
+            ]);
+        }
+
+        foreach (\App\Models\DataPendaftar::where('status_daftar_ulang', 'Menunggu Validasi')->whereNotNull('bukti_daftar_ulang')->latest('updated_at')->limit(8)->get() as $p) {
+            $notifikasi->push([
+                'judul' => 'Berkas Daftar Ulang Baru',
+                'nama'  => $p->nama_lengkap,
+                'no'    => $p->no_pendaftaran,
+                'waktu' => $p->updated_at,
+                'url'   => url('/admin/validasi-daftar-ulang'),
+                'icon'  => 'check-square',
+                'warna' => 'purple',
+            ]);
+        }
+    }
+
+    $notifikasi = $notifikasi->sortByDesc('waktu')->take(10)->values();
 @endphp
 
 {{-- Mobile overlay --}}
@@ -361,23 +409,72 @@
             <i data-feather="menu" class="w-5 h-5"></i>
         </button>
 
-        <div class="relative flex-1 max-w-sm hidden sm:block">
-            <i data-feather="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-gray pointer-events-none"></i>
-            <input type="text" placeholder="Cari pendaftar..."
-                class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-100 rounded-full text-[13px] outline-none shadow-sm focus:border-brand-blue transition-all">
-        </div>
+        {{-- Search box dihapus karena tidak dipakai. Elemen kanan (lonceng,
+             divider, user info, avatar, logout) tidak berubah posisi karena
+             sudah dibungkus div "ml-auto" tersendiri di bawah. --}}
 
-        <div class="flex items-center gap-2.5 ml-auto">
+        <div class="flex items-center gap-2.5 ml-auto" x-data="{ notifOpen: false }">
+
+            {{-- ══ NOTIFIKASI (popover) ═══════════════════════════════ --}}
             <div class="relative">
-                <button class="flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-gray-100 shadow-sm text-brand-gray hover:text-brand-blue transition-all">
+                <button x-on:click="notifOpen = !notifOpen"
+                    class="flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-gray-100 shadow-sm text-brand-gray hover:text-brand-blue transition-all">
                     <i data-feather="bell" class="w-4 h-4"></i>
                 </button>
                 @if($totalPending > 0)
-                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-brand-bg">
+                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-brand-bg pointer-events-none">
                     {{ $totalPending > 9 ? '9+' : $totalPending }}
                 </span>
                 @endif
+
+                {{-- Popover --}}
+                <div x-show="notifOpen"
+                     x-cloak
+                     x-on:click.away="notifOpen = false"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="absolute right-0 top-full mt-2 w-80 max-w-[90vw] bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden">
+
+                    <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+                        <h4 class="text-[13px] font-black text-brand-dark">Notifikasi</h4>
+                        @if($notifikasi->count() > 0)
+                        <span class="text-[10px] font-bold text-brand-gray">{{ $notifikasi->count() }} butuh aksi</span>
+                        @endif
+                    </div>
+
+                    <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                        @forelse($notifikasi as $n)
+                            @php
+                                $warnaMap = [
+                                    'blue'   => ['bg' => 'bg-blue-50',   'text' => 'text-blue-600'],
+                                    'amber'  => ['bg' => 'bg-amber-50',  'text' => 'text-amber-600'],
+                                    'purple' => ['bg' => 'bg-purple-50', 'text' => 'text-purple-600'],
+                                ];
+                                $w = $warnaMap[$n['warna']] ?? $warnaMap['blue'];
+                            @endphp
+                            <a href="{{ $n['url'] }}"
+                               class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+                                <div class="w-9 h-9 {{ $w['bg'] }} {{ $w['text'] }} rounded-xl flex items-center justify-center shrink-0">
+                                    <i data-feather="{{ $n['icon'] }}" class="w-4 h-4"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[12px] font-bold text-brand-dark leading-snug">{{ $n['judul'] }}</p>
+                                    <p class="text-[11px] text-brand-gray font-medium truncate">{{ $n['nama'] }} · {{ $n['no'] }}</p>
+                                    <p class="text-[10px] text-gray-400 font-medium mt-0.5">{{ $n['waktu']->diffForHumans() }}</p>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="px-4 py-10 text-center">
+                                <i data-feather="check-circle" class="w-8 h-8 text-emerald-400 mx-auto mb-2"></i>
+                                <p class="text-[12px] font-bold text-brand-gray">Semua sudah beres!</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Tidak ada yang butuh aksi kamu saat ini.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
+
             <div class="h-6 w-px bg-gray-200 hidden sm:block"></div>
             <div class="hidden sm:flex flex-col text-right">
                 <p class="text-[12px] font-bold text-brand-dark leading-tight">{{ $user->name ?? 'Admin' }}</p>
