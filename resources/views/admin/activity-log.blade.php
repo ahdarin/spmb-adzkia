@@ -74,7 +74,7 @@
 </form>
 
 {{-- ── Tabel Log ───────────────────────────────────────────────── --}}
-<div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+<div class="bg-white border border-gray-100 rounded-[2rem] shadow-sm overflow-hidden">
 
     {{-- Jumlah hasil --}}
     <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
@@ -94,18 +94,24 @@
 
     <div class="overflow-x-auto">
         <table class="w-full">
-            <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-left">
-                    <th class="px-5 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest w-44">Waktu</th>
-                    <th class="px-5 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest w-52">Pelaku</th>
-                    <th class="px-5 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest w-40">Aktivitas</th>
-                    <th class="px-5 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Keterangan</th>
-                    <th class="px-5 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest w-32">IP Address</th>
+            <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+                <tr>
+                    <th class="px-5 py-4 w-12">No.</th>
+                    <th class="px-5 py-4 w-44">Waktu</th>
+                    <th class="px-5 py-4 w-52">Pelaku</th>
+                    <th class="px-5 py-4 w-40">Aktivitas</th>
+                    <th class="px-5 py-4">Keterangan</th>
+                    <th class="px-5 py-4 w-32">IP Address</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
+            <tbody class="divide-y divide-gray-50 text-[13px]">
                 @forelse($logs as $log)
-                <tr class="hover:bg-gray-50/60 transition-colors">
+                <tr class="hover:bg-gray-50/50 transition-colors">
+
+                    {{-- No. --}}
+                    <td class="px-5 py-4 text-gray-400 font-bold text-[12px]">
+                        {{ $loop->iteration + ($logs->currentPage() - 1) * $logs->perPage() }}
+                    </td>
 
                     {{-- Waktu --}}
                     <td class="px-5 py-4 whitespace-nowrap">
@@ -186,7 +192,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-5 py-20 text-center">
+                    <td colspan="6" class="px-5 py-20 text-center">
                         <div class="flex flex-col items-center gap-3">
                             <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
                                 <i data-feather="activity" class="w-7 h-7 text-gray-300"></i>

@@ -36,7 +36,7 @@
 @endif
 
 {{-- ── Tabel ─────────────────────────────────────────────────── --}}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100">
         <p class="text-[13px] font-bold text-brand-gray">
             Total: <span class="text-brand-dark font-black">{{ $data->count() }}</span> program studi
@@ -44,14 +44,15 @@
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-left min-w-[600px]">
-            <thead class="bg-gray-50 border-b border-gray-100">
+            <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
                 <tr>
-                    <th class="px-6 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Program Studi</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Jenjang</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Akreditasi</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Kuota</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Biaya Daftar Ulang</th>
-                    <th class="px-6 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Aksi</th>
+                    <th class="px-6 py-5 w-12">No.</th>
+                    <th class="px-4 py-5">Program Studi</th>
+                    <th class="px-4 py-5">Jenjang</th>
+                    <th class="px-4 py-5">Akreditasi</th>
+                    <th class="px-4 py-5 text-center">Kuota</th>
+                    <th class="px-4 py-5 text-center">Biaya Daftar Ulang</th>
+                    <th class="px-6 py-5 text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50 text-[13px]">
@@ -61,10 +62,13 @@
                     $jumlahBiaya = \App\Models\BiayaDaftarUlang::where('prodi_id', $item->id)->count();
                     $akrGreen    = in_array($akr, ['Unggul', 'A', 'Baik Sekali']);
                 @endphp
-                <tr class="hover:bg-gray-50/60 transition-colors group">
+                <tr class="hover:bg-gray-50/50 transition-colors group">
+
+                    {{-- No. --}}
+                    <td class="px-6 py-4 text-gray-400 font-bold text-[12px]">{{ $loop->iteration }}</td>
 
                     {{-- Nama --}}
-                    <td class="px-6 py-4">
+                    <td class="px-4 py-4">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                                 <i data-feather="{{ $item->icon ?? 'book' }}" class="w-4 h-4"></i>
@@ -128,7 +132,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-16 text-center">
+                    <td colspan="7" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center gap-3">
                             <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
                                 <i data-feather="book-open" class="w-7 h-7 text-gray-300"></i>

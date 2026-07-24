@@ -3,78 +3,68 @@
 @section('title', 'Validasi Formulir Pendaftaran')
 
 @section('admin-content')
-<div class="min-h-screen bg-slate-50 p-6">
-
-    {{-- =============================================
-         HEADER
-    ============================================== --}}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-800">Validasi Formulir Pendaftaran</h1>
-        <p class="text-sm text-slate-500 mt-1">Tinjau biodata dan kelengkapan berkas dokumen calon mahasiswa baru.</p>
+<div>
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-brand-dark tracking-tight mb-2">Validasi Formulir Pendaftaran</h1>
+        <p class="text-brand-gray text-[14px] font-medium">Tinjau biodata dan kelengkapan berkas dokumen calon mahasiswa baru.</p>
     </div>
 
-    {{-- =============================================
-         FLASH MESSAGE
-    ============================================== --}}
+    {{-- FLASH MESSAGE --}}
     @if(session('success'))
-    <div class="mb-4 flex items-start gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3 text-sm">
-        <svg class="w-5 h-5 mt-0.5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-        <span>{{ session('success') }}</span>
-    </div>
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-xl flex items-start gap-3">
+            <i data-feather="check-circle" class="w-5 h-5 text-green-600"></i>
+            <p class="text-sm font-bold text-green-700">{{ session('success') }}</p>
+        </div>
     @endif
     @if(session('error'))
-    <div class="mb-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm">
-        <svg class="w-5 h-5 mt-0.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        <span>{{ session('error') }}</span>
-    </div>
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-xl flex items-start gap-3">
+            <i data-feather="alert-circle" class="w-5 h-5 text-red-600"></i>
+            <p class="text-sm font-bold text-red-700">{{ session('error') }}</p>
+        </div>
     @endif
 
-    {{-- =============================================
-         FILTER & SEARCH
-    ============================================== --}}
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-5 shadow-sm">
-        <form method="GET" action="{{ route('admin.validasi.formulir') }}" class="flex flex-col sm:flex-row gap-3">
-            <div class="relative flex-1">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-                <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari nama atau no. pendaftaran..."
-                    class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-            <select name="status" class="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700">
+    {{-- FILTER & SEARCH --}}
+    <form method="GET" action="{{ route('admin.validasi.formulir') }}" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-wrap items-center gap-4">
+        <div class="relative flex-1 min-w-[220px]">
+            <i data-feather="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau no. pendaftaran..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-[13px] font-medium focus:ring-2 focus:ring-brand-blue outline-none transition-all placeholder-gray-400">
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-[12px] font-extrabold text-gray-400 uppercase tracking-widest">Status:</span>
+            <select name="status" class="border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-brand-blue bg-gray-50 text-[13px] font-bold text-brand-dark cursor-pointer min-w-[180px]">
                 <option value="">Semua Status</option>
                 <option value="menunggu verifikasi" @selected(request('status') === 'menunggu verifikasi')>Menunggu Verifikasi</option>
                 <option value="Revisi" @selected(request('status') === 'Revisi')>Revisi</option>
                 <option value="Selesai" @selected(request('status') === 'Selesai')>Selesai</option>
             </select>
-            <button type="submit" class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                Filter
-            </button>
-            @if(request('search') || request('status'))
-            <a href="{{ route('admin.validasi.formulir') }}" class="px-4 py-2 text-sm font-medium bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors">
-                Reset
-            </a>
-            @endif
-        </form>
-    </div>
+        </div>
+        <button type="submit" class="px-5 py-2.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-brand-blue transition-colors shadow-sm">
+            Filter
+        </button>
+        @if(request('search') || request('status'))
+        <a href="{{ route('admin.validasi.formulir') }}" class="text-[13px] font-extrabold text-brand-blue hover:text-brand-dark transition-colors whitespace-nowrap flex items-center gap-1.5">
+            <i data-feather="refresh-ccw" class="w-3.5 h-3.5"></i> Reset
+        </a>
+        @endif
+    </form>
 
-    {{-- =============================================
-         TABEL DATA
-    ============================================== --}}
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+    {{-- TABEL DATA --}}
+    <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="text-left px-5 py-3.5 font-semibold text-slate-600">#</th>
-                        <th class="text-left px-5 py-3.5 font-semibold text-slate-600">No. Pendaftaran</th>
-                        <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Nama Lengkap</th>
-                        <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Pilihan Prodi</th>
-                        <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Jalur</th>
-                        <th class="text-left px-5 py-3.5 font-semibold text-slate-600">Status</th>
-                        <th class="text-center px-5 py-3.5 font-semibold text-slate-600">Aksi</th>
+            <table class="w-full text-left whitespace-nowrap">
+                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-5">No.</th>
+                        <th class="px-4 py-5">No. Pendaftaran</th>
+                        <th class="px-4 py-5">Nama Lengkap</th>
+                        <th class="px-4 py-5">Pilihan Prodi</th>
+                        <th class="px-4 py-5">Jalur</th>
+                        <th class="px-4 py-5 text-center">Status</th>
+                        <th class="px-6 py-5 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-gray-50 text-[13px]">
                 @forelse($pendaftars as $index => $item)
                     {{-- Siapkan data berkas JSON --}}
                     @php
@@ -86,7 +76,6 @@
                             $berkas = $decoded ?? [];
                         }
 
-                        // Label ramah untuk tiap key berkas
                         $labelBerkas = [
                             'ktp'           => 'KTP / Kartu Identitas',
                             'kk'            => 'Kartu Keluarga',
@@ -98,17 +87,16 @@
                         ];
 
                         $statusColor = match($item->status_pendaftaran) {
-                            'menunggu verifikasi' => 'bg-amber-100 text-amber-700 border-amber-200',
-                            'Revisi'              => 'bg-red-100 text-red-700 border-red-200',
-                            'Selesai'             => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                            default               => 'bg-slate-100 text-slate-600 border-slate-200',
+                            'menunggu verifikasi' => 'bg-amber-50 text-amber-600',
+                            'Revisi'              => 'bg-red-50 text-red-600',
+                            'Selesai'             => 'bg-green-50 text-green-600',
+                            default               => 'bg-gray-100 text-gray-500',
                         };
                         $statusLabel = match($item->status_pendaftaran) {
                             'menunggu verifikasi' => 'Menunggu Verifikasi',
                             default               => $item->status_pendaftaran,
                         };
 
-                        // Encode data untuk Alpine.js
                         $alpineData = json_encode([
                             'id'                 => $item->id,
                             'no_pendaftaran'     => $item->no_pendaftaran,
@@ -134,44 +122,37 @@
                         ], JSON_HEX_APOS | JSON_HEX_QUOT);
                     @endphp
 
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-5 py-4 text-slate-400 font-mono text-xs">{{ $index + 1 }}</td>
-                        <td class="px-5 py-4 font-mono text-xs font-semibold text-slate-700">{{ $item->no_pendaftaran }}</td>
-                        <td class="px-5 py-4">
-                            <span class="font-medium text-slate-800">{{ $item->nama_lengkap }}</span>
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-4 text-gray-400 font-bold">{{ $index + 1 }}</td>
+                        <td class="px-4 py-4 text-gray-400 text-[11px] font-extrabold tracking-wider">{{ $item->no_pendaftaran }}</td>
+                        <td class="px-4 py-4">
+                            <span class="font-bold text-brand-dark text-[14px]">{{ $item->nama_lengkap }}</span>
                         </td>
-                        <td class="px-5 py-4 text-slate-600">
-                            <div>{{ $item->pilihan_jurusan_1 ?? '-' }}</div>
-                            @if($item->pilihan_jurusan_2)
-                            <div class="text-xs text-slate-400">Pilihan 2: {{ $item->pilihan_jurusan_2 }}</div>
-                            @endif
+                        <td class="px-4 py-4">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[11px] font-bold text-gray-700"><span class="text-gray-400">1.</span> {{ $item->pilihan_jurusan_1 ?? '-' }}</span>
+                                @if($item->pilihan_jurusan_2)
+                                <span class="text-[11px] font-bold text-gray-700"><span class="text-gray-400">2.</span> {{ $item->pilihan_jurusan_2 }}</span>
+                                @endif
+                            </div>
                         </td>
-                        <td class="px-5 py-4 text-slate-600">{{ $item->jalur_pendaftaran ?? '-' }}</td>
-                        <td class="px-5 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border {{ $statusColor }}">
-                                {{ $statusLabel }}
-                            </span>
+                        <td class="px-4 py-4 font-bold text-gray-700 text-[13px]">{{ $item->jalur_pendaftaran ?? '-' }}</td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-3 py-1 {{ $statusColor }} rounded-full text-[10px] font-black uppercase">{{ $statusLabel }}</span>
                         </td>
-                        <td class="px-5 py-4 text-center">
+                        <td class="px-6 py-4 text-center">
                             <button
                                 type="button"
                                 x-data
                                 @click="$dispatch('open-formulir-modal', {{ $alpineData }})"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                class="px-5 py-2 bg-brand-dark text-white rounded-lg font-bold text-[11px] hover:bg-brand-blue transition-colors shadow-sm">
                                 Tinjau
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-5 py-16 text-center">
-                            <div class="flex flex-col items-center gap-2 text-slate-400">
-                                <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                <p class="font-medium">Tidak ada formulir yang perlu ditinjau</p>
-                                <p class="text-xs">Formulir akan muncul saat pendaftar telah mengisi biodata lengkap</p>
-                            </div>
-                        </td>
+                        <td colspan="7" class="px-6 py-10 text-center text-gray-500 font-bold">Tidak ada formulir yang perlu ditinjau.</td>
                     </tr>
                 @endforelse
                 </tbody>
@@ -181,9 +162,7 @@
 
 </div>
 
-{{-- =============================================
-     MODAL DETAIL & VALIDASI FORMULIR (Alpine.js)
-============================================== --}}
+{{-- MODAL DETAIL & VALIDASI FORMULIR (Alpine.js) --}}
 <div
     x-data="{
         open: false,
@@ -198,15 +177,16 @@
                 this.showRevisiForm = false;
                 this.pesanRevisi  = '';
                 this.open         = true;
+                setTimeout(() => { if(window.feather) feather.replace(); }, 50);
             });
         },
         getStatusClass(status) {
             const map = {
-                'menunggu verifikasi': 'bg-amber-100 text-amber-700 border-amber-200',
-                'Revisi':              'bg-red-100 text-red-700 border-red-200',
-                'Selesai':             'bg-emerald-100 text-emerald-700 border-emerald-200',
+                'menunggu verifikasi': 'bg-amber-50 text-amber-600',
+                'Revisi':              'bg-red-50 text-red-600',
+                'Selesai':             'bg-green-50 text-green-600',
             };
-            return map[status] || 'bg-slate-100 text-slate-600 border-slate-200';
+            return map[status] || 'bg-gray-100 text-gray-500';
         },
         getStatusLabel(status) {
             return status === 'menunggu verifikasi' ? 'Menunggu Verifikasi' : (status || 'Draft');
@@ -238,63 +218,56 @@
 >
     {{-- Backdrop --}}
     <div
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
+        x-show="open" x-transition.opacity
+        class="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm cursor-pointer"
         @click="open = false"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
     ></div>
 
     {{-- Panel Modal --}}
     <div
-        class="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl z-10"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
+        x-show="open"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        class="bg-white w-full max-w-3xl rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col"
         @click.stop
     >
         {{-- Modal Header --}}
-        <div class="flex items-start justify-between px-6 py-5 border-b border-slate-100">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <div>
-                <h2 class="text-lg font-bold text-slate-800" x-text="pendaftar.nama_lengkap"></h2>
+                <h2 class="text-xl font-extrabold text-brand-dark tracking-tight" x-text="pendaftar.nama_lengkap"></h2>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="font-mono text-xs text-slate-500" x-text="pendaftar.no_pendaftaran"></span>
+                    <span class="text-gray-400 text-[11px] font-extrabold tracking-wider" x-text="pendaftar.no_pendaftaran"></span>
                     <span
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border"
+                        class="px-3 py-1 rounded-full text-[10px] font-black uppercase"
                         :class="getStatusClass(pendaftar.status_pendaftaran)"
                         x-text="getStatusLabel(pendaftar.status_pendaftaran)"
                     ></span>
                 </div>
             </div>
-            <button @click="open = false" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button @click="open = false" class="p-2 bg-white border border-gray-200 hover:bg-gray-100 rounded-full transition-colors">
+                <i data-feather="x" class="w-4 h-4 text-gray-500"></i>
             </button>
         </div>
 
         {{-- Tab Nav --}}
-        <div class="flex gap-1 px-6 pt-4 border-b border-slate-100">
+        <div class="flex gap-1 px-6 pt-4 border-b border-gray-100">
             <button
                 @click="activeTab = 'biodata'"
-                :class="activeTab === 'biodata' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-2 text-sm transition-colors -mb-px">
+                :class="activeTab === 'biodata' ? 'border-b-2 border-brand-blue text-brand-blue font-extrabold' : 'text-gray-500 hover:text-brand-dark font-bold'"
+                class="px-4 py-2 text-[13px] transition-colors -mb-px">
                 Biodata
             </button>
             <button
                 @click="activeTab = 'berkas'"
-                :class="activeTab === 'berkas' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-2 text-sm transition-colors -mb-px">
+                :class="activeTab === 'berkas' ? 'border-b-2 border-brand-blue text-brand-blue font-extrabold' : 'text-gray-500 hover:text-brand-dark font-bold'"
+                class="px-4 py-2 text-[13px] transition-colors -mb-px">
                 Berkas Dokumen
             </button>
             <button
                 @click="activeTab = 'aksi'"
-                :class="activeTab === 'aksi' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                class="px-4 py-2 text-sm transition-colors -mb-px">
+                :class="activeTab === 'aksi' ? 'border-b-2 border-brand-blue text-brand-blue font-extrabold' : 'text-gray-500 hover:text-brand-dark font-bold'"
+                class="px-4 py-2 text-[13px] transition-colors -mb-px">
                 Keputusan
             </button>
         </div>
@@ -307,76 +280,76 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                     <div class="sm:col-span-2">
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Informasi Pribadi</p>
+                        <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-3">Informasi Pribadi</p>
                     </div>
 
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">NIK</p>
-                        <p class="text-sm font-mono font-medium text-slate-800" x-text="pendaftar.nik"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">NIK</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.nik"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Jenis Kelamin</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.gender"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Jenis Kelamin</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.gender"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Tempat Lahir</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.tempat_lahir"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Tempat Lahir</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.tempat_lahir"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Tanggal Lahir</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.tanggal_lahir"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Tanggal Lahir</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.tanggal_lahir"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Agama</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.agama"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Agama</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.agama"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">No. WhatsApp</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.no_whatsapp"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">No. WhatsApp</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.no_whatsapp"></p>
                     </div>
                     <div class="sm:col-span-2">
-                        <p class="text-xs text-slate-400 mb-0.5">Email</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.email"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Email</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.email"></p>
                     </div>
                     <div class="sm:col-span-2">
-                        <p class="text-xs text-slate-400 mb-0.5">Alamat Lengkap</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.alamat"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Alamat Lengkap</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.alamat"></p>
                     </div>
 
                     {{-- Divider --}}
-                    <div class="sm:col-span-2 border-t border-slate-100 pt-4">
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Asal Sekolah</p>
+                    <div class="sm:col-span-2 border-t border-gray-100 pt-4">
+                        <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-3">Asal Sekolah</p>
                     </div>
 
                     <div class="sm:col-span-2">
-                        <p class="text-xs text-slate-400 mb-0.5">Nama Sekolah</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.asal_sekolah"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Nama Sekolah</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.asal_sekolah"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Jurusan / Program</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.jurusan_sekolah"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Jurusan / Program</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.jurusan_sekolah"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Tahun Lulus</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.tahun_lulus"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Tahun Lulus</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.tahun_lulus"></p>
                     </div>
 
                     {{-- Divider --}}
-                    <div class="sm:col-span-2 border-t border-slate-100 pt-4">
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Pilihan Program Studi</p>
+                    <div class="sm:col-span-2 border-t border-gray-100 pt-4">
+                        <p class="text-[11px] font-extrabold text-gray-400 uppercase tracking-widest mb-3">Pilihan Program Studi</p>
                     </div>
 
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Pilihan 1</p>
-                        <p class="text-sm font-semibold text-blue-700" x-text="pendaftar.pilihan_jurusan_1"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Pilihan 1</p>
+                        <p class="text-[14px] font-bold text-brand-blue" x-text="pendaftar.pilihan_jurusan_1"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Pilihan 2</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.pilihan_jurusan_2 || '-'"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Pilihan 2</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.pilihan_jurusan_2 || '-'"></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 mb-0.5">Jalur Pendaftaran</p>
-                        <p class="text-sm text-slate-800" x-text="pendaftar.jalur_pendaftaran"></p>
+                        <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">Jalur Pendaftaran</p>
+                        <p class="text-[14px] font-bold text-brand-dark" x-text="pendaftar.jalur_pendaftaran"></p>
                     </div>
                 </div>
             </div>
@@ -384,35 +357,34 @@
             {{-- ===== TAB: BERKAS DOKUMEN ===== --}}
             <div x-show="activeTab === 'berkas'" x-cloak>
                 <template x-if="berkasEntries().length === 0">
-                    <div class="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <svg class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <p class="text-sm font-medium">Belum ada berkas diunggah</p>
-                        <p class="text-xs mt-1">Pendaftar belum mengunggah dokumen apapun</p>
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <i data-feather="file-text" class="w-10 h-10 mb-2"></i>
+                        <p class="text-[13px] font-bold">Belum ada berkas diunggah</p>
+                        <p class="text-[11px] mt-1">Pendaftar belum mengunggah dokumen apapun</p>
                     </div>
                 </template>
                 <template x-if="berkasEntries().length > 0">
                     <div class="space-y-2">
-                        <p class="text-xs text-slate-400 mb-3">
+                        <p class="text-[11px] text-gray-400 font-bold mb-3">
                             <span x-text="berkasEntries().length"></span> berkas ditemukan
                         </p>
                         <template x-for="([key, path], idx) in berkasEntries()" :key="idx">
-                            <div class="flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                            <div class="flex items-center justify-between px-4 py-3 bg-gray-50/50 border border-gray-100 rounded-xl">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                                        <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <div class="w-8 h-8 rounded-lg bg-brand-blue-light flex items-center justify-center shrink-0">
+                                        <i data-feather="file-text" class="w-4 h-4 text-brand-blue"></i>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-slate-700" x-text="getBerkasLabel(key)"></p>
-                                        <p class="text-xs text-slate-400 font-mono" x-text="path.split('/').pop()"></p>
+                                        <p class="text-[13px] font-bold text-brand-dark" x-text="getBerkasLabel(key)"></p>
+                                        <p class="text-[11px] text-gray-400 font-bold" x-text="path.split('/').pop()"></p>
                                     </div>
                                 </div>
                                 <a
                                     :href="getBerkasUrl(path)"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                    Buka File
+                                    class="px-3 py-1.5 text-[11px] font-bold bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors shrink-0 flex items-center gap-1.5">
+                                    <i data-feather="external-link" class="w-3.5 h-3.5"></i> Buka File
                                 </a>
                             </div>
                         </template>
@@ -425,20 +397,20 @@
 
                 {{-- Pesan Revisi Sebelumnya --}}
                 <template x-if="pendaftar.pesan_revisi">
-                    <div class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                        <p class="text-xs font-semibold text-amber-700 mb-1">Catatan Revisi Sebelumnya</p>
-                        <p class="text-sm text-amber-800" x-text="pendaftar.pesan_revisi"></p>
+                    <div class="mb-4 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl">
+                        <p class="text-[12px] font-extrabold text-amber-700 mb-1 uppercase tracking-widest">Catatan Revisi Sebelumnya</p>
+                        <p class="text-[13px] font-bold text-amber-800" x-text="pendaftar.pesan_revisi"></p>
                     </div>
                 </template>
 
                 {{-- Sudah Selesai --}}
                 <template x-if="pendaftar.status_pendaftaran === 'Selesai'">
                     <div class="flex flex-col items-center justify-center py-10 text-center">
-                        <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-3">
-                            <svg class="w-7 h-7 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-3">
+                            <i data-feather="check-circle" class="w-7 h-7 text-green-600"></i>
                         </div>
-                        <p class="font-semibold text-slate-800">Formulir Telah Diverifikasi</p>
-                        <p class="text-sm text-slate-500 mt-1">Tidak ada tindakan lebih lanjut yang diperlukan.</p>
+                        <p class="font-extrabold text-brand-dark">Formulir Telah Diverifikasi</p>
+                        <p class="text-[13px] font-medium text-gray-500 mt-1">Tidak ada tindakan lebih lanjut yang diperlukan.</p>
                     </div>
                 </template>
 
@@ -448,15 +420,15 @@
 
                         {{-- Setujui Formulir --}}
                         <div x-show="!showRevisiForm">
-                            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl mb-4">
-                                <p class="text-sm font-semibold text-emerald-800 mb-1">Setujui Formulir</p>
-                                <p class="text-xs text-emerald-700">Formulir pendaftar dinyatakan lengkap dan benar. Status akan berubah menjadi <strong>Selesai</strong> dan notifikasi WhatsApp akan dikirim.</p>
+                            <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-r-xl mb-4">
+                                <p class="text-[13px] font-extrabold text-green-800 mb-1">Setujui Formulir</p>
+                                <p class="text-[12px] font-bold text-green-700">Formulir pendaftar dinyatakan lengkap dan benar. Status akan berubah menjadi <strong>Selesai</strong> dan notifikasi WhatsApp akan dikirim.</p>
                             </div>
                             <form :action="'/admin/setujui-formulir/' + pendaftar.id" method="POST">
                                 @csrf
                                 <button type="submit"
                                     onclick="return confirm('Setujui formulir pendaftar ini?')"
-                                    class="w-full py-2.5 text-sm font-semibold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors">
+                                    class="w-full py-3.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-brand-blue transition-colors shadow-lg">
                                     Setujui Formulir Ini
                                 </button>
                             </form>
@@ -464,16 +436,16 @@
 
                         {{-- Divider --}}
                         <div x-show="!showRevisiForm" class="flex items-center gap-3">
-                            <div class="flex-1 h-px bg-slate-200"></div>
-                            <span class="text-xs text-slate-400">atau</span>
-                            <div class="flex-1 h-px bg-slate-200"></div>
+                            <div class="flex-1 h-px bg-gray-100"></div>
+                            <span class="text-[11px] text-gray-400 font-bold">atau</span>
+                            <div class="flex-1 h-px bg-gray-100"></div>
                         </div>
 
                         {{-- Tombol Minta Revisi --}}
                         <div x-show="!showRevisiForm">
                             <button
                                 @click="showRevisiForm = true"
-                                class="w-full py-2.5 text-sm font-semibold bg-white border border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+                                class="w-full py-3.5 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-[13px] hover:bg-red-50 transition-colors">
                                 Minta Revisi Formulir
                             </button>
                         </div>
@@ -483,31 +455,32 @@
                             x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 translate-y-2"
                             x-transition:enter-end="opacity-100 translate-y-0">
-                            <div class="p-4 bg-red-50 border border-red-200 rounded-xl mb-4">
-                                <p class="text-sm font-semibold text-red-800 mb-1">Minta Revisi</p>
-                                <p class="text-xs text-red-700">Jelaskan secara spesifik dokumen atau data apa yang perlu diperbaiki pendaftar.</p>
+                            <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl mb-4">
+                                <p class="text-[13px] font-extrabold text-red-800 mb-1">Minta Revisi</p>
+                                <p class="text-[12px] font-bold text-red-700">Jelaskan secara spesifik dokumen atau data apa yang perlu diperbaiki pendaftar.</p>
                             </div>
                             <form :action="'/admin/revisi-formulir/' + pendaftar.id" method="POST" class="space-y-3">
                                 @csrf
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Pesan Revisi untuk Pendaftar <span class="text-red-500">*</span></label>
+                                    <label class="block text-[11px] font-extrabold text-gray-500 uppercase tracking-widest mb-2">Pesan Revisi untuk Pendaftar <span class="text-red-500">*</span></label>
                                     <textarea
                                         name="pesan_revisi"
                                         x-model="pesanRevisi"
                                         rows="4"
                                         placeholder="Contoh: Foto KTP yang diunggah buram, mohon unggah ulang dengan foto yang jelas..."
                                         required
-                                        class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-bold focus:border-brand-blue focus:bg-white outline-none transition-all resize-none"
                                     ></textarea>
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex gap-3">
                                     <button type="button" @click="showRevisiForm = false"
-                                        class="flex-1 py-2.5 text-sm font-medium bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors">
+                                        class="flex-1 py-3 border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl font-bold text-[13px] transition-colors">
                                         Batal
                                     </button>
                                     <button type="submit"
                                         :disabled="!pesanRevisi.trim()"
-                                        class="flex-1 py-2.5 text-sm font-semibold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        :class="pesanRevisi.trim() ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                                        class="flex-1 py-3 rounded-xl font-bold text-[13px] transition-colors">
                                         Kirim Revisi
                                     </button>
                                 </div>
@@ -520,9 +493,9 @@
         </div>
 
         {{-- Modal Footer --}}
-        <div class="px-6 py-4 border-t border-slate-100 flex justify-end">
+        <div class="p-6 border-t border-gray-100 flex justify-end bg-gray-50/50">
             <button @click="open = false"
-                class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
+                class="px-6 py-3 border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl font-bold text-[13px] transition-colors">
                 Tutup
             </button>
         </div>

@@ -85,25 +85,25 @@
     </div>
 
     {{-- ══ TABEL ════════════════════════════════════════════════════ --}}
-    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+    <div class="bg-white border border-gray-100 rounded-[2rem] shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-[13px]">
-                <thead>
-                    <tr class="bg-gray-50 border-b border-gray-100">
-                        <th class="text-left px-5 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-10">No.</th>
-                        <th class="text-left px-5 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider">Nama Jalur</th>
-                        <th class="text-center px-4 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-28">Kode NIM</th>
-                        <th class="text-center px-4 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-32">Tipe Jalur</th>
-                        <th class="text-center px-4 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-24">Gratis</th>
-                        <th class="text-center px-4 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-24">Ada Ujian</th>
-                        <th class="text-center px-4 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-24">Status</th>
-                        <th class="text-center px-4 py-3.5 font-black text-gray-400 text-[10px] uppercase tracking-wider w-24">Aksi</th>
+                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="text-left px-5 py-4 w-10">No.</th>
+                        <th class="text-left px-5 py-4">Nama Jalur</th>
+                        <th class="text-center px-4 py-4 w-28">Kode NIM</th>
+                        <th class="text-center px-4 py-4 w-32">Tipe Jalur</th>
+                        <th class="text-center px-4 py-4 w-24">Gratis</th>
+                        <th class="text-center px-4 py-4 w-24">Ada Ujian</th>
+                        <th class="text-center px-4 py-4 w-24">Status</th>
+                        <th class="text-center px-4 py-4 w-24">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody class="divide-y divide-gray-50 text-[13px]">
                     @forelse($jalurs as $j)
-                    <tr class="hover:bg-gray-50/60 transition-colors group">
-                        <td class="px-5 py-3.5 text-gray-400 text-[12px]">
+                    <tr class="hover:bg-gray-50/50 transition-colors group">
+                        <td class="px-5 py-3.5 text-gray-400 font-bold text-[12px]">
                             {{ ($jalurs->currentPage() - 1) * $jalurs->perPage() + $loop->iteration }}
                         </td>
                         <td class="px-5 py-3.5">

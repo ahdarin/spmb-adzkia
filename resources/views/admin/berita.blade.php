@@ -81,16 +81,17 @@
 </div>
 
 {{-- ── Tabel ───────────────────────────────────────────────── --}}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-left">
-            <thead class="bg-gray-50 border-b border-gray-100">
+            <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
                 <tr>
-                    <th class="px-6 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Berita</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Kategori</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tanggal</th>
-                    <th class="px-4 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                    <th class="px-6 py-3.5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Aksi</th>
+                    <th class="px-6 py-5 w-12">No.</th>
+                    <th class="px-4 py-5">Berita</th>
+                    <th class="px-4 py-5">Kategori</th>
+                    <th class="px-4 py-5">Tanggal</th>
+                    <th class="px-4 py-5">Status</th>
+                    <th class="px-6 py-5 text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50 text-[13px]">
@@ -111,7 +112,8 @@
                     data-status="{{ $item->status }}"
                     data-kategori="{{ $item->kategori }}">
 
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 text-gray-400 font-bold text-[12px]">{{ $loop->iteration }}</td>
+                    <td class="px-4 py-4">
                         <div class="flex items-center gap-4">
                             <img src="{{ $thumb ?? 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=100' }}"
                                  class="w-14 h-14 rounded-xl object-cover border border-gray-100 shadow-sm {{ $item->status==='Draft' ? 'opacity-50 grayscale' : '' }}" alt="">
@@ -159,7 +161,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-16 text-center">
+                    <td colspan="6" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center gap-3">
                             <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
                                 <i data-feather="rss" class="w-7 h-7 text-gray-300"></i>

@@ -223,22 +223,24 @@
 
                 <div class="border-t border-gray-100 overflow-x-auto">
                     <table class="w-full text-[13px]">
-                        <thead>
-                            <tr class="bg-gray-50/80">
-                                <th class="text-left px-6 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider">Jalur</th>
-                                <th class="text-left px-4 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider">Gelombang</th>
-                                <th class="text-right px-4 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider">SPP Semester</th>
-                                <th class="text-right px-4 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider">Sarpras</th>
-                                <th class="text-right px-4 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider">Seragam & Orientasi</th>
-                                <th class="text-right px-4 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider">Total Biaya</th>
-                                <th class="text-center px-4 py-3 font-black text-gray-400 text-[10px] uppercase tracking-wider w-20">Aksi</th>
+                        <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+                            <tr>
+                                <th class="text-left px-6 py-3 w-12">No.</th>
+                                <th class="text-left px-4 py-3">Jalur</th>
+                                <th class="text-left px-4 py-3">Gelombang</th>
+                                <th class="text-right px-4 py-3">SPP Semester</th>
+                                <th class="text-right px-4 py-3">Sarpras</th>
+                                <th class="text-right px-4 py-3">Seragam & Orientasi</th>
+                                <th class="text-right px-4 py-3">Total Biaya</th>
+                                <th class="text-center px-4 py-3 w-20">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50">
+                        <tbody class="divide-y divide-gray-50 text-[13px]">
                             @foreach($items as $b)
                             @php $belumDiisi = $b->total_biaya == 0; @endphp
-                            <tr class="hover:bg-blue-50/30 transition-colors group">
-                                <td class="px-6 py-3.5">
+                            <tr class="hover:bg-gray-50/50 transition-colors group">
+                                <td class="px-6 py-3.5 text-gray-400 font-bold text-[12px]">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-3.5">
                                     <span class="px-2.5 py-1 bg-brand-blue-light text-brand-blue rounded-lg text-[11px] font-extrabold">
                                         {{ $b->jalur->nama_jalur ?? '—' }}
                                     </span>
@@ -307,7 +309,7 @@
                         @if($totalTerisi > 0)
                         <tfoot>
                             <tr class="bg-gray-50 border-t border-gray-200">
-                                <td colspan="5" class="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-wider">
+                                <td colspan="6" class="px-6 py-3 text-[11px] font-black text-gray-400 uppercase tracking-wider">
                                     Rata-rata total biaya ({{ $totalTerisi }} jalur terisi)
                                 </td>
                                 <td class="px-4 py-3 text-right font-black text-brand-dark">

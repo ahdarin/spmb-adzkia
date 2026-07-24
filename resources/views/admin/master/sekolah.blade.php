@@ -9,8 +9,8 @@
     {{-- ── Header ──────────────────────────────────────────────── --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-2xl font-extrabold text-brand-dark tracking-tight">Master Sekolah</h1>
-            <p class="text-brand-gray text-[13px] font-medium mt-1">
+            <h1 class="text-3xl font-extrabold text-[#0B1C39] tracking-tight mb-2">Master Sekolah</h1>
+            <p class="text-brand-gray text-[14px] font-medium">
                 Data sekolah asal pendaftar. Cari via NPSN untuk mengambil data otomatis dari PDDikti.
             </p>
         </div>
@@ -23,21 +23,21 @@
 
     {{-- Flash --}}
     @if(session('success'))
-    <div class="mb-5 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl px-4 py-3 text-[13px] font-bold">
-        <i data-feather="check-circle" class="w-4 h-4 text-emerald-500 shrink-0"></i>
-        {{ session('success') }}
+    <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-xl flex items-start gap-3">
+        <i data-feather="check-circle" class="w-5 h-5 text-green-600 shrink-0"></i>
+        <p class="text-[13px] font-bold text-green-800">{{ session('success') }}</p>
     </div>
     @endif
     @if(session('error'))
-    <div class="mb-5 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-[13px] font-bold">
-        <i data-feather="alert-circle" class="w-4 h-4 text-red-500 shrink-0"></i>
-        {{ session('error') }}
+    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl flex items-start gap-3">
+        <i data-feather="alert-circle" class="w-5 h-5 text-red-600 shrink-0"></i>
+        <p class="text-[13px] font-bold text-red-800">{{ session('error') }}</p>
     </div>
     @endif
 
     {{-- ── Filter & Search ─────────────────────────────────────── --}}
     <form method="GET" action="{{ route('admin.master.sekolah.index') }}"
-          class="bg-white border border-gray-100 rounded-2xl p-4 mb-6 flex gap-3 shadow-sm">
+          class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex gap-3">
         <div class="relative flex-1">
             <i data-feather="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
             <input type="text" name="search" value="{{ $search ?? '' }}"
@@ -45,7 +45,7 @@
                    class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] outline-none focus:border-brand-blue focus:bg-white transition-all">
         </div>
         <button type="submit"
-                class="px-5 py-2.5 bg-brand-blue text-white rounded-xl font-bold text-[13px] hover:bg-blue-700 transition-colors">
+                class="px-5 py-2.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-brand-blue transition-colors">
             Cari
         </button>
         @if($search)
@@ -57,73 +57,73 @@
     </form>
 
     {{-- ── Tabel ───────────────────────────────────────────────── --}}
-    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
             <p class="text-[13px] font-bold text-brand-gray">
                 Total: <span class="text-brand-dark">{{ $sekolahs->total() }}</span> sekolah
             </p>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="bg-gray-50 border-b border-gray-100 text-left">
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest w-10">#</th>
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest w-32">NPSN</th>
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Nama Sekolah</th>
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Kota / Provinsi</th>
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest w-24 text-center">Bentuk</th>
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest w-24 text-center">Status</th>
-                        <th class="px-5 py-3 text-[11px] font-black text-gray-400 uppercase tracking-widest w-24 text-right">Aksi</th>
+            <table class="w-full text-left whitespace-nowrap">
+                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-5 w-10">No.</th>
+                        <th class="px-4 py-5 w-32">NPSN</th>
+                        <th class="px-4 py-5">Nama Sekolah</th>
+                        <th class="px-4 py-5">Kota / Provinsi</th>
+                        <th class="px-4 py-5 w-24 text-center">Bentuk</th>
+                        <th class="px-4 py-5 w-24 text-center">Status</th>
+                        <th class="px-6 py-5 w-24 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody class="divide-y divide-gray-50 text-[13px]">
                     @forelse($sekolahs as $s)
-                    <tr class="hover:bg-gray-50/60 transition-colors group">
-                        <td class="px-5 py-3.5 text-gray-400 text-[12px]">
+                    <tr class="hover:bg-gray-50/50 transition-colors group">
+                        <td class="px-6 py-4 text-gray-400 font-bold text-[12px]">
                             {{ ($sekolahs->currentPage() - 1) * $sekolahs->perPage() + $loop->iteration }}
                         </td>
-                        <td class="px-5 py-3.5">
+                        <td class="px-4 py-4">
                             <span class="font-mono font-bold text-[13px] text-brand-blue bg-blue-50 px-2 py-1 rounded-lg">
                                 {{ $s->npsn }}
                             </span>
                         </td>
-                        <td class="px-5 py-3.5">
-                            <p class="font-bold text-brand-dark text-[13px]">{{ $s->nama_sekolah }}</p>
+                        <td class="px-4 py-4">
+                            <p class="font-bold text-brand-dark text-[14px]">{{ $s->nama_sekolah }}</p>
                             @if($s->alamat)
-                            <p class="text-[11px] text-gray-400 font-medium mt-0.5 truncate max-w-xs">{{ $s->alamat }}</p>
+                            <p class="text-gray-400 text-[11px] font-medium mt-0.5 truncate max-w-xs">{{ $s->alamat }}</p>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5">
+                        <td class="px-4 py-4">
                             @if($s->kota || $s->provinsi)
-                            <p class="text-[13px] font-medium text-brand-dark">{{ $s->kota }}</p>
-                            <p class="text-[11px] text-gray-400">{{ $s->provinsi }}</p>
+                            <p class="text-[13px] font-bold text-brand-dark">{{ $s->kota }}</p>
+                            <p class="text-gray-400 text-[11px] font-medium">{{ $s->provinsi }}</p>
                             @else
                             <span class="text-gray-300 text-[12px]">—</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-4 py-4 text-center">
                             @if($s->bentuk)
-                            <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-[11px] font-bold">
+                            <span class="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-[10px] font-black uppercase">
                                 {{ $s->bentuk }}
                             </span>
                             @else
                             <span class="text-gray-300 text-[12px]">—</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-center">
+                        <td class="px-4 py-4 text-center">
                             @if($s->status)
-                            <span class="px-2 py-1 rounded-lg text-[11px] font-bold
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase
                                 {{ strtolower($s->status) === 'negeri'
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : 'bg-amber-50 text-amber-700' }}">
+                                    ? 'bg-green-50 text-green-600'
+                                    : 'bg-amber-50 text-amber-600' }}">
                                 {{ $s->status }}
                             </span>
                             @else
                             <span class="text-gray-300 text-[12px]">—</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3.5 text-right">
+                        <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button @click="bukaModalEdit({{ $s }})"
                                         class="p-1.5 rounded-lg text-brand-gray hover:text-brand-blue hover:bg-blue-50 transition-all"
@@ -140,15 +140,15 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-5 py-16 text-center">
+                        <td colspan="7" class="px-6 py-10 text-center">
                             <div class="flex flex-col items-center gap-3">
                                 <i data-feather="database" class="w-10 h-10 text-gray-200"></i>
-                                <p class="text-gray-400 font-bold text-[14px]">
+                                <p class="text-gray-500 font-bold text-[14px]">
                                     {{ $search ? 'Sekolah tidak ditemukan.' : 'Belum ada data sekolah.' }}
                                 </p>
                                 @if(!$search)
                                 <button @click="bukaModalTambah()"
-                                        class="mt-1 px-4 py-2 bg-brand-blue text-white rounded-xl text-[12px] font-bold hover:bg-blue-700 transition-colors">
+                                        class="mt-1 px-5 py-2 bg-brand-dark text-white rounded-lg font-bold text-[11px] hover:bg-brand-blue transition-colors shadow-sm">
                                     Tambah Sekolah Pertama
                                 </button>
                                 @endif
@@ -162,7 +162,7 @@
 
         {{-- Pagination --}}
         @if($sekolahs->hasPages())
-        <div class="px-6 py-4 border-t border-gray-100">
+        <div class="p-6 border-t border-gray-100 flex justify-end gap-2">
             {{ $sekolahs->links() }}
         </div>
         @endif
@@ -171,19 +171,19 @@
     {{-- ══ MODAL TAMBAH ════════════════════════════════════════ --}}
     <div x-show="modalTambah" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div x-show="modalTambah" x-transition.opacity @click="modalTambah = false"
-             class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+             class="absolute inset-0 bg-brand-dark/60 backdrop-blur-sm"></div>
 
         <div x-show="modalTambah"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
-             class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[90vh]">
+             class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[90vh]">
 
             {{-- Header --}}
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-                <h2 class="font-extrabold text-brand-dark text-[16px]">Tambah Sekolah</h2>
-                <button @click="modalTambah = false" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-brand-dark transition-colors">
-                    <i data-feather="x" class="w-4 h-4"></i>
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+                <h2 class="text-xl font-extrabold text-brand-dark tracking-tight">Tambah Sekolah</h2>
+                <button @click="modalTambah = false" class="p-2 bg-white border border-gray-200 hover:bg-gray-100 rounded-full transition-colors">
+                    <i data-feather="x" class="w-4 h-4 text-gray-500"></i>
                 </button>
             </div>
 
@@ -192,8 +192,8 @@
 
                 {{-- Cari via NPSN --}}
                 <div class="mb-5 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                    <p class="text-[12px] font-black text-brand-blue uppercase tracking-widest mb-3">
-                        🔍 Cari Otomatis via NPSN (PDDikti)
+                    <p class="text-[11px] font-black text-brand-blue uppercase tracking-widest mb-3">
+                        Cari Otomatis via NPSN (PDDikti)
                     </p>
                     <div class="flex gap-2">
                         <input type="text" x-model="npsn_cari"
@@ -203,13 +203,13 @@
                                @keydown.enter.prevent="cariNpsn()">
                         <button type="button" @click="cariNpsn()"
                                 :disabled="loading_npsn"
-                                class="px-4 py-2.5 bg-brand-blue text-white rounded-xl font-bold text-[13px] hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+                                class="px-5 py-2.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-brand-blue transition-colors disabled:opacity-50 flex items-center gap-2">
                             <span x-show="loading_npsn" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             <span x-text="loading_npsn ? 'Mencari...' : 'Cari'"></span>
                         </button>
                     </div>
                     <p x-show="pesan_npsn" x-text="pesan_npsn"
-                       :class="status_npsn === 'error' || status_npsn === 'not_found' ? 'text-red-600' : 'text-emerald-600'"
+                       :class="status_npsn === 'error' || status_npsn === 'not_found' ? 'text-red-600' : 'text-green-600'"
                        class="text-[12px] font-bold mt-2"></p>
                 </div>
 
@@ -274,9 +274,9 @@
             </div>
 
             {{-- Footer --}}
-            <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 shrink-0">
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 shrink-0">
                 <button type="button" @click="modalTambah = false"
-                        class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-bold text-[13px] hover:bg-gray-200 transition-colors">
+                        class="px-6 py-2.5 border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl font-bold text-[13px] transition-colors">
                     Batal
                 </button>
                 <button type="submit" form="formTambah"
@@ -291,18 +291,18 @@
     {{-- ══ MODAL EDIT ══════════════════════════════════════════ --}}
     <div x-show="modalEdit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div x-show="modalEdit" x-transition.opacity @click="modalEdit = false"
-             class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+             class="absolute inset-0 bg-brand-dark/60 backdrop-blur-sm"></div>
 
         <div x-show="modalEdit"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
-             class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[90vh]">
+             class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[90vh]">
 
-            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-                <h2 class="font-extrabold text-brand-dark text-[16px]">Edit Sekolah</h2>
-                <button @click="modalEdit = false" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors">
-                    <i data-feather="x" class="w-4 h-4"></i>
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+                <h2 class="text-xl font-extrabold text-brand-dark tracking-tight">Edit Sekolah</h2>
+                <button @click="modalEdit = false" class="p-2 bg-white border border-gray-200 hover:bg-gray-100 rounded-full transition-colors">
+                    <i data-feather="x" class="w-4 h-4 text-gray-500"></i>
                 </button>
             </div>
 
@@ -362,13 +362,13 @@
                 </form>
             </div>
 
-            <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 shrink-0">
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 shrink-0">
                 <button type="button" @click="modalEdit = false"
-                        class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-bold text-[13px] hover:bg-gray-200 transition-colors">
+                        class="px-6 py-2.5 border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 rounded-xl font-bold text-[13px] transition-colors">
                     Batal
                 </button>
                 <button type="submit" :form="'formEdit-' + editData.id"
-                        class="px-6 py-2.5 bg-brand-blue text-white rounded-xl font-bold text-[13px] hover:bg-blue-700 transition-colors flex items-center gap-2">
+                        class="px-6 py-2.5 bg-brand-dark text-white rounded-xl font-bold text-[13px] hover:bg-brand-blue transition-colors flex items-center gap-2">
                     <i data-feather="save" class="w-4 h-4"></i>
                     Simpan Perubahan
                 </button>
@@ -379,17 +379,17 @@
     {{-- ══ MODAL HAPUS ════════════════════════════════════════ --}}
     <div x-show="modalHapus" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div x-show="modalHapus" x-transition.opacity @click="modalHapus = false"
-             class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+             class="absolute inset-0 bg-brand-dark/60 backdrop-blur-sm"></div>
         <div x-show="modalHapus"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
-             class="bg-white rounded-2xl shadow-2xl w-full max-w-sm relative z-10 p-6 text-center">
-            <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+             class="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm relative z-10 p-8 text-center">
+            <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-feather="trash-2" class="w-6 h-6 text-red-500"></i>
             </div>
             <h3 class="font-extrabold text-brand-dark text-[16px] mb-2">Hapus Sekolah?</h3>
-            <p class="text-brand-gray text-[13px] mb-6">
+            <p class="text-brand-gray text-[13px] font-medium mb-6">
                 Sekolah <span class="font-bold text-brand-dark" x-text="hapusNama"></span> akan dihapus permanen.
             </p>
             <div class="flex gap-3">
@@ -401,7 +401,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit"
-                            class="w-full py-2.5 bg-red-500 text-white rounded-xl font-bold text-[13px] hover:bg-red-600 transition-colors">
+                            class="w-full py-2.5 bg-red-600 text-white rounded-xl font-bold text-[13px] hover:bg-red-700 transition-colors">
                         Ya, Hapus
                     </button>
                 </form>
@@ -484,18 +484,18 @@ function sekolahPage() {
 
                 if (json.status === 'found') {
                     this.form        = { ...json.data };
-                    this.pesan_npsn  = '✓ Data ditemukan dan otomatis diisi.';
+                    this.pesan_npsn  = 'Data ditemukan dan otomatis diisi.';
                     this.status_npsn = 'found';
                 } else if (json.status === 'exists') {
-                    this.pesan_npsn  = '⚠ NPSN ini sudah terdaftar di database.';
+                    this.pesan_npsn  = 'NPSN ini sudah terdaftar di database.';
                     this.status_npsn = 'error';
                 } else {
-                    this.pesan_npsn  = '✗ NPSN tidak ditemukan di PDDikti. Isi manual.';
+                    this.pesan_npsn  = 'NPSN tidak ditemukan di PDDikti. Isi manual.';
                     this.status_npsn = 'not_found';
                     this.form.npsn   = npsn;
                 }
             } catch (e) {
-                this.pesan_npsn  = '✗ Gagal menghubungi API. Cek koneksi internet.';
+                this.pesan_npsn  = 'Gagal menghubungi API. Cek koneksi internet.';
                 this.status_npsn = 'error';
             } finally {
                 this.loading_npsn = false;

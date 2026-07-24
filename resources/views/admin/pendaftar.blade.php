@@ -42,9 +42,9 @@
     <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left min-w-[750px]">
-                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-gray uppercase tracking-widest border-b border-gray-100">
+                <thead class="bg-gray-50/50 text-[11px] font-black text-brand-dark uppercase tracking-widest border-b border-gray-100">
                     <tr>
-                        <th class="px-5 py-4">No</th>
+                        <th class="px-5 py-4">No.</th>
                         <th class="px-4 py-4">Nama & Email</th>
                         <th class="px-4 py-4">No. WA</th>
                         <th class="px-4 py-4">Prodi Diterima / Pilihan</th>
