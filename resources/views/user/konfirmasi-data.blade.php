@@ -56,7 +56,31 @@
     <x-step-tracker :current-step="3" />
 
     <main class="flex-1 max-w-6xl mx-auto w-full px-6 py-12">
-        
+
+        @php
+            // ── Resolusi berkas dokumen (dinamis sesuai jalur) ──────────────
+            // Upload dokumen disimpan dinamis di kolom berkas_dokumen (json),
+            // BUKAN di kolom pas_foto/scan_ktp/ijazah_skl (kolom lama, sudah
+            // tidak diisi oleh proses simpanPendaftaran()).
+            $berkas = is_array($pendaftar->berkas_dokumen)
+                ? $pendaftar->berkas_dokumen
+                : (json_decode($pendaftar->berkas_dokumen ?? '{}', true) ?? []);
+
+            // Cari path foto profil: cek kolom pas_foto dulu, fallback ke
+            // berkas_dokumen dengan key yang mengandung kata "foto" / "pas".
+            $fotoProfilPath = $pendaftar->pas_foto ?? null;
+            if (empty($fotoProfilPath)) {
+                foreach ($berkas as $namaDoc => $pathDoc) {
+                    if (!empty($pathDoc) && (stripos($namaDoc, 'foto') !== false || stripos($namaDoc, 'pas') !== false)) {
+                        $fotoProfilPath = $pathDoc;
+                        break;
+                    }
+                }
+            }
+
+            $isPdf = fn(?string $path) => $path && str_ends_with(strtolower($path), '.pdf');
+        @endphp
+
         <div class="mb-10 text-center md:text-left">
             <span class="inline-block px-3 py-1 bg-adzkia-badge-bg text-adzkia-blue rounded-lg text-[11px] font-black uppercase tracking-widest mb-3">STEP 05 / 07</span>
             <h1 class="text-3xl md:text-4xl font-black text-adzkia-dark tracking-tight mb-2">Konfirmasi Data Pendaftaran</h1>
@@ -65,14 +89,24 @@
             </p>
         </div>
 
+        {{-- PERINGATAN — dipindah ke atas, sebelum kolom profil --}}
+        <div class="flex gap-4 border-l-4 border-adzkia-red bg-red-50 rounded-r-xl pl-5 pr-4 py-4 shadow-sm mb-8">
+            <i data-feather="info" class="w-5 h-5 text-adzkia-red shrink-0 mt-0.5"></i>
+            <div>
+                <h4 class="text-[14px] font-extrabold text-adzkia-red mb-1">Peringatan Penting</h4>
+                <p class="text-[12px] font-medium text-red-900/80 leading-relaxed">Data tidak dapat diubah setelah tahap ini. Pastikan semua informasi sudah benar sebelum menekan tombol konfirmasi.</p>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {{-- KOLOM KIRI (Profil & Info) --}}
             <div class="lg:col-span-4 space-y-6">
                 <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm flex flex-col items-center text-center">
-                    
-                <img src="{{ !empty($pendaftar->pas_foto) ? asset($pendaftar->pas_foto) : 'https://ui-avatars.com/api/?name=' . urlencode($pendaftar->nama_lengkap) . '&background=F1F5F9&color=1e293b&size=128' }}"                         alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100 object-cover">
-                     
+
+                    <img src="{{ !empty($fotoProfilPath) ? asset($fotoProfilPath) : 'https://ui-avatars.com/api/?name=' . urlencode($pendaftar->nama_lengkap) . '&background=F1F5F9&color=1e293b&size=128' }}"
+                         alt="Foto Profil" class="w-24 h-24 rounded-2xl mb-4 shadow-sm border border-gray-100 object-cover">
+
                     <h2 class="text-2xl font-black text-adzkia-dark mb-1">{{ $pendaftar->nama_lengkap }}</h2>
                     <p class="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-6">No. Registrasi: {{ $pendaftar->no_pendaftaran }}</p>
     
@@ -86,14 +120,6 @@
                         
                         <p class="text-[10px] font-black text-blue-100 uppercase tracking-widest mb-1 relative z-10 text-left">Pilihan Jurusan 2</p>
                         <h3 class="text-lg font-extrabold text-white relative z-10 text-left leading-tight">{{ $pendaftar->pilihan_jurusan_2 ?? '-' }}</h3>
-                    </div>
-                </div>
-
-                <div class="flex gap-4 border-l-4 border-adzkia-red bg-red-50 rounded-r-xl pl-5 pr-4 py-4 shadow-sm">
-                    <i data-feather="info" class="w-5 h-5 text-adzkia-red shrink-0 mt-0.5"></i>
-                    <div>
-                        <h4 class="text-[14px] font-extrabold text-adzkia-red mb-1">Peringatan Penting</h4>
-                        <p class="text-[12px] font-medium text-red-900/80 leading-relaxed">Data tidak dapat diubah setelah tahap ini. Pastikan semua informasi sudah benar sebelum menekan tombol konfirmasi.</p>
                     </div>
                 </div>
             </div>
@@ -149,7 +175,9 @@
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Alamat</p>
-                                <p class="text-[14px] font-bold text-adzkia-dark leading-snug">{{ $pendaftar->alamat_rumah ?? '-' }}, {{ $pendaftar->kota_kabupaten ?? '' }}</p>
+                                <p class="text-[14px] font-bold text-adzkia-dark leading-snug">
+                                    {{ $pendaftar->alamat_rumah ?? '-' }}{{ $pendaftar->kota_kabupaten ? ', ' . $pendaftar->kota_kabupaten : '' }}{{ $pendaftar->provinsi ? ', ' . $pendaftar->provinsi : '' }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -161,78 +189,59 @@
                             <i data-feather="book-open" class="w-4 h-4 text-adzkia-blue"></i>
                             <h3 class="text-[15px] font-extrabold text-adzkia-dark">Pendidikan Asal</h3>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Sekolah Asal</p>
-                                <p class="text-[14px] font-bold text-adzkia-dark">{{ $pendaftar->sekolah_asal ?? '-' }}</p>
+                                <p class="text-[14px] font-bold text-adzkia-dark">
+                                    {{ $pendaftar->sekolah_asal ?? '-' }}
+                                    @if(!empty($pendaftar->npsn_sekolah))
+                                        <span class="block text-[11px] font-mono text-gray-400 mt-0.5">NPSN: {{ $pendaftar->npsn_sekolah }}</span>
+                                    @endif
+                                </p>
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Tahun Lulus</p>
                                 <p class="text-[14px] font-bold text-adzkia-dark">{{ $pendaftar->tahun_lulus ?? '-' }}</p>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Nilai Akhir</p>
-                                <p class="text-[14px] font-bold text-adzkia-dark">{{ $pendaftar->nilai_akhir ?? '-' }}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- BLOK REVIEW DOKUMEN (RAPI & SERAGAM) --}}
+                {{-- BLOK REVIEW DOKUMEN — dinamis sesuai isi berkas_dokumen --}}
                 <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm relative">
                     <h3 class="text-[15px] font-extrabold text-adzkia-dark mb-6 flex items-center gap-2">
                         <i data-feather="paperclip" class="w-4 h-4 text-adzkia-blue"></i> Dokumen Terlampir
                     </h3>
-                    
+
+                    @if(count($berkas) > 0)
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        
-                        {{-- Thumbnail Pas Foto --}}
-                        <div class="border border-gray-200 rounded-xl p-3 flex items-center gap-4 hover:border-adzkia-blue transition-colors group">
-                            <div class="w-14 h-14 bg-gray-50 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-gray-100">
-                                <img src="{{ asset($pendaftar->pas_foto) }}" alt="Pas Foto" class="w-full h-full object-cover">                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest">Pas Foto</span>
-                                <a href="{{ asset($pendaftar->pas_foto) }}" target="_blank" class="text-[11px] font-bold text-adzkia-blue hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
-                                    Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
-                                </a>
+                        @foreach($berkas as $namaDokumen => $pathDokumen)
+                            @continue(empty($pathDokumen))
+                            <div class="border border-gray-200 rounded-xl p-3 flex items-center gap-4 hover:border-adzkia-blue transition-colors group">
+                                <div class="w-14 h-14 bg-gray-50 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-gray-100">
+                                    @if($isPdf($pathDokumen))
+                                        {{-- File PDF: tampilkan ikon saja, tidak bisa dijadikan thumbnail gambar --}}
+                                        <i data-feather="file-text" class="w-6 h-6 text-gray-400"></i>
+                                    @else
+                                        {{-- File gambar: tampilkan thumbnail kecil sesuai ukuran box --}}
+                                        <img src="{{ asset($pathDokumen) }}" alt="{{ $namaDokumen }}" class="w-full h-full object-cover">
+                                    @endif
+                                </div>
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest truncate">{{ $namaDokumen }}</span>
+                                    <a href="{{ asset($pathDokumen) }}" target="_blank" class="text-[11px] font-bold text-adzkia-blue hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
+                                        Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-
-                        {{-- Thumbnail KTP --}}
-                        <div class="border border-gray-200 rounded-xl p-3 flex items-center gap-4 hover:border-indigo-400 transition-colors group">
-                            <div class="w-14 h-14 bg-gray-50 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-gray-100">
-                                @if(Str::endsWith($pendaftar->scan_ktp, '.pdf'))
-                                    <i data-feather="file-text" class="w-6 h-6 text-gray-400"></i>
-                                @else
-<img src="{{ asset($pendaftar->scan_ktp) }}" alt="KTP" class="w-full h-full object-cover">
-                                @endif
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest">Scan KTP</span>
-                                <a href="{{ asset($pendaftar->scan_ktp) }}" target="_blank" class="text-[11px] font-bold text-indigo-600 hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
-                                    Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
-                                </a>
-                            </div>
-                        </div>
-
-                        {{-- Thumbnail Ijazah / SKL --}}
-                        <div class="border border-gray-200 rounded-xl p-3 flex items-center gap-4 hover:border-green-400 transition-colors group">
-                            <div class="w-14 h-14 bg-gray-50 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-gray-100">
-                                @if(Str::endsWith($pendaftar->ijazah_skl, '.pdf'))
-                                    <i data-feather="file-text" class="w-6 h-6 text-gray-400"></i>
-                                @else
-                                    <img src="{{ asset($pendaftar->ijazah_skl) }}" alt="Ijazah" class="w-full h-full object-cover">
-                                @endif
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-[11px] font-black text-adzkia-dark uppercase tracking-widest">Ijazah / SKL</span>
-                                <a href="{{ asset($pendaftar->ijazah_skl) }}" target="_blank" class="text-[11px] font-bold text-green-600 hover:text-adzkia-red transition-colors mt-0.5 flex items-center gap-1">
-                                    Lihat File <i data-feather="external-link" class="w-3 h-3"></i>
-                                </a>
-                            </div>
-                        </div>
-
+                        @endforeach
                     </div>
+                    @else
+                    <div class="border-2 border-dashed border-gray-100 rounded-2xl p-6 text-center">
+                        <i data-feather="inbox" class="w-6 h-6 text-gray-300 mb-2 mx-auto"></i>
+                        <p class="text-[12px] font-bold text-gray-400">Belum ada dokumen yang diunggah.</p>
+                    </div>
+                    @endif
                 </div>
 
                 {{-- PERSETUJUAN --}}

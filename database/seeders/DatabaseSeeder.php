@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
 
             // 2. Bergantung pada Prodi + Jalur + Gelombang di atas
             BiayaDaftarUlangSeeder::class,
+
+            SekolahSeeder::class,
+            FaqSeeder::class,
+            BeritaSeeder::class,
         ]);
     }
 }

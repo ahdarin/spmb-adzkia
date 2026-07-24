@@ -120,9 +120,9 @@
                             'agama'              => $item->agama ?? '-',
                             'no_whatsapp'        => $item->no_whatsapp ?? '-',
                             'email'              => $item->email ?? '-',
-                            'alamat'             => $item->alamat ?? '-',
-                            'asal_sekolah'       => $item->asal_sekolah ?? '-',
-                            'jurusan_sekolah'    => $item->jurusan_sekolah ?? '-',
+                            'alamat'             => trim(($item->alamat_rumah ?? '') . ($item->kota_kabupaten ? ', ' . $item->kota_kabupaten : '') . ($item->provinsi ? ', ' . $item->provinsi : ''), ', ') ?: '-',
+                            'asal_sekolah'       => $item->sekolah_asal ?? '-',
+                            'jurusan_sekolah'    => $item->jurusan_sma ?? '-',
                             'tahun_lulus'        => $item->tahun_lulus ?? '-',
                             'pilihan_jurusan_1'  => $item->pilihan_jurusan_1 ?? '-',
                             'pilihan_jurusan_2'  => $item->pilihan_jurusan_2 ?? '-',
@@ -212,7 +212,7 @@
             return status === 'menunggu verifikasi' ? 'Menunggu Verifikasi' : (status || 'Draft');
         },
         getBerkasUrl(path) {
-            return '/storage/' + path;
+            return '/' + path;
         },
         getBerkasLabel(key) {
             const labels = {
