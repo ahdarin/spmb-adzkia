@@ -95,7 +95,18 @@ class RegisterController extends Controller
             $this->kirimNotifikasiWA($nomorHp, $pendaftar->nama_lengkap, $noPendaftaran, $rawPassword);
         }
 
+        // Hapus sesi admin dulu kalau ada (device/browser yang sama dipakai
+        // bergantian admin & pendaftar) — sama seperti pengamanan yang sudah
+        // ada di AuthController::authenticate(). Tanpa ini, ActivityLogger
+        // akan salah mendeteksi aktor sebagai admin, bukan pendaftar yang
+        // baru daftar, karena Auth::check() dicek lebih dulu daripada
+        // session('pendaftar_id').
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            \Illuminate\Support\Facades\Auth::logout();
+        }
+
         session([
+            'is_pendaftar'   => true,   // dipakai CheckRole middleware untuk rute 'user'
             'pendaftar_id'   => $pendaftar->id,
             'nama_pendaftar' => $pendaftar->nama_lengkap,
             'role'           => 'user' 

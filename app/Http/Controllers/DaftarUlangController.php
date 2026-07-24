@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DataPendaftar;
 use App\Models\BiayaDaftarUlang;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -142,6 +143,12 @@ class DaftarUlangController extends Controller
             'data_ortu' => json_encode($dataOrtu, JSON_UNESCAPED_UNICODE),
         ]);
 
+        ActivityLogger::catat(
+            'isi_data_ortu',
+            "{$pendaftar->nama_lengkap} mengisi data orang tua/wali untuk daftar ulang.",
+            ['modul' => 'Daftar Ulang', 'subjek' => $pendaftar]
+        );
+
         return redirect()->route('daftar-ulang.pembayaran')
             ->with('success', 'Data orang tua/wali berhasil disimpan. Silakan lanjutkan ke pembayaran daftar ulang.');
     }
@@ -246,6 +253,12 @@ class DaftarUlangController extends Controller
             }
 
             $pendaftar->update($updateData);
+
+            ActivityLogger::catat(
+                'upload_bukti_daftar_ulang',
+                "{$pendaftar->nama_lengkap} mengunggah bukti pembayaran daftar ulang.",
+                ['modul' => 'Daftar Ulang', 'subjek' => $pendaftar]
+            );
 
             return redirect()->route('dashboard.user')
                 ->with('success', '✅ Bukti pembayaran daftar ulang berhasil diunggah! Harap tunggu proses validasi oleh Admin. Anda akan mendapatkan NIM setelah berkas diverifikasi.');

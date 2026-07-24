@@ -6,6 +6,7 @@ use App\Models\DataPendaftar;
 use App\Models\Prodi;
 use App\Models\Jalur;
 use App\Models\Sekolah;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -173,6 +174,12 @@ class DashboardUserController extends Controller
                 'status_pembayaran' => $statusPembayaran,
             ]);
 
+            ActivityLogger::catat(
+                'isi_formulir_awal',
+                "{$pendaftar->nama_lengkap} mengisi formulir pendaftaran awal, jalur {$jalur->nama_jalur}.",
+                ['modul' => 'Pendaftaran', 'subjek' => $pendaftar]
+            );
+
             DB::commit();
 
             if ($jalur->is_free_registration) {
@@ -317,6 +324,13 @@ class DashboardUserController extends Controller
         }
 
         $pendaftar->save();
+
+        ActivityLogger::catat(
+            'upload_bukti_pembayaran',
+            "{$pendaftar->nama_lengkap} mengunggah bukti pembayaran pendaftaran.",
+            ['modul' => 'Pembayaran', 'subjek' => $pendaftar]
+        );
+
         return back()->with('success', 'Bukti pembayaran berhasil diunggah! Harap tunggu proses validasi oleh Admin.');
     }
 
@@ -452,6 +466,12 @@ class DashboardUserController extends Controller
 
         $pendaftar->update($validated);
 
+        ActivityLogger::catat(
+            'lengkapi_biodata',
+            "{$pendaftar->nama_lengkap} melengkapi biodata & dokumen persyaratan.",
+            ['modul' => 'Pendaftaran', 'subjek' => $pendaftar]
+        );
+
         return redirect()->route('konfirmasi-data', $pendaftar->id)
             ->with('success', 'Biodata berhasil disimpan!');
     }
@@ -502,6 +522,12 @@ class DashboardUserController extends Controller
 
         $pendaftar->update($validated);
 
+        ActivityLogger::catat(
+            'update_biodata',
+            "{$pendaftar->nama_lengkap} memperbarui biodata.",
+            ['modul' => 'Pendaftaran', 'subjek' => $pendaftar]
+        );
+
         return redirect()->route('konfirmasi-data', $pendaftar->id)
             ->with('success', 'Biodata berhasil diperbarui!');
     }
@@ -534,6 +560,12 @@ class DashboardUserController extends Controller
         $pendaftar = DataPendaftar::findOrFail($id);
         $pendaftar->status_pendaftaran = 'menunggu verifikasi';
         $pendaftar->save();
+
+        ActivityLogger::catat(
+            'konfirmasi_data',
+            "{$pendaftar->nama_lengkap} ({$pendaftar->no_pendaftaran}) mengonfirmasi & mengirim data pendaftaran untuk diverifikasi admin.",
+            ['modul' => 'Pendaftaran', 'subjek' => $pendaftar]
+        );
 
         return redirect()->route('pendaftaran.validasiakhir', ['id' => $id]);
     }

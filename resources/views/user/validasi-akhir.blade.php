@@ -27,6 +27,21 @@
 </head>
 <body class="bg-gray-50 antialiased text-adzkia-dark min-h-screen flex flex-col" x-data="validasiApp()">
 
+    @php
+        // ── Resolusi status berkas jadi 3 kondisi tampilan ─────────────
+        // 'menunggu'  → status_pendaftaran masih 'menunggu verifikasi'
+        // 'revisi'    → status_pendaftaran == 'Revisi', admin minta perbaikan
+        // 'selesai'   → status_pendaftaran == 'Selesai', berkas terverifikasi
+        $statusBerkas = match($pendaftar->status_pendaftaran) {
+            'Selesai' => 'selesai',
+            'Revisi'  => 'revisi',
+            default   => 'menunggu', // termasuk 'menunggu verifikasi'
+        };
+
+        // Tahap 3 (Hasil Kelulusan) aktif kalau admin sudah menetapkan status_kelulusan
+        $kelulusanSudahAda = !empty($pendaftar->status_kelulusan);
+    @endphp
+
     {{-- NAVBAR DASHBOARD USER (Konsisten) --}}
     <nav class="bg-white border-b border-gray-200 py-4 px-6 md:px-10 flex justify-between items-center sticky top-0 z-30">
         <a href="{{ route('dashboard.user') }}" class="flex items-center gap-3 group">
@@ -67,20 +82,40 @@
 
         <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-sm border border-gray-100">
             
+            {{-- HEADER — berubah sesuai status --}}
             <div class="flex flex-col items-center text-center mb-10 border-b border-gray-50 pb-8">
-                <div class="w-20 h-20 bg-adzkia-badge-bg text-adzkia-blue rounded-full flex items-center justify-center mb-6 animate-pulse">
-                    <i data-feather="hourglass" class="w-10 h-10"></i>
-                </div>
-                <h1 class="text-3xl font-black text-adzkia-dark tracking-tight mb-3">Verifikasi Berkas Admin</h1>
-                <span class="px-4 py-1.5 bg-blue-50 text-adzkia-blue rounded-full text-[11px] font-black uppercase tracking-widest border border-blue-100">
-                    Proses Pemeriksaan
-                </span>
+                @if($statusBerkas === 'selesai')
+                    <div class="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-6">
+                        <i data-feather="check-circle" class="w-10 h-10"></i>
+                    </div>
+                    <h1 class="text-3xl font-black text-adzkia-dark tracking-tight mb-3">Berkas Anda Telah Diverifikasi!</h1>
+                    <span class="px-4 py-1.5 bg-green-50 text-green-600 rounded-full text-[11px] font-black uppercase tracking-widest border border-green-100">
+                        Terverifikasi
+                    </span>
+                @elseif($statusBerkas === 'revisi')
+                    <div class="w-20 h-20 bg-red-50 text-adzkia-red rounded-full flex items-center justify-center mb-6">
+                        <i data-feather="alert-triangle" class="w-10 h-10"></i>
+                    </div>
+                    <h1 class="text-3xl font-black text-adzkia-dark tracking-tight mb-3">Perlu Perbaikan Berkas</h1>
+                    <span class="px-4 py-1.5 bg-red-50 text-adzkia-red rounded-full text-[11px] font-black uppercase tracking-widest border border-red-100">
+                        Revisi Diperlukan
+                    </span>
+                @else
+                    <div class="w-20 h-20 bg-adzkia-badge-bg text-adzkia-blue rounded-full flex items-center justify-center mb-6 animate-pulse">
+                        <i data-feather="hourglass" class="w-10 h-10"></i>
+                    </div>
+                    <h1 class="text-3xl font-black text-adzkia-dark tracking-tight mb-3">Verifikasi Berkas Admin</h1>
+                    <span class="px-4 py-1.5 bg-blue-50 text-adzkia-blue rounded-full text-[11px] font-black uppercase tracking-widest border border-blue-100">
+                        Proses Pemeriksaan
+                    </span>
+                @endif
             </div>
 
+            {{-- TIMELINE --}}
             <div class="mb-10 px-4 md:px-10">
                 <div class="relative space-y-6 before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-adzkia-blue before:via-gray-200 before:to-transparent">
                     
-                    {{-- TIMELINE 1: DATA DIKIRIM --}}
+                    {{-- TIMELINE 1: DATA DIKIRIM — selalu selesai (halaman ini cuma bisa diakses setelah submit) --}}
                     <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                         <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-green-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
                             <i data-feather="check" class="w-3 h-3"></i>
@@ -88,22 +123,43 @@
                         <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-green-600">Formulir Dikirim</div>
                     </div>
                     
-                    {{-- TIMELINE 2: MENUNGGU VERIFIKASI (STATUS SAAT INI) --}}
+                    {{-- TIMELINE 2: PENGECEKAN ADMIN — berubah sesuai status --}}
                     <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-adzkia-blue text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                            <i data-feather="loader" class="w-3 h-3 animate-spin"></i>
-                        </div>
-                        <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-adzkia-blue">Menunggu Pengecekan Admin</div>
+                        @if($statusBerkas === 'selesai')
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-green-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-feather="check" class="w-3 h-3"></i>
+                            </div>
+                            <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-green-600">Berkas Terverifikasi</div>
+                        @elseif($statusBerkas === 'revisi')
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-adzkia-red text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-feather="x" class="w-3 h-3"></i>
+                            </div>
+                            <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-adzkia-red">Perlu Revisi Berkas</div>
+                        @else
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-adzkia-blue text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-feather="loader" class="w-3 h-3 animate-spin"></i>
+                            </div>
+                            <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-adzkia-blue">Menunggu Pengecekan Admin</div>
+                        @endif
                     </div>
 
-                    {{-- TIMELINE 3: SELESAI --}}
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                        <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-200 bg-white text-gray-400 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                            <i data-feather="check" class="w-3 h-3"></i>
-                        </div>
-                        <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-gray-400">
-                            Hasil Kelulusan
-                        </div>
+                    {{-- TIMELINE 3: HASIL KELULUSAN — aktif kalau admin sudah tetapkan status_kelulusan --}}
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group {{ $kelulusanSudahAda ? 'is-active' : '' }}">
+                        @if($kelulusanSudahAda)
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-green-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-feather="check" class="w-3 h-3"></i>
+                            </div>
+                            <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-green-600">
+                                Hasil Kelulusan Tersedia
+                            </div>
+                        @else
+                            <div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-200 bg-white text-gray-400 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <i data-feather="check" class="w-3 h-3"></i>
+                            </div>
+                            <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] md:group-odd:text-right font-extrabold text-[14px] text-gray-400">
+                                Hasil Kelulusan
+                            </div>
+                        @endif
                     </div>
 
                 </div>
@@ -125,25 +181,65 @@
                     <h4 class="text-[14px] font-extrabold text-adzkia-dark">{{ \Carbon\Carbon::parse($pendaftar->updated_at)->translatedFormat('d F Y') }}</h4>
                 </div>
                 <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Estimasi Verifikasi</p>
-                    <h4 class="text-[14px] font-extrabold text-adzkia-dark">1 - 2 Hari Kerja</h4>
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
+                        {{ $statusBerkas === 'selesai' ? 'Status' : 'Estimasi Verifikasi' }}
+                    </p>
+                    <h4 class="text-[14px] font-extrabold text-adzkia-dark">
+                        @if($statusBerkas === 'selesai')
+                            Berkas Valid
+                        @elseif($statusBerkas === 'revisi')
+                            Menunggu Perbaikan Anda
+                        @else
+                            1 - 2 Hari Kerja
+                        @endif
+                    </h4>
                 </div>
             </div>
 
-            <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 flex gap-4 items-start mb-8">
-                <i data-feather="message-square" class="w-5 h-5 text-adzkia-blue shrink-0 mt-0.5"></i>
-                <p class="text-[13px] font-medium text-gray-600 leading-relaxed">
-                    Data Anda sedang dalam antrean pemeriksaan oleh tim akademik. Mohon periksa dasbor secara berkala untuk melihat hasil pengumuman.
-                </p>
-            </div>
+            {{-- KOTAK PESAN — berubah sesuai status --}}
+            @if($statusBerkas === 'revisi')
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-5 flex gap-4 items-start mb-8">
+                    <i data-feather="alert-triangle" class="w-5 h-5 text-adzkia-red shrink-0 mt-0.5"></i>
+                    <div>
+                        <p class="text-[13px] font-black text-adzkia-red mb-1">Catatan dari Admin:</p>
+                        <p class="text-[13px] font-medium text-red-900/80 leading-relaxed">
+                            {{ $pendaftar->pesan_revisi ?? 'Mohon periksa kembali kelengkapan data dan dokumen Anda.' }}
+                        </p>
+                    </div>
+                </div>
+            @elseif($statusBerkas === 'selesai')
+                <div class="bg-green-50 border border-green-100 rounded-2xl p-5 flex gap-4 items-start mb-8">
+                    <i data-feather="check-circle" class="w-5 h-5 text-green-600 shrink-0 mt-0.5"></i>
+                    <p class="text-[13px] font-medium text-gray-600 leading-relaxed">
+                        Berkas dan biodata Anda sudah dinyatakan lengkap dan valid. Panitia PMB sedang melakukan proses seleksi akhir — pantau dasbor secara berkala untuk melihat hasil kelulusan.
+                    </p>
+                </div>
+            @else
+                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 flex gap-4 items-start mb-8">
+                    <i data-feather="message-square" class="w-5 h-5 text-adzkia-blue shrink-0 mt-0.5"></i>
+                    <p class="text-[13px] font-medium text-gray-600 leading-relaxed">
+                        Data Anda sedang dalam antrean pemeriksaan oleh tim akademik. Mohon periksa dasbor secara berkala untuk melihat hasil pengumuman.
+                    </p>
+                </div>
+            @endif
 
+            {{-- TOMBOL AKSI — berubah sesuai status --}}
             <div class="flex flex-col items-center gap-4">
-                <a href="{{ route('dashboard.user') }}" class="w-full py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98] text-center">
-                    Kembali ke Dashboard Utama
-                </a>
-                <button onclick="window.location.reload()" class="text-[13px] font-extrabold text-gray-500 hover:text-adzkia-dark transition-colors py-2">
-                    Muat Ulang Halaman
-                </button>
+                @if($statusBerkas === 'revisi')
+                    <a href="{{ route('pendaftaran.biodata') }}" class="w-full py-4 bg-adzkia-red text-white rounded-2xl font-black text-[15px] hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-[0.98] text-center flex items-center justify-center gap-2">
+                        <i data-feather="edit-2" class="w-4 h-4"></i> Perbaiki Berkas Sekarang
+                    </a>
+                @else
+                    <a href="{{ route('dashboard.user') }}" class="w-full py-4 bg-adzkia-blue text-white rounded-2xl font-black text-[15px] hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98] text-center">
+                        Kembali ke Dashboard Utama
+                    </a>
+                @endif
+
+                @if($statusBerkas === 'menunggu')
+                    <button onclick="window.location.reload()" class="text-[13px] font-extrabold text-gray-500 hover:text-adzkia-dark transition-colors py-2">
+                        Muat Ulang Halaman
+                    </button>
+                @endif
             </div>
 
         </div>

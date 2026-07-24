@@ -49,11 +49,20 @@ class ActivityLogger
     /** @return array{0: string, 1: int|null, 2: string|null, 3: string|null} */
     protected static function deteksiAktor(): array
     {
-        if (Auth::check()) {
-            $admin = Auth::user();
-            return ['admin', $admin->id, $admin->name ?? $admin->email, $admin->role ?? $admin->divisi ?? null];
-        }
-
+        // PENTING: cek pendaftar LEBIH DULU daripada admin.
+        //
+        // Kenapa dibalik urutannya: di sistem ini ada 2 mekanisme login yang
+        // independen satu sama lain — Auth::check() (guard bawaan Laravel,
+        // dipakai admin, punya cookie "remember me" yang bisa auto-login lagi)
+        // dan session('pendaftar_id') (custom, dipakai pendaftar). Kalau
+        // keduanya kebetulan aktif bersamaan di browser yang sama (mis. admin
+        // login lalu di tab/waktu lain ada pendaftar register/login tanpa
+        // logout admin dulu), method lama ini SELALU menganggapnya admin —
+        // padahal aksi yang sebenarnya terjadi adalah aksi pendaftar.
+        //
+        // session('pendaftar_id') jauh lebih spesifik/eksplisit dibanding
+        // Auth::check() (yang bisa "menyala sendiri" lewat cookie remember),
+        // jadi diutamakan di sini.
         if (session('pendaftar_id')) {
             return [
                 'pendaftar',
@@ -61,6 +70,11 @@ class ActivityLogger
                 session('nama_pendaftar'),
                 null,
             ];
+        }
+
+        if (Auth::check()) {
+            $admin = Auth::user();
+            return ['admin', $admin->id, $admin->name ?? $admin->email, $admin->role ?? $admin->divisi ?? null];
         }
 
         return ['system', null, null, null];
