@@ -88,12 +88,8 @@
                             <i data-feather="check-circle" class="w-4 h-4 text-white"></i>
                         </div>
                         <div>
-                            <p class="text-white font-extrabold text-[14px] leading-tight">Pendaftaran Berhasil! 🎉</p>
+                            <p class="text-white font-extrabold text-[14px] leading-tight">Pendaftaran Berhasil!</p>
                             <p class="text-blue-100 text-[11px] font-medium mt-0.5">Data akun Anda telah dikirim via WhatsApp</p>
-                        </div>
-                        <div class="ml-auto flex items-center gap-1.5 bg-white/15 px-2.5 py-1 rounded-full">
-                            <i data-feather="message-circle" class="w-3 h-3 text-white"></i>
-                            <span class="text-white text-[10px] font-extrabold uppercase tracking-wide">WhatsApp</span>
                         </div>
                     </div>
 

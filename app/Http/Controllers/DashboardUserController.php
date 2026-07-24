@@ -91,8 +91,7 @@ class DashboardUserController extends Controller
             'sekolah_asal'      => 'required|string|max:255',
             'npsn_sekolah'      => 'nullable|digits_between:8,10',
             'jurusan_sma'       => 'nullable|string|max:100',
-            'tahun_lulus'       => 'nullable|digits:4',
-            'nilai_akhir'       => 'required|numeric|min:0|max:100',
+            'tahun_lulus'       => 'nullable|digits:4|integer|min:2020|max:' . date('Y'),
             'pilihan_jurusan_1' => 'required|string',
             'pilihan_jurusan_2' => 'required|string|different:pilihan_jurusan_1',
         ], [
@@ -168,7 +167,6 @@ class DashboardUserController extends Controller
                 'npsn_sekolah'      => $request->npsn_sekolah,
                 'jurusan_sma'       => $request->jurusan_sma,
                 'tahun_lulus'       => $request->tahun_lulus,
-                'nilai_akhir'       => $request->nilai_akhir,
                 'pilihan_jurusan_1' => $request->pilihan_jurusan_1,
                 'pilihan_jurusan_2' => $request->pilihan_jurusan_2,
                 'berkas_dokumen'    => json_encode($berkasUpdate, JSON_UNESCAPED_UNICODE),
@@ -389,10 +387,12 @@ class DashboardUserController extends Controller
             'gender'          => 'required|in:Laki-laki,Perempuan',
             'agama'           => 'required|string|max:50',
             'no_whatsapp'     => 'required|string|max:20',
+            'provinsi'        => 'required|string',
+            'kota_kabupaten'  => 'required|string',
             'sekolah_asal'    => 'required|string|max:255',
             'npsn_sekolah'    => 'nullable|digits_between:8,10',
             'jurusan_sma'     => 'nullable|string|max:255',
-            'tahun_lulus'     => 'required|digits:4|integer',
+            'tahun_lulus'     => 'required|digits:4|integer|min:2020|max:' . date('Y'),
             'alamat_rumah'    => 'required|string',
         ], [
             'npsn_sekolah.digits_between' => 'NPSN harus 8-10 digit angka.',
@@ -404,8 +404,51 @@ class DashboardUserController extends Controller
                 ->withInput()
                 ->withErrors(['npsn_sekolah' => $resolved['error']]);
         }
-
         $validated['sekolah_id'] = $resolved['sekolah_id'];
+
+        // ── Proses upload dokumen sesuai syarat jalur yang dipilih ──────────
+        // (logika sama seperti di simpanPendaftaran(), supaya konsisten)
+        if ($pendaftar->jalur_id) {
+            $jalur = \App\Models\Jalur::find($pendaftar->jalur_id);
+
+            if ($jalur) {
+                $dokumenSyarat = is_array($jalur->dokumen_syarat)
+                    ? $jalur->dokumen_syarat
+                    : (json_decode($jalur->dokumen_syarat, true) ?? []);
+
+                $berkasLama = is_array($pendaftar->berkas_dokumen)
+                    ? $pendaftar->berkas_dokumen
+                    : (json_decode($pendaftar->berkas_dokumen ?? '{}', true) ?? []);
+
+                $uploadRules = [];
+                foreach ($dokumenSyarat as $dokumen) {
+                    $fieldName = 'doc_' . $this->slugifyDokumen($dokumen);
+                    $sudahAda  = !empty($berkasLama[$dokumen]);
+                    $uploadRules[$fieldName] = ($sudahAda ? 'nullable' : 'required')
+                        . '|file|mimes:jpg,jpeg,png,pdf|max:2048';
+                }
+
+                if (!empty($uploadRules)) {
+                    $request->validate($uploadRules, $this->pesanValidasiDokumen($dokumenSyarat));
+                }
+
+                $berkasUpdate = $berkasLama;
+                foreach ($dokumenSyarat as $dokumen) {
+                    $fieldName = 'doc_' . $this->slugifyDokumen($dokumen);
+
+                    if ($request->hasFile($fieldName) && $request->file($fieldName)->isValid()) {
+                        $file     = $request->file($fieldName);
+                        $folder   = 'uploads/dokumen/' . $pendaftar->id;
+                        $namaFile = $this->slugifyDokumen($dokumen) . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+                        $file->move(public_path($folder), $namaFile);
+                        $berkasUpdate[$dokumen] = $folder . '/' . $namaFile;
+                    }
+                }
+
+                $validated['berkas_dokumen'] = json_encode($berkasUpdate, JSON_UNESCAPED_UNICODE);
+            }
+        }
 
         $pendaftar->update($validated);
 
@@ -442,7 +485,7 @@ class DashboardUserController extends Controller
             'sekolah_asal'    => 'required|string|max:255',
             'npsn_sekolah'    => 'nullable|digits_between:8,10',
             'jurusan_sma'     => 'nullable|string|max:255',
-            'tahun_lulus'     => 'required|digits:4|integer',
+            'tahun_lulus'     => 'required|digits:4|integer|min:2020|max:' . date('Y'),
             'alamat_rumah'    => 'required|string',
         ], [
             'npsn_sekolah.digits_between' => 'NPSN harus 8-10 digit angka.',

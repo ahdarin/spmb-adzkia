@@ -19,7 +19,6 @@ class SekolahController extends Controller
             return response()->json([]);
         }
 
-        // 1. Cari di DB lokal dulu (cepat)
         $lokal = Sekolah::where('nama_sekolah', 'like', "%{$q}%")
             ->orWhere('npsn', 'like', "%{$q}%")
             ->orWhere('kota', 'like', "%{$q}%")
@@ -28,16 +27,7 @@ class SekolahController extends Controller
             ->get(['id', 'npsn', 'nama_sekolah', 'kota', 'provinsi', 'bentuk', 'status'])
             ->map(fn($s) => [...$s->toArray(), 'source' => 'local']);
 
-        // Kalau sudah cukup hasil dari lokal, kembalikan langsung
-        if ($lokal->count() >= 5) {
-            return response()->json($lokal->values());
-        }
-
-        // 2. Fallback ke API PDDikti untuk tambahan hasil
-        $npsn_lokal = $lokal->pluck('npsn')->toArray();
-        $apiResults = $this->searchFromApi($q, $npsn_lokal);
-
-        return response()->json($lokal->concat($apiResults)->values());
+        return response()->json($lokal->values());
     }
 
     /**
@@ -71,50 +61,5 @@ class SekolahController extends Controller
             'provinsi'     => $sekolah->provinsi,
         ]);
     }
-
-    /**
-     * Cari dari API PDDikti berdasarkan nama sekolah
-     */
-    private function searchFromApi(string $keyword, array $skipNpsn = []): array
-    {
-        try {
-            $encoded  = urlencode($keyword);
-            $url      = "https://api-sekolah-indonesia.vercel.app/sekolah?nama={$encoded}&limit=10";
-            $ctx      = stream_context_create([
-                'http' => ['timeout' => 5, 'ignore_errors' => true],
-                'ssl'  => ['verify_peer' => false],
-            ]);
-            $response = @file_get_contents($url, false, $ctx);
-
-            if (!$response) return [];
-
-            $json = json_decode($response, true);
-            if (empty($json['dataSekolah'])) return [];
-
-            $results = [];
-            foreach ($json['dataSekolah'] as $s) {
-                $npsn = $s['npsn'] ?? null;
-                if (!$npsn || in_array($npsn, $skipNpsn)) continue;
-
-                $results[] = [
-                    'id'           => null,
-                    'npsn'         => $npsn,
-                    'nama_sekolah' => ucwords(strtolower($s['nama'] ?? '')),
-                    'kota'         => ucwords(strtolower($s['kota'] ?? $s['kabupaten_kota'] ?? '')),
-                    'provinsi'     => ucwords(strtolower($s['propinsi'] ?? $s['provinsi'] ?? '')),
-                    'bentuk'       => strtoupper($s['bentuk'] ?? ''),
-                    'status'       => ucwords(strtolower($s['status'] ?? '')),
-                    'alamat'       => $s['alamat_jalan'] ?? $s['alamat'] ?? null,
-                    'source'       => 'api', // penanda dari API, belum ada di DB
-                ];
-
-                if (count($results) >= 5) break;
-            }
-
-            return $results;
-
-        } catch (\Exception $e) {
-            return [];
-        }
-    }
+    
 }

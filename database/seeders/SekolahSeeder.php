@@ -4,54 +4,125 @@ namespace Database\Seeders;
 
 use App\Models\Sekolah;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 /**
- * Seeder data sekolah STARTER.
- *
- * Berisi data sekolah negeri di Kota Padang & sekitarnya yang datanya sudah
- * saya cek silang ke sumber resmi (dapo.kemendikdasmen.go.id /
- * referensi.data.kemdikbud.go.id) supaya NPSN-nya akurat — bukan hasil
- * tebakan. Ini dipakai sebagai data awal saja; sisanya akan terisi otomatis
- * lewat fitur "cari NPSN" di form pendaftar (lihat resolveSekolah() di
- * DashboardUserController) setiap kali mahasiswa daftar dengan sekolah yang
- * belum ada di master.
+ * Seeder data sekolah dari file CSV resmi DAPODIK / referensi.data.kemdikbud.go.id.
  *
  * CARA PAKAI:
- *   php artisan db:seed --class="Database\Seeders\SekolahSeeder"
+ *   1. Taruh file CSV di: database/seeders/data/Data Induk Satuan Pendidikan  - DAFTAR Nasional 360 - dikmen - ASC - 20 Juli 2026.csv
+ *   2. Jalankan: php artisan db:seed --class="Database\Seeders\SekolahSeeder"
  *
- * Silakan tambah baris sendiri untuk sekolah lain yang sering muncul di
- * pendaftar kamu (cek manual NPSN-nya di referensi.data.kemdikbud.go.id
- * biar akurat, jangan asal isi).
+ * Format CSV yang didukung (header wajib ada, urutan kolom bebas):
+ *   NPSN,Nama,Bentuk,Jenis,Status,Jenjang,Kabupaten,Kecamatan,Kelurahan,Alamat,Jalur,Pembina
+ *
+ * Baris yang diawali "#" (metadata seperti "# Wilayah::" / "# Bentuk::") otomatis dilewati.
+ *
+ * Catatan: kolom "Provinsi" TIDAK ada di CSV sumber (hanya Kabupaten), jadi
+ * kolom provinsi di database akan kosong (null) untuk data yang diimport
+ * lewat cara ini. Ini aman karena kolom provinsi memang nullable.
+ *
+ * Data diproses per-chunk (500 baris) pakai upsert supaya cepat untuk file besar,
+ * dan otomatis update kalau NPSN sudah ada di database (tidak duplikat).
  */
 class SekolahSeeder extends Seeder
 {
     public function run(): void
     {
-        $data = [
-            // ── SMA Negeri Kota Padang ──────────────────────────────
-            ['npsn' => '10303461', 'nama_sekolah' => 'SMA Negeri 1 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMA', 'status' => 'Negeri'],
+        $path = database_path('seeders/data/Data Induk Satuan Pendidikan  - DAFTAR Nasional 360 - dikmen - ASC - 20 Juli 2026.csv');
 
-            // ── SMK Negeri Kota Padang ───────────────────────────────
-            ['npsn' => '10304847', 'nama_sekolah' => 'SMK Negeri 1 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304848', 'nama_sekolah' => 'SMK Negeri 2 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304849', 'nama_sekolah' => 'SMK Negeri 3 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304850', 'nama_sekolah' => 'SMK Negeri 4 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304851', 'nama_sekolah' => 'SMK Negeri 5 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10303507', 'nama_sekolah' => 'SMK Negeri 6 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304188', 'nama_sekolah' => 'SMK Negeri 7 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304852', 'nama_sekolah' => 'SMK Negeri 8 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-            ['npsn' => '10304853', 'nama_sekolah' => 'SMK Negeri 9 Padang', 'kota' => 'Kota Padang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMK', 'status' => 'Negeri'],
-
-            // ── SMA Negeri kota/kabupaten sekitar Padang ────────────
-            ['npsn' => '10303611', 'nama_sekolah' => 'SMA Negeri 1 Padang Panjang', 'kota' => 'Kota Padang Panjang', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMA', 'status' => 'Negeri'],
-            ['npsn' => '10305563', 'nama_sekolah' => 'SMA Negeri 1 Padang Sago', 'kota' => 'Kabupaten Padang Pariaman', 'provinsi' => 'Sumatera Barat', 'bentuk' => 'SMA', 'status' => 'Negeri'],
-        ];
-
-        foreach ($data as $row) {
-            Sekolah::updateOrCreate(['npsn' => $row['npsn']], $row);
+        if (!file_exists($path)) {
+            $this->command->error("File CSV tidak ditemukan di: {$path}");
+            $this->command->warn('Pastikan file sudah diletakkan di database/seeders/data');
+            return;
         }
 
-        $this->command->info('Selesai. ' . count($data) . ' data sekolah starter diimport/diperbarui.');
-        $this->command->info('Sisanya akan terisi otomatis lewat form pendaftaran mahasiswa (isi NPSN saat daftar).');
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            $this->command->error('Gagal membuka file CSV.');
+            return;
+        }
+
+        $header       = null;
+        $columnIndex  = [];
+        $buffer       = [];
+        $totalDiimpor = 0;
+        $chunkSize    = 500;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            // Lewati baris kosong atau metadata (# Wilayah::, # Bentuk::, dst)
+            if (empty($row) || !isset($row[0]) || str_starts_with(trim($row[0]), '#')) {
+                continue;
+            }
+
+            // Baris pertama yang bukan metadata = header
+            if ($header === null) {
+                $header = array_map('trim', $row);
+                foreach ($header as $i => $kolom) {
+                    $columnIndex[strtolower($kolom)] = $i;
+                }
+                continue;
+            }
+
+            // Ambil kolom berdasarkan nama header (bukan posisi tetap, lebih aman)
+            $npsn  = trim($row[$columnIndex['npsn']]   ?? '');
+            $nama  = trim($row[$columnIndex['nama']]   ?? '');
+
+            if ($npsn === '' || $nama === '') {
+                continue; // baris rusak/tidak lengkap, lewati
+            }
+
+            $status = trim($row[$columnIndex['status']] ?? '');
+            $status = match (strtoupper($status)) {
+                'NEGERI' => 'Negeri',
+                'SWASTA' => 'Swasta',
+                default  => $status ?: null,
+            };
+
+            $buffer[] = [
+                'npsn'         => $npsn,
+                'nama_sekolah' => $nama,
+                'bentuk'       => trim($row[$columnIndex['bentuk']]     ?? '') ?: null,
+                'status'       => $status,
+                'kota'         => trim($row[$columnIndex['kabupaten']]  ?? '') ?: null,
+                'alamat'       => trim($row[$columnIndex['alamat']]     ?? '') ?: null,
+                'provinsi'     => null, // tidak tersedia di CSV sumber
+                'created_at'   => Carbon::now(),
+                'updated_at'   => Carbon::now(),
+            ];
+
+            // Insert per-chunk supaya tidak boros memori untuk file besar
+            if (count($buffer) >= $chunkSize) {
+                $this->upsertChunk($buffer);
+                $totalDiimpor += count($buffer);
+                $this->command->info("Diproses: {$totalDiimpor} baris...");
+                $buffer = [];
+            }
+        }
+
+        // Sisa buffer terakhir yang belum genap satu chunk
+        if (!empty($buffer)) {
+            $this->upsertChunk($buffer);
+            $totalDiimpor += count($buffer);
+        }
+
+        fclose($handle);
+
+        $this->command->info("✅ Selesai. Total {$totalDiimpor} data sekolah diimport/diperbarui dari CSV.");
+    }
+
+    /**
+     * Upsert satu batch data sekolah berdasarkan kolom unique "npsn".
+     * Kalau NPSN sudah ada → kolom yang disebut di argumen ke-3 akan diupdate.
+     * Kalau belum ada → insert baru.
+     */
+    private function upsertChunk(array $rows): void
+    {
+        DB::table('sekolahs')->upsert(
+            $rows,
+            ['npsn'], // kolom unique untuk deteksi duplikat
+            ['nama_sekolah', 'bentuk', 'status', 'kota', 'alamat', 'updated_at'] // kolom yang diupdate kalau sudah ada
+        );
     }
 }
