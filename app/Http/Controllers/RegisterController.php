@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DataPendaftar;
 use App\Models\Prodi;
+use App\Models\Jalur;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -14,19 +15,14 @@ class RegisterController extends Controller
 {
     public function showRegister()
     {
-        $prodiList = Prodi::all(); 
-        
-        $jalurKhusus = [
-            'Prestasi' => [
-                (object)['name' => 'Prestasi Akademik (Juara Kelas/Olimpiade)'],
-                (object)['name' => 'Prestasi Non-Akademik (Olahraga/Seni)'],
-                (object)['name' => 'Tahfidz Al-Quran']
-            ],
-            'Kemitraan' => [
-                (object)['name' => 'Kemitraan Instansi Pemerintah'],
-                (object)['name' => 'Rekomendasi Yayasan Adzkia']
-            ]
-        ];
+        $prodiList = Prodi::all();
+
+        $jalurKhusus = Jalur::where('is_active', true)
+            ->where('tipe_jalur', '!=', 'Reguler')
+            ->orderBy('tipe_jalur')
+            ->orderBy('nama_jalur')
+            ->get()
+            ->groupBy('tipe_jalur');
 
         return view('user.register', compact('prodiList', 'jalurKhusus'));
     }

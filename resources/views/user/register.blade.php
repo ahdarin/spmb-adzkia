@@ -106,19 +106,16 @@
                             <select x-model="specificJalur" class="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl outline-none focus:border-adzkia-blue transition-all font-bold text-[14px] text-adzkia-dark appearance-none cursor-pointer">
                                 <option value="" disabled selected>-- Pilih Kategori Program Khusus --</option>
                                 
-                                @if(isset($jalurKhusus) && is_array($jalurKhusus))
-                                    @foreach($jalurKhusus as $category => $items)
-                                        <optgroup label="{{ $category }}">
-                                            @foreach($items as $jalur)
-                                                <option value="{{ $jalur->name }}">{{ $jalur->name }}</option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endforeach
-                                @else
-                                    <option value="Prestasi">Jalur Prestasi Akademik / Non-Akademik</option>
-                                    <option value="Kemitraan">Jalur Kemitraan Instansi</option>
-                                    <option value="Rekomendasi">Jalur Rekomendasi Yayasan</option>
-                                @endif
+                                {{-- Karena data di-group berdasarkan tipe_jalur, kita gunakan nested foreach --}}
+                                @foreach($jalurKhusus as $tipeJalur => $jalurs)
+                                    {{-- Menampilkan nama group (opsional, tapi membuat UI lebih rapi) --}}
+                                    <optgroup label="{{ $tipeJalur }}">
+                                        {{-- Looping isi dari masing-masing tipe jalur --}}
+                                        @foreach($jalurs as $jalur)
+                                            <option value="{{ $jalur->nama_jalur }}">{{ $jalur->nama_jalur }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
 
                             </select>
                             <i data-feather="chevron-down" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none"></i>

@@ -307,7 +307,7 @@
      Data diambil dari $jalurReguler & $khususPathsJs (lihat @php di atas),
      bukan lagi hardcoded — mengikuti Master Data > Jalur Pendaftaran.
      ============================================================ --}}
-<section class="px-4 sm:px-6 lg:px-16 py-10 sm:py-14 lg:py-20 bg-adzkia-bg relative z-30">
+<section class="px-4 sm:px-6 lg:px-16 py-10 sm:py-14 lg:py-20 bg-adzkia-bg relative z-30" id="jalur-pendaftaran">
     <div x-data='{
             mode: "reguler",
             dropdownOpen: false,

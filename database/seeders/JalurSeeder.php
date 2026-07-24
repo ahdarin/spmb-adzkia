@@ -17,7 +17,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Reguler',
                 'kode_nim'            => 'REG',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Reguler',
                 'is_free_registration'=> false,
                 'has_exam'            => false,
                 'is_active'           => true,
@@ -28,7 +28,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Beasiswa Adzkia Unggul (BAU)',
                 'kode_nim'            => 'BAU',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Beasiswa',
                 'is_free_registration'=> true,
                 'has_exam'            => true,
                 'is_active'           => true,
@@ -40,7 +40,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Beasiswa PMDK',
                 'kode_nim'            => 'PMD',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Beasiswa',
                 'is_free_registration'=> true,
                 'has_exam'            => false,
                 'is_active'           => true,
@@ -52,7 +52,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Beasiswa Prestasi',
                 'kode_nim'            => 'PRS',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Beasiswa',
                 'is_free_registration'=> true,
                 'has_exam'            => false,
                 'is_active'           => true,
@@ -64,7 +64,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Beasiswa KIP-K',
                 'kode_nim'            => 'KIP',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Beasiswa',
                 'is_free_registration'=> true,
                 'has_exam'            => false,
                 'is_active'           => true,
@@ -74,21 +74,9 @@ class JalurSeeder extends Seeder
                 ]),
             ],
             [
-                'nama_jalur'          => 'Undangan',
-                'kode_nim'            => 'UDG',
-                'tipe_jalur'          => 'Umum',
-                'is_free_registration'=> true,
-                'has_exam'            => false,
-                'is_active'           => true,
-                'dokumen_syarat'      => json_encode([
-                    'Ijazah / SKL', 'Kartu Tanda Penduduk (KTP)', 'Pas Foto 3x4',
-                    'Surat Undangan Resmi dari Universitas Adzkia',
-                ]),
-            ],
-            [
                 'nama_jalur'          => 'Spirit Sarjana 1',
                 'kode_nim'            => 'SS1',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Beasiswa',
                 'is_free_registration'=> false,
                 'has_exam'            => false,
                 'is_active'           => true,
@@ -99,7 +87,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Spirit Sarjana 2',
                 'kode_nim'            => 'SS2',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Beasiswa',
                 'is_free_registration'=> false,
                 'has_exam'            => false,
                 'is_active'           => true,
@@ -110,7 +98,7 @@ class JalurSeeder extends Seeder
             [
                 'nama_jalur'          => 'Transfer Lanjut',
                 'kode_nim'            => 'TRF',
-                'tipe_jalur'          => 'Umum',
+                'tipe_jalur'          => 'Transfer Lanjut',
                 'is_free_registration'=> false,
                 'has_exam'            => false,
                 'is_active'           => true,
